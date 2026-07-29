@@ -1,0 +1,12 @@
+# Copy this file to .dev.vars for local `wrangler pages dev` runs.
+# Never commit the real .dev.vars file.
+
+# Google PageSpeed Insights API key (free) — used for Core Web Vitals / performance checks.
+# Create one at https://console.cloud.google.com/apis/credentials after enabling the
+# "PageSpeed Insights API" on your Google Cloud project.
+PAGESPEED_API_KEY=
+
+# Firebase service account JSON (single line), used server-side to write leads to Firestore.
+# Firebase Console -> Project settings -> Service accounts -> Generate new private key.
+# Paste the entire downloaded JSON file content here as one line.
+FIREBASE_SERVICE_ACCOUNT_JSON=
