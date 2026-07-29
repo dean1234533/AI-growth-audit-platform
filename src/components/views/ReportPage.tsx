@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Globe, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Globe, AlertTriangle, Activity } from 'lucide-react';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -63,7 +63,7 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
             scannedAt={audit.scannedAt}
           />
 
-          <div className="mt-8 flex justify-center sm:justify-start">
+          <div className="mt-8 flex flex-wrap justify-center gap-3 sm:justify-start">
             <Button size="lg" onClick={() => setModalOpen(true)} disabled={downloaded} success={downloaded}>
               {downloaded ? (
                 <>
@@ -72,6 +72,16 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
               ) : (
                 'Unlock My Professional Report'
               )}
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              icon={<Activity className="size-4" />}
+              onClick={() => {
+                window.location.href = `/login?url=${encodeURIComponent(audit.url)}`;
+              }}
+            >
+              Monitor This Site Automatically
             </Button>
           </div>
         </div>

@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { FloatingBackground } from '../components/landing/FloatingBackground';
+import AuthForm from '../components/auth/AuthForm';
+---
+
+<BaseLayout title="Sign In" description="Sign in to your website health dashboard." path="/login" noindex>
+  <div class="relative flex min-h-[85vh] items-center justify-center px-6 py-16">
+    <FloatingBackground />
+    <div class="relative w-full">
+      <AuthForm client:only="react" />
+    </div>
+  </div>
+</BaseLayout>

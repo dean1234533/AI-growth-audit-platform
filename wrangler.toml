@@ -14,6 +14,11 @@ html_handling = "drop-trailing-slash"
 [ai]
 binding = "AI"
 
+# Daily sweep for automated website monitoring — the handler itself decides which sites are
+# actually due a scan (daily/weekly/monthly) based on each website's nextScanDue field.
+[triggers]
+crons = ["0 6 * * *"]
+
 # Set via `wrangler secret put PAGESPEED_API_KEY` (or the Cloudflare dashboard) in production.
 # For local dev, put PAGESPEED_API_KEY=... in a .dev.vars file (gitignored).
 [vars]

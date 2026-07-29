@@ -1,0 +1,15 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import WebsiteDetail from '../../components/dashboard-app/WebsiteDetail';
+
+const websiteId = Astro.params.websiteId!;
+---
+
+<BaseLayout title="Website Detail" description="Website health detail and scan history." path={`/dashboard/${websiteId}`} noindex>
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <WebsiteDetail client:only="react" websiteId={websiteId} />
+  </div>
+</BaseLayout>

@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Paste this into Firebase Console -> Firestore Database -> Rules. There is no
+// Firebase CLI / automated deploy pipeline wired into this project (Cloudflare
+// is the only deploy target so far), so this file is committed for reference
+// and must be applied manually whenever it changes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Anonymous, server-only collections — written exclusively via the service-account
+    // REST client in src/server/lib/firestore.ts (functions/api routes), which
+    // authenticates as an admin and bypasses these rules entirely. No client access.
+    match /leads/{leadId} {
+      allow read, write: if false;
+    }
+    match /newsletter/{subId} {
+      allow read, write: if false;
+    }
+    match /contactMessages/{msgId} {
+      allow read, write: if false;
+    }
+
+    // Monitored websites — owned by the signed-in user who created them.
+    match /websites/{websiteId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+      // Only allow the owner to update their own doc, and only when uid is unchanged.
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.uid
+        && request.resource.data.uid == resource.data.uid;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
+
+      // Scan history for this website. Reads are owner-only; writes are NOT allowed from
+      // the client at all — every scan is written server-side (either by the cron job's
+      // service account, or by the /api/audit-triggered client write path below, which
+      // is intentionally still routed through the same rule: the client writes its own
+      // scan directly, but only for a website it already owns).
+      match /scans/{scanId} {
+        allow read: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid;
+        allow create: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid;
+        allow update, delete: if false;
+      }
+    }
+  }
+}

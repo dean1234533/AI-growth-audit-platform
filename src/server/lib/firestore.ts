@@ -1,6 +1,6 @@
 /**
  * Minimal Firestore REST client using a Google service account, for use inside
- * Cloudflare Pages Functions (no Node.js firebase-admin SDK available in Workers runtime).
+ * Cloudflare Workers (no Node.js firebase-admin SDK available in the Workers runtime).
  */
 
 interface ServiceAccount {
@@ -59,14 +59,24 @@ async function getAccessToken(serviceAccount: ServiceAccount): Promise<string> {
   return json.access_token;
 }
 
-type FirestoreValue = { stringValue: string } | { integerValue: string } | { booleanValue: boolean } | { timestampValue: string } | { mapValue: { fields: Record<string, FirestoreValue> } };
+type FirestoreValue =
+  | { nullValue: null }
+  | { stringValue: string }
+  | { integerValue: string }
+  | { doubleValue: number }
+  | { booleanValue: boolean }
+  | { timestampValue: string }
+  | { arrayValue: { values: FirestoreValue[] } }
+  | { mapValue: { fields: Record<string, FirestoreValue> } };
 
 function toFirestoreValue(value: unknown): FirestoreValue {
+  if (value === null || value === undefined) return { nullValue: null };
   if (typeof value === 'string') return { stringValue: value };
-  if (typeof value === 'number') return { integerValue: String(Math.trunc(value)) };
+  if (typeof value === 'number') return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
   if (typeof value === 'boolean') return { booleanValue: value };
   if (value instanceof Date) return { timestampValue: value.toISOString() };
-  if (value && typeof value === 'object') {
+  if (Array.isArray(value)) return { arrayValue: { values: value.map(toFirestoreValue) } };
+  if (typeof value === 'object') {
     const fields: Record<string, FirestoreValue> = {};
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
       fields[k] = toFirestoreValue(v);
@@ -76,11 +86,37 @@ function toFirestoreValue(value: unknown): FirestoreValue {
   return { stringValue: String(value) };
 }
 
+function fromFirestoreValue(value: FirestoreValue): unknown {
+  if ('nullValue' in value) return null;
+  if ('stringValue' in value) return value.stringValue;
+  if ('integerValue' in value) return Number(value.integerValue);
+  if ('doubleValue' in value) return value.doubleValue;
+  if ('booleanValue' in value) return value.booleanValue;
+  if ('timestampValue' in value) return value.timestampValue;
+  if ('arrayValue' in value) return (value.arrayValue.values ?? []).map(fromFirestoreValue);
+  if ('mapValue' in value) {
+    const obj: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value.mapValue.fields ?? {})) obj[k] = fromFirestoreValue(v);
+    return obj;
+  }
+  return null;
+}
+
+function docNameToId(name: string): string {
+  return name.split('/').pop() ?? name;
+}
+
+function fieldsToDoc(name: string, fields: Record<string, FirestoreValue>): Record<string, unknown> {
+  const obj: Record<string, unknown> = { id: docNameToId(name) };
+  for (const [k, v] of Object.entries(fields)) obj[k] = fromFirestoreValue(v);
+  return obj;
+}
+
 export async function addFirestoreDocument(
   serviceAccount: ServiceAccount,
   collection: string,
   data: Record<string, unknown>,
-): Promise<void> {
+): Promise<string> {
   const token = await getAccessToken(serviceAccount);
   const fields: Record<string, FirestoreValue> = {};
   for (const [k, v] of Object.entries(data)) fields[k] = toFirestoreValue(v);
@@ -97,6 +133,103 @@ export async function addFirestoreDocument(
     const text = await res.text().catch(() => '');
     throw new Error(`Firestore write failed: ${res.status} ${text}`);
   }
+  const json = (await res.json()) as { name: string };
+  return docNameToId(json.name);
+}
+
+/**
+ * Updates specific fields on an existing document (partial update via updateMask —
+ * fields not listed are left untouched).
+ */
+export async function updateFirestoreDocument(
+  serviceAccount: ServiceAccount,
+  collectionPath: string,
+  docId: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  const token = await getAccessToken(serviceAccount);
+  const fields: Record<string, FirestoreValue> = {};
+  for (const [k, v] of Object.entries(data)) fields[k] = toFirestoreValue(v);
+
+  const mask = Object.keys(data)
+    .map((k) => `updateMask.fieldPaths=${encodeURIComponent(k)}`)
+    .join('&');
+
+  const res = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${serviceAccount.project_id}/databases/(default)/documents/${collectionPath}/${docId}?${mask}`,
+    {
+      method: 'PATCH',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ fields }),
+    },
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Firestore update failed: ${res.status} ${text}`);
+  }
+}
+
+export interface QueryFilter {
+  field: string;
+  op: 'EQUAL' | 'LESS_THAN_OR_EQUAL' | 'LESS_THAN' | 'GREATER_THAN_OR_EQUAL' | 'GREATER_THAN';
+  // Note: value's type must match how the field is stored (e.g. a Date for a field written
+  // as a Firestore timestamp) — Firestore's structured queries compare by value type, so a
+  // string filter against a timestamp-typed field will silently never match.
+  value: string | number | boolean | Date;
+}
+
+/** Runs a structured query (collection + simple AND-ed field filters) and returns plain document objects. */
+export async function runQuery(
+  serviceAccount: ServiceAccount,
+  collection: string,
+  filters: QueryFilter[],
+): Promise<Record<string, unknown>[]> {
+  const token = await getAccessToken(serviceAccount);
+
+  const where =
+    filters.length === 0
+      ? undefined
+      : filters.length === 1
+        ? fieldFilter(filters[0])
+        : {
+            compositeFilter: {
+              op: 'AND',
+              filters: filters.map((f) => fieldFilter(f)),
+            },
+          };
+
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId: collection }],
+      ...(where ? { where } : {}),
+    },
+  };
+
+  const res = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${serviceAccount.project_id}/databases/(default)/documents:runQuery`,
+    {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Firestore query failed: ${res.status} ${text}`);
+  }
+
+  const json = (await res.json()) as { document?: { name: string; fields: Record<string, FirestoreValue> } }[];
+  return json.filter((row) => row.document).map((row) => fieldsToDoc(row.document!.name, row.document!.fields));
+}
+
+function fieldFilter(filter: QueryFilter) {
+  return {
+    fieldFilter: {
+      field: { fieldPath: filter.field },
+      op: filter.op,
+      value: toFirestoreValue(filter.value),
+    },
+  };
 }
 
 export function parseServiceAccount(json: string | undefined): ServiceAccount | null {

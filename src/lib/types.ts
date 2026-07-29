@@ -71,6 +71,22 @@ export interface Lead {
   website: string;
 }
 
+export type ScanFrequency = 'daily' | 'weekly' | 'monthly' | 'manual';
+
+export interface MonitoredWebsite {
+  id: string;
+  uid: string;
+  url: string;
+  name: string;
+  frequency: ScanFrequency;
+  status: 'active' | 'paused';
+  createdAt: string;
+  lastScannedAt: string | null;
+  nextScanDue: string | null;
+  latestOverallScore: number | null;
+  latestCategoryScores: { id: CategoryId; score: number }[];
+}
+
 export const CATEGORY_LABELS: Record<CategoryId, string> = {
   seo: 'SEO',
   performance: 'Performance',

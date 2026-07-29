@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import WebsiteHealthCentre from '../../components/dashboard-app/WebsiteHealthCentre';
+---
+
+<BaseLayout title="Dashboard" description="Your monitored websites and health scores." path="/dashboard" noindex>
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <WebsiteHealthCentre client:only="react" />
+  </div>
+</BaseLayout>
