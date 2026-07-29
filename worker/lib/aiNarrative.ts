@@ -4,7 +4,7 @@ interface WorkersAiBinding {
   run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }>;
 }
 
-const MODEL = '@cf/meta/llama-3.1-8b-instruct';
+const MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8';
 
 /**
  * Rewrites the title/description of each recommendation into specific, business-owner-friendly
@@ -45,7 +45,8 @@ export async function enrichRecommendationsWithAi(ai: WorkersAiBinding | undefin
     });
 
     return [...enrichedTop, ...rest];
-  } catch {
+  } catch (err) {
+    console.error('Workers AI recommendation enrichment failed, falling back to rule-based text:', err);
     return recommendations;
   }
 }
