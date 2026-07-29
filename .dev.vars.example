@@ -1,4 +1,4 @@
-# Copy this file to .dev.vars for local `wrangler pages dev` runs.
+# Copy this file to .dev.vars for local `wrangler dev` runs.
 # Never commit the real .dev.vars file.
 
 # Google PageSpeed Insights API key (free) — used for Core Web Vitals / performance checks.

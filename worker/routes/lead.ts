@@ -1,7 +1,7 @@
 import type { AuditResult, Lead } from '../../src/lib/types';
 import { addFirestoreDocument, parseServiceAccount } from '../lib/firestore';
 
-interface Env {
+export interface LeadEnv {
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
 }
 
@@ -11,9 +11,7 @@ interface LeadRequestBody extends Lead {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
-
+export async function handleLead(request: Request, env: LeadEnv): Promise<Response> {
   let body: LeadRequestBody;
   try {
     body = await request.json();
@@ -52,7 +50,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   return new Response(JSON.stringify({ ok: true, stored: true }), { headers: { 'content-type': 'application/json' } });
-};
+}
 
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {

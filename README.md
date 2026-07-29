@@ -4,14 +4,14 @@ A free, AI-powered website audit tool designed as a lead-generation funnel: a vi
 their website URL, gets a real, data-backed growth audit, and submits their contact details
 to download the full branded PDF report.
 
-**Stack:** React + TypeScript + Vite + Tailwind CSS + Framer Motion + Recharts, running on
-Cloudflare Pages with Cloudflare Pages Functions (audit engine backend) and Firebase (lead storage).
+**Stack:** React + TypeScript + Vite + Tailwind CSS + Framer Motion + Recharts, running as a single
+Cloudflare Worker with static assets (frontend + `/api/*` routes in one deployment) and Firebase (lead storage).
 
 ## MVP scope (this pass)
 
 Built:
 - Animated landing page, "how it works" section, animated scanning state
-- Real audit engine (Cloudflare Pages Function) covering SEO, Performance (via Google
+- Real audit engine (Cloudflare Worker route) covering SEO, Performance (via Google
   PageSpeed Insights), Accessibility, Mobile, Trust, Conversion and Local SEO checks
 - AI-generated recommendation wording via Cloudflare Workers AI (free tier), with a
   deterministic rule-based fallback if the AI call fails
@@ -47,7 +47,7 @@ Powers the Performance category (Core Web Vitals, unused CSS/JS, compression, ca
 
 ### 4. Cloudflare Workers AI
 
-No separate signup needed — it uses the same Cloudflare account you'll deploy Pages with, via
+No separate signup needed — it uses the same Cloudflare account you'll deploy the Worker with, via
 the `AI` binding declared in `wrangler.toml`. Free tier: ~10,000 neurons/day.
 
 ### 5. Local environment variables
@@ -61,32 +61,43 @@ service account JSON as a single line). `.dev.vars` is gitignored — never comm
 
 ### 6. Run locally
 
-The frontend (Vite) and the API (Cloudflare Pages Functions via Wrangler) run as two processes:
+The frontend (Vite, with hot reload) and the Worker (API routes + Workers AI binding) run as
+two processes:
 
 ```bash
 # Terminal 1 — frontend
 npm run dev
 
-# Terminal 2 — Functions + Workers AI binding
-npm run build && npx wrangler pages dev dist --compatibility-date=2026-01-01 --compatibility-flags=nodejs_compat
+# Terminal 2 — Worker (rebuilds dist/ first, then runs wrangler dev)
+npm run dev:worker
 ```
 
-Vite is configured to proxy `/api/*` requests to `http://127.0.0.1:8788`, which is Wrangler's
-default local port.
+Vite is configured to proxy `/api/*` requests to `http://127.0.0.1:8787`, which is Wrangler's
+default local port for `wrangler dev`.
 
-### 7. Deploy to Cloudflare Pages
+> Note: `wrangler dev` (and `wrangler deploy`) require macOS 13.5+, Linux (glibc 2.35+), or
+> Windows — the underlying `workerd` runtime won't start on older macOS. If you hit an
+> "Unsupported macOS version" error, deploy directly (step 7) and test against the live URL instead.
+
+### 7. Deploy to Cloudflare
+
+This project deploys as a single Cloudflare Worker with static assets (not a classic "Pages"
+project) — `wrangler.toml` declares `main` (the Worker entry) and `[assets]` (the built frontend).
 
 ```bash
-npm run build
-npx wrangler pages deploy dist
+npm run deploy
 ```
 
 Then set the production secrets (one-time):
 
 ```bash
-npx wrangler pages secret put PAGESPEED_API_KEY
-npx wrangler pages secret put FIREBASE_SERVICE_ACCOUNT_JSON
+npx wrangler secret put PAGESPEED_API_KEY
+npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_JSON
 ```
+
+If deploying via a Git-connected Cloudflare dashboard build, make sure the project type is
+**Workers** (not **Pages**) so it runs `wrangler deploy` — that's what actually executes
+against this `wrangler.toml`.
 
 ## Project structure
 
@@ -104,10 +115,11 @@ src/
     api.ts           Client fetch wrappers for /api/audit and /api/lead
     pdf.ts            Branded PDF report generation
   pages/            LandingPage, ScanningState, ReportPage
-functions/
-  api/
-    audit.ts        POST /api/audit — orchestrates all checks, returns AuditResult JSON
-    lead.ts          POST /api/lead — validates + writes lead to Firestore
+worker/
+  index.ts          Worker entry — routes /api/* to route handlers, else serves static assets
+  routes/
+    audit.ts         handleAudit() — orchestrates all checks, returns AuditResult JSON
+    lead.ts           handleLead() — validates + writes lead to Firestore
   lib/
     fetchSite.ts      Fetches + parses target site HTML via HTMLRewriter
     aiNarrative.ts     Cloudflare Workers AI recommendation rewriting

@@ -1,12 +1,18 @@
 name = "ai-website-growth-audit-platform"
+main = "worker/index.ts"
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
 
 [ai]
 binding = "AI"
 
-# Set via `wrangler pages secret put PAGESPEED_API_KEY` (or the Cloudflare dashboard) in production.
+# Set via `wrangler secret put PAGESPEED_API_KEY` (or the Cloudflare dashboard) in production.
 # For local dev, put PAGESPEED_API_KEY=... in a .dev.vars file (gitignored).
 [vars]
 # PAGESPEED_API_KEY is intentionally left unset here — provide it as a secret, not a committed var.

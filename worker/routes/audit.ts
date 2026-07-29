@@ -11,7 +11,7 @@ import { runLocalSeoChecks } from '../lib/checks/localSeo';
 import { runPerformanceChecks } from '../lib/checks/performance';
 import { enrichRecommendationsWithAi } from '../lib/aiNarrative';
 
-interface Env {
+export interface AuditEnv {
   PAGESPEED_API_KEY?: string;
   AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
 }
@@ -29,9 +29,7 @@ function normalizeUrl(input: string): string | null {
   }
 }
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
-
+export async function handleAudit(request: Request, env: AuditEnv): Promise<Response> {
   let body: { url?: string };
   try {
     body = await request.json();
@@ -89,7 +87,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   return new Response(JSON.stringify(result), {
     headers: { 'content-type': 'application/json' },
   });
-};
+}
 
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {
