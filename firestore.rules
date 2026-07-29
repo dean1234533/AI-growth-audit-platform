@@ -30,11 +30,10 @@ service cloud.firestore {
         && request.resource.data.uid == resource.data.uid;
       allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
 
-      // Scan history for this website. Reads are owner-only; writes are NOT allowed from
-      // the client at all — every scan is written server-side (either by the cron job's
-      // service account, or by the /api/audit-triggered client write path below, which
-      // is intentionally still routed through the same rule: the client writes its own
-      // scan directly, but only for a website it already owns).
+      // Scan history for this website. Reads and creates are owner-only (the client
+      // writes its own scan right after running an audit); updates/deletes are blocked
+      // entirely — scan records are immutable once written, whether by the owner or by
+      // the cron job's service account (which bypasses these rules).
       match /scans/{scanId} {
         allow read: if request.auth != null
           && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid;
