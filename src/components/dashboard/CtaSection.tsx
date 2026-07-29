@@ -12,10 +12,11 @@ interface CtaSectionProps {
 }
 
 const DEFAULT_URL = 'https://dean-da-dev.co.uk';
+const CONSULTATION_URL = 'https://www.dean-da-dev.co.uk/DiscoveryCall';
 
 export function CtaSection({
   recommendations,
-  consultationUrl = DEFAULT_URL,
+  consultationUrl = CONSULTATION_URL,
   quoteUrl = DEFAULT_URL,
   portfolioUrl = DEFAULT_URL,
 }: CtaSectionProps) {

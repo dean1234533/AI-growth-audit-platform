@@ -3,6 +3,7 @@ import type { AuditResult, Lead } from './types';
 
 const BRAND_NAME = 'Dean Da Dev';
 const BRAND_CONTACT = 'dean@dean-da-dev.co.uk  ·  dean-da-dev.co.uk';
+const CONSULTATION_URL = 'https://www.dean-da-dev.co.uk/DiscoveryCall';
 const PAGE_MARGIN = 40;
 const PAGE_WIDTH = 595.28; // A4 pt
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2;
@@ -167,6 +168,8 @@ export function generateAuditPdf(audit: AuditResult, lead: Lead): void {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.text(BRAND_CONTACT, PAGE_MARGIN + 16, y + 44);
+  doc.setFont('helvetica', 'bold');
+  doc.textWithLink('Book a free discovery call ->', PAGE_MARGIN + 340, y + 44, { url: CONSULTATION_URL });
 
   const filenameSafe = lead.business.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
   doc.save(`website-growth-audit-${filenameSafe || 'report'}.pdf`);
