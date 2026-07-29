@@ -1,0 +1,5 @@
+{
+  "question": "Do I need an SSL certificate?",
+  "answer": "Yes, without exception. Browsers actively warn visitors that a site without HTTPS is \"Not Secure\", which destroys trust instantly regardless of how good the rest of the site is. SSL is also a confirmed (if minor) Google ranking factor, and most modern hosting providers now include free SSL certificates by default, so there's rarely a reason not to have one. Our free audit checks this automatically as part of every scan.",
+  "category": "Web Development"
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ai-website-growth-audit-platform.deanburt1308.workers.dev/sitemap-index.xml

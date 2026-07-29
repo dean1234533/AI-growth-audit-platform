@@ -1,0 +1,68 @@
+---
+import { Search, Gauge, Accessibility, ShieldCheck, Smartphone, MousePointerClick, MapPin, Sparkles, FileText } from 'lucide-react';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../components/site/CtaBanner.astro';
+
+const CATEGORIES = [
+  { icon: Search, label: 'SEO', desc: 'Titles, meta descriptions, headings, structured data, sitemaps, robots.txt, image alt text and more.' },
+  { icon: Gauge, label: 'Performance', desc: 'Real Core Web Vitals from Google PageSpeed Insights — LCP, CLS, INP, image sizing, render-blocking resources.' },
+  { icon: Accessibility, label: 'Accessibility', desc: 'Alt text, contrast, form labels, heading hierarchy, ARIA attributes, focus states.' },
+  { icon: ShieldCheck, label: 'Trust', desc: 'SSL, privacy policy, terms, contact details, testimonials, business hours, social links.' },
+  { icon: Smartphone, label: 'Mobile', desc: 'Viewport configuration, responsive layout, touch target sizing, text readability.' },
+  { icon: MousePointerClick, label: 'Conversion', desc: 'Call-to-action visibility, contact forms, trust badges, page content depth.' },
+  { icon: MapPin, label: 'Local SEO', desc: 'Google Business Profile signals, NAP consistency, location pages, reviews.' },
+];
+
+const EXTRAS = [
+  { icon: Sparkles, label: 'AI-generated recommendations', desc: 'Detected issues rewritten into specific, plain-English recommendations by AI — never generic advice.' },
+  { icon: FileText, label: 'Branded PDF report', desc: 'A complete, professionally branded report you can keep, share with your team, or hand to a developer.' },
+];
+---
+
+<BaseLayout
+  title="Features"
+  description="Everything the free AI website audit checks — SEO, performance, accessibility, trust, mobile, conversion and local SEO."
+  path="/features"
+>
+  <Breadcrumbs items={[{ name: 'Features', path: '/features' }]} />
+
+  <section class="px-6 pt-10 pb-20 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">What Gets Checked</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        Seven categories, dozens of individual checks, every one based on what's actually detected on your live site.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        CATEGORIES.map((cat) => (
+          <div class="glass gradient-border gradient-border-brand rounded-[24px] p-7">
+            <span class="inline-flex size-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
+              <cat.icon className="size-5" />
+            </span>
+            <h2 class="mt-4 font-display font-bold text-ink dark:text-white">{cat.label}</h2>
+            <p class="mt-2 text-sm leading-relaxed text-slate">{cat.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mx-auto mt-6 grid max-w-5xl gap-5 sm:grid-cols-2">
+      {
+        EXTRAS.map((extra) => (
+          <div class="glass rounded-[24px] p-7">
+            <span class="inline-flex size-11 items-center justify-center rounded-2xl bg-mint-500/10 text-mint-600">
+              <extra.icon className="size-5" />
+            </span>
+            <h2 class="mt-4 font-display font-bold text-ink dark:text-white">{extra.label}</h2>
+            <p class="mt-2 text-sm leading-relaxed text-slate">{extra.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

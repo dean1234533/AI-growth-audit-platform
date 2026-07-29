@@ -1,0 +1,42 @@
+---
+import '../index.css';
+import SeoHead from '../components/seo/SeoHead.astro';
+import JsonLd from '../components/seo/JsonLd.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import { buildOrganizationSchema, buildSoftwareApplicationSchema } from '../lib/seo/schema';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  image?: string;
+  noindex?: boolean;
+  /** Hide the global header/footer chrome — used for the bare audit-tool experience. */
+  bare?: boolean;
+}
+
+const { title, description, path, image, noindex, bare = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400..700&display=swap"
+      rel="stylesheet"
+    />
+    <SeoHead title={title} description={description} path={path} image={image} noindex={noindex} />
+    <JsonLd schema={[buildOrganizationSchema(), buildSoftwareApplicationSchema()]} />
+  </head>
+  <body class="bg-canvas text-ink dark:bg-[#0a0a12] dark:text-white">
+    {!bare && <SiteHeader />}
+    <slot />
+    {!bare && <SiteFooter />}
+  </body>
+</html>

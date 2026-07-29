@@ -1,0 +1,90 @@
+---
+import { CheckCircle2, CalendarCheck } from 'lucide-react';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import { CONSULTATION_URL } from '../lib/seo/site';
+
+const AUDIT_INCLUDES = [
+  'Full SEO, performance, accessibility, trust, mobile, conversion and local SEO scan',
+  'AI-generated, plain-English recommendations',
+  'Interactive dashboard with charts and growth estimates',
+  'Downloadable, branded PDF report',
+];
+
+const PRO_INCLUDES = [
+  'Every issue in your audit fixed by hand, not just flagged',
+  'A tailored quote based on what your specific site actually needs',
+  'Ongoing support if you want it — or a one-off fix if you don’t',
+  'No obligation from the free audit — you decide if and when to take it further',
+];
+---
+
+<BaseLayout
+  title="Pricing"
+  description="The AI website audit is completely free. Professional fixes are quoted individually based on your website."
+  path="/pricing"
+>
+  <Breadcrumbs items={[{ name: 'Pricing', path: '/pricing' }]} />
+
+  <section class="px-6 pt-10 pb-20 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">Simple, Honest Pricing</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        The audit is free, full stop. If you want the issues actually fixed, that's quoted individually — because every
+        website's problems (and the work to fix them) are different.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-4xl gap-6 sm:grid-cols-2">
+      <div class="glass gradient-border gradient-border-brand rounded-[28px] p-8">
+        <span class="inline-flex rounded-full bg-mint-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-mint-600">Free</span>
+        <div class="mt-4 font-display text-4xl font-extrabold text-ink dark:text-white">£0</div>
+        <p class="mt-1 text-sm text-slate">Forever — no card, no trial period</p>
+        <ul class="mt-6 space-y-3">
+          {
+            AUDIT_INCLUDES.map((item) => (
+              <li class="flex items-start gap-2.5 text-sm leading-relaxed text-ink dark:text-slate-100">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-mint-500" />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+        <a
+          href="/"
+          class="mt-8 block rounded-2xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-5 py-3 text-center text-sm font-semibold text-white shadow-[0_16px_36px_-12px_rgba(108,99,255,0.55)]"
+        >
+          Run My Free Audit
+        </a>
+      </div>
+
+      <div class="glass rounded-[28px] p-8">
+        <span class="inline-flex rounded-full bg-brand-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand-600">Professional fixes</span>
+        <div class="mt-4 font-display text-4xl font-extrabold text-ink dark:text-white">Custom quote</div>
+        <p class="mt-1 text-sm text-slate">Based on what your site actually needs</p>
+        <ul class="mt-6 space-y-3">
+          {
+            PRO_INCLUDES.map((item) => (
+              <li class="flex items-start gap-2.5 text-sm leading-relaxed text-ink dark:text-slate-100">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-500" />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+        <a
+          href={CONSULTATION_URL}
+          target="_blank"
+          rel="noopener"
+          class="glass mt-8 flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-center text-sm font-semibold text-ink dark:text-white"
+        >
+          <CalendarCheck className="size-4" /> Book a Free Consultation
+        </a>
+      </div>
+    </div>
+
+    <p class="mx-auto mt-10 max-w-xl text-center text-sm text-slate">
+      No package, retainer or contract is required to use the free audit — it's a genuine tool, not a lead-in to a hidden fee.
+    </p>
+  </section>
+</BaseLayout>

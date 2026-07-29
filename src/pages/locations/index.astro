@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import { ArrowRight, MapPin } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+
+const locations = await getCollection('locations');
+---
+
+<BaseLayout
+  title="AI Website Audits by Location"
+  description="Free AI website audits for businesses across the UK — see local search insights specific to your city or region."
+  path="/locations"
+>
+  <Breadcrumbs items={[{ name: 'Locations', path: '/locations' }]} />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">Audits by Location</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        Local search competition varies city to city — see what matters most for businesses in your area.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-3xl gap-4 sm:grid-cols-2">
+      {
+        locations.map((location) => (
+          <a href={`/locations/${location.id}`} class="glass gradient-border gradient-border-brand group flex items-center justify-between gap-3 rounded-[20px] px-6 py-5 transition-transform hover:-translate-y-1">
+            <span class="inline-flex items-center gap-2 font-display font-bold text-ink dark:text-white">
+              <MapPin className="size-4 text-brand-500" />
+              {location.data.name}
+            </span>
+            <ArrowRight className="size-4 text-brand-500 transition-transform group-hover:translate-x-1" />
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

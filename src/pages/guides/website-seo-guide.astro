@@ -1,0 +1,57 @@
+---
+import { getEntry, render } from 'astro:content';
+import { Clock } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import JsonLd from '../../components/seo/JsonLd.astro';
+import ReadingProgressBar from '../../components/blog/ReadingProgressBar.astro';
+import TableOfContents from '../../components/blog/TableOfContents.astro';
+import ShareButtons from '../../components/blog/ShareButtons.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+import { buildArticleSchema } from '../../lib/seo/schema';
+import { canonicalUrl } from '../../lib/seo/site';
+import { getReadingTime } from '../../lib/blog';
+
+const entry = await getEntry('guides', 'website-seo-guide');
+if (!entry) throw new Error('Missing guides/website-seo-guide entry');
+
+const { Content, headings } = await render(entry);
+const { title, description, publishDate, updatedDate, author } = entry.data;
+const readingTime = getReadingTime(entry.body);
+const path = '/guides/website-seo-guide';
+
+const schema = buildArticleSchema({ title, description, path, publishDate, updatedDate, authorName: author });
+---
+
+<BaseLayout title={title} description={description} path={path}>
+  <ReadingProgressBar />
+  <JsonLd schema={schema} />
+  <Breadcrumbs items={[{ name: 'Guides', path: '/guides' }, { name: title, path }]} />
+
+  <article class="px-6 py-10 sm:py-16">
+    <header class="mx-auto max-w-3xl text-center">
+      <span class="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">Pillar Guide</span>
+      <h1 class="mt-3 font-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl dark:text-white">{title}</h1>
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-slate">
+        <span>{author}</span>
+        <span class="inline-flex items-center gap-1.5">
+          <Clock className="size-4" /> {readingTime} min read
+        </span>
+      </div>
+      <div class="mt-6 flex justify-center">
+        <ShareButtons url={canonicalUrl(path)} title={title} />
+      </div>
+    </header>
+
+    <div class="mx-auto mt-14 grid max-w-5xl gap-10 lg:grid-cols-[1fr_260px]">
+      <div class="prose prose-slate dark:prose-invert max-w-none prose-headings:font-display prose-a:text-brand-600 dark:prose-a:text-brand-400">
+        <Content />
+      </div>
+      <aside class="hidden lg:block">
+        <TableOfContents headings={headings} />
+      </aside>
+    </div>
+  </article>
+
+  <CtaBanner />
+</BaseLayout>

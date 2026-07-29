@@ -1,0 +1,27 @@
+{
+  "name": "London",
+  "region": "Greater London",
+  "seoTitle": "Website Audit London — Free AI Website Health Check",
+  "metaDescription": "Free AI website audit for London businesses. Find out why your site isn't winning more enquiries in one of the UK's most competitive search markets.",
+  "intro": "London has the highest search competition of any UK market — for almost any local service, dozens of businesses are fighting for the same first page. A website that's merely \"fine\" doesn't survive that competition; small technical and SEO gaps are the difference between page one and page three.",
+  "painPoints": [
+    "Competing against dozens of similar businesses across boroughs, where generic \"London\" targeting loses to competitors with borough-specific content (e.g. Hackney, Stratford, Croydon)",
+    "Higher visitor expectations for site speed and polish, since London audiences are used to slicker competitor sites and abandon slow ones faster",
+    "Local searches increasingly specifying a borough or postcode rather than just \"London\", missed entirely by sites without location-specific pages",
+    "Intense local SEO competition making Google Business Profile completeness and review volume a bigger differentiator than in less competitive markets"
+  ],
+  "faq": [
+    {
+      "question": "Why isn't my business ranking in London even though my website looks fine?",
+      "answer": "London's search competition is intense enough that \"fine\" usually isn't enough — technical SEO gaps, thin local content, and page speed issues that wouldn't matter in a smaller market become the deciding factor here."
+    },
+    {
+      "question": "Should I target specific London boroughs instead of just \"London\"?",
+      "answer": "Generally yes — borough or postcode-specific content (e.g. a dedicated page for Shoreditch or Croydon) lets you compete for more specific, less contested searches instead of the single hyper-competitive \"London\" term."
+    },
+    {
+      "question": "How fast should my website be for London audiences?",
+      "answer": "The same Core Web Vitals benchmarks apply everywhere, but London visitors — used to slick competitor sites — tend to bounce from slow pages faster, making speed an even higher priority here than in less competitive markets."
+    }
+  ]
+}

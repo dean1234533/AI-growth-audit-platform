@@ -1,0 +1,27 @@
+{
+  "name": "Birmingham",
+  "region": "West Midlands",
+  "seoTitle": "Website Audit Birmingham — Free AI Website Health Check",
+  "metaDescription": "Free AI website audit for Birmingham businesses. Find out exactly what's stopping your site from winning more local enquiries.",
+  "intro": "As the UK's second-largest city, Birmingham has a large and varied local search market spanning the city centre and surrounding boroughs like Solihull, Sutton Coldfield and Dudley — businesses that only optimise for \"Birmingham\" broadly are leaving a lot of specific, winnable local search traffic on the table.",
+  "painPoints": [
+    "Broad \"Birmingham\" targeting missing more specific, less competitive searches from Solihull, Sutton Coldfield, Dudley and other surrounding areas",
+    "Website trust signals (reviews, accreditations, business details) not kept current as the business grows across a wider service area",
+    "Mobile experience issues going unnoticed despite Birmingham's high proportion of mobile local searches",
+    "Missing structured data that would help the business appear in Google's local map pack alongside organic results"
+  ],
+  "faq": [
+    {
+      "question": "Is it worth targeting areas around Birmingham like Solihull or Sutton Coldfield separately?",
+      "answer": "Yes — these are large, distinct search markets in their own right, and dedicated content for each lets you compete for local searches you'd otherwise miss with generic Birmingham-only targeting."
+    },
+    {
+      "question": "What's the biggest local SEO opportunity for Birmingham businesses?",
+      "answer": "Completing and actively maintaining a Google Business Profile alongside consistent NAP (name, address, phone) details across the website — this combination is what drives visibility in Google's local map pack, which sits above organic results for most local searches."
+    },
+    {
+      "question": "How do I check if my Birmingham business website is mobile-friendly?",
+      "answer": "Our free audit specifically checks viewport configuration, responsive layout, and touch target sizing — run it on your site to get an instant mobile-friendliness assessment."
+    }
+  ]
+}

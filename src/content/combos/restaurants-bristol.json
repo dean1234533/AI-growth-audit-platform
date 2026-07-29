@@ -1,0 +1,29 @@
+{
+  "industrySlug": "restaurants",
+  "locationSlug": "bristol",
+  "industryName": "Restaurants",
+  "locationName": "Bristol",
+  "seoTitle": "Website Audit for Restaurants in Bristol \u2014 Free Health Check",
+  "metaDescription": "Free AI website audit for Bristol restaurants. Find out why your site isn't winning more bookings in the city's design-conscious dining scene.",
+  "intro": "Bristol's independent dining scene is design-conscious and competitive \u2014 diners researching where to eat expect a fast, clear website with the menu and booking option immediately visible, and Bristol's strong food culture means the bar for \"good enough\" keeps rising.",
+  "painPoints": [
+    "Menu locked behind a slow-loading PDF, invisible to Google and frustrating on mobile where most restaurant searches happen",
+    "No visible online booking link, forcing diners to call during service instead of booking themselves in seconds",
+    "Outdated opening hours or missing details for surrounding areas like Clifton or Bath where genuine diner demand exists",
+    "Review count and rating not displayed on-site, missing a trust signal that reinforces what diners already saw in Google search results"
+  ],
+  "faq": [
+    {
+      "question": "Why does Bristol's dining scene make website quality more important?",
+      "answer": "Bristol's strong independent food culture means diners are used to comparing polished, well-designed sites \u2014 a slow or dated site stands out more here than in less design-conscious markets."
+    },
+    {
+      "question": "Should my Bristol restaurant website mention nearby areas like Bath or Clifton?",
+      "answer": "If you draw diners from those areas, yes \u2014 content that speaks to those specific locations helps you appear in searches beyond just \"Bristol restaurants.\""
+    },
+    {
+      "question": "What's the highest-impact fix for a Bristol restaurant's website?",
+      "answer": "Replacing a PDF menu with a real, fast-loading web page and adding a visible online booking link \u2014 both directly remove friction at the exact moment a hungry visitor is deciding where to eat."
+    }
+  ]
+}

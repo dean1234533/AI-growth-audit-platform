@@ -1,0 +1,27 @@
+{
+  "name": "Plumbers",
+  "seoTitle": "AI Website Audit for Plumbers — Free Website Health Check",
+  "metaDescription": "Free AI website audit built for plumbers. Find out why your site isn't winning more emergency callouts and installation jobs — in under 30 seconds.",
+  "intro": "A burst pipe doesn't wait for business hours, and neither do the searches that follow it. Plumbers live or die on how fast a stressed, phone-in-hand visitor can tell you're available, local, and reliable — everything else on the page is secondary to that first five seconds.",
+  "painPoints": [
+    "No emergency/24-hour availability messaging above the fold, so panicked searchers can't tell at a glance whether you'll actually pick up right now",
+    "Missing Gas Safe Register number or plumbing-specific certifications, leaving visitors unable to verify you're qualified for gas or boiler work",
+    "Contact form asking for excessive detail before a phone number is even offered, adding friction exactly when speed matters most",
+    "No structured data marking up service areas, so the site struggles to appear for \"emergency plumber near me\" searches outside the core town"
+  ],
+  "whyItMatters": "Plumbing enquiries split into two very different buyers — emergency callouts (fast, trust-driven, mobile) and planned installations like bathrooms or boilers (considered, desktop-heavy, comparison-shopped). A site built for only one of these loses the other; the strongest plumber websites make the emergency path instant while still building enough trust and portfolio depth to win the bigger planned jobs.",
+  "faq": [
+    {
+      "question": "Should my plumbing website have a separate emergency page?",
+      "answer": "Yes — a dedicated, fast-loading emergency callout page with your phone number prominent and availability stated clearly converts far better than making a panicked visitor hunt through a general services page."
+    },
+    {
+      "question": "Does showing my Gas Safe number actually affect conversions?",
+      "answer": "Significantly — for anything gas-related, customers are specifically taught to check for it, and a visible registration number is one of the fastest trust signals you can display, alongside genuine reviews."
+    },
+    {
+      "question": "How many service area pages should a plumber have?",
+      "answer": "One dedicated page per distinct town or postcode area you genuinely serve is the standard approach — it gives Google unique, indexable content for each area rather than relying on one generic \"areas we cover\" list."
+    }
+  ]
+}

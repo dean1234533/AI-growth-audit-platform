@@ -1,0 +1,125 @@
+---
+import { Sparkles, Mail } from 'lucide-react';
+
+const COLUMNS = [
+  {
+    title: 'Tools',
+    links: [
+      { label: 'Website Audit', href: '/tools/website-audit' },
+      { label: 'SEO Checker', href: '/tools/seo-checker' },
+      { label: 'Website Speed Test', href: '/tools/website-speed-test' },
+      { label: 'Accessibility Checker', href: '/tools/accessibility-checker' },
+      { label: 'Local SEO Checker', href: '/tools/local-seo-checker' },
+      { label: 'All tools', href: '/tools' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Blog', href: '/blog' },
+      { label: 'Ultimate Website SEO Guide', href: '/guides/website-seo-guide' },
+      { label: 'FAQ Hub', href: '/faq' },
+      { label: 'Compare', href: '/compare' },
+    ],
+  },
+  {
+    title: 'By industry',
+    links: [
+      { label: 'Electricians', href: '/industries/electricians' },
+      { label: 'Plumbers', href: '/industries/plumbers' },
+      { label: 'Painters & Decorators', href: '/industries/painters-and-decorators' },
+      { label: 'Dentists', href: '/industries/dentists' },
+      { label: 'Restaurants', href: '/industries/restaurants' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Contact', href: '/contact' },
+    ],
+  },
+];
+---
+
+<footer class="relative border-t border-ink/[0.06] px-6 py-16 dark:border-white/10">
+  <div class="mx-auto max-w-6xl">
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+      <div>
+        <a href="/" class="inline-flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
+          <span class="inline-flex size-8 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
+            <Sparkles className="size-4" />
+          </span>
+          Growth Audit
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-slate">
+          Free AI-powered website audits for small businesses — real, data-backed recommendations to win more enquiries.
+        </p>
+
+        <form id="newsletter-form" class="glass mt-6 flex items-center gap-2 rounded-2xl p-2">
+          <div class="flex flex-1 items-center gap-2 px-3">
+            <Mail className="size-4 shrink-0 text-slate" />
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Monthly website health reports"
+              class="w-full bg-transparent text-sm text-ink placeholder:text-slate/70 outline-none dark:text-white"
+            />
+          </div>
+          <button
+            type="submit"
+            class="shrink-0 rounded-xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            Subscribe
+          </button>
+        </form>
+        <p id="newsletter-message" class="mt-2 text-xs font-medium text-slate"></p>
+      </div>
+
+      {COLUMNS.map((col) => (
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wide text-slate">{col.title}</div>
+          <ul class="mt-4 space-y-2.5">
+            {col.links.map((link) => (
+              <li>
+                <a href={link.href} class="text-sm font-medium text-ink transition-colors hover:text-brand-500 dark:text-slate-200">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-14 border-t border-ink/[0.06] pt-8 text-sm text-slate dark:border-white/10">
+      &copy; {new Date().getFullYear()} Growth Audit, built by <a href="https://dean-da-dev.co.uk" class="font-semibold text-brand-500">Dean Da Dev</a>.
+    </div>
+  </div>
+</footer>
+
+<script>
+  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
+  const message = document.getElementById('newsletter-message');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = (form.elements.namedItem('email') as HTMLInputElement)?.value;
+    if (!email || !message) return;
+    message.textContent = 'Subscribing…';
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error();
+      message.textContent = "You're subscribed! Check your inbox.";
+      form.reset();
+    } catch {
+      message.textContent = 'Something went wrong. Please try again.';
+    }
+  });
+</script>

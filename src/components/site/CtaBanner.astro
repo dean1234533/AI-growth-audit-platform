@@ -1,0 +1,43 @@
+---
+import { CalendarCheck, Sparkles } from 'lucide-react';
+import { CONSULTATION_URL } from '../../lib/seo/site';
+
+interface Props {
+  heading?: string;
+  body?: string;
+  auditHref?: string;
+}
+
+const {
+  heading = 'Run a Free Website Audit',
+  body = "See exactly what's stopping your website from winning more enquiries — real, data-backed recommendations in under 30 seconds.",
+  auditHref = '/',
+} = Astro.props;
+---
+
+<section class="mx-auto max-w-6xl px-6 py-16">
+  <div class="glass gradient-border gradient-border-brand relative overflow-hidden rounded-[28px] p-10 text-center sm:p-14">
+    <div class="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-brand-400/20 blur-[90px]" />
+    <span class="glass relative inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-[0.15em] text-brand-500">
+      <Sparkles className="size-3.5" /> Free, no obligation
+    </span>
+    <h2 class="relative mt-6 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl dark:text-white">{heading}</h2>
+    <p class="relative mx-auto mt-4 max-w-xl text-slate">{body}</p>
+    <div class="relative mt-8 flex flex-wrap items-center justify-center gap-4">
+      <a
+        href={auditHref}
+        class="inline-flex items-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_16px_36px_-12px_rgba(108,99,255,0.55)] transition-shadow hover:shadow-[0_20px_44px_-10px_rgba(108,99,255,0.65)]"
+      >
+        Run My Free Audit
+      </a>
+      <a
+        href={CONSULTATION_URL}
+        target="_blank"
+        rel="noopener"
+        class="glass inline-flex items-center gap-2 rounded-2xl px-7 py-3.5 text-sm font-semibold text-ink transition-colors hover:bg-white/60 dark:text-white dark:hover:bg-white/10"
+      >
+        <CalendarCheck className="size-4" /> Book a Free Consultation
+      </a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+{
+  "name": "Leeds",
+  "region": "West Yorkshire",
+  "seoTitle": "Website Audit Leeds — Free AI Website Health Check",
+  "metaDescription": "Free AI website audit for Leeds businesses. Find out exactly what's stopping your site from winning more local enquiries.",
+  "intro": "Leeds' business community spans a large city centre and well-defined surrounding suburbs, and local search increasingly rewards businesses that speak directly to specific areas rather than the city as a whole — a website built for \"Leeds\" broadly is competing far harder than it needs to.",
+  "painPoints": [
+    "No area-specific content for suburbs like Headingley, Chapel Allerton or Roundhay, missing more targeted, less competitive local searches",
+    "Website speed and Core Web Vitals issues going unnoticed and unfixed, quietly suppressing local search rankings over time",
+    "Trust signals like reviews and testimonials thin or outdated, weakening conversion even when the site does get found",
+    "Missing FAQ or schema markup that could help the business earn richer, more visible search result listings"
+  ],
+  "faq": [
+    {
+      "question": "Should a Leeds business target specific suburbs like Headingley or Chapel Allerton?",
+      "answer": "If you serve those areas specifically, dedicated content for each gives Google more precise, relevant pages to match against local searches — a real advantage over competitors relying on one general Leeds-wide page."
+    },
+    {
+      "question": "What local SEO factors matter most for Leeds businesses?",
+      "answer": "A complete, active Google Business Profile, consistent business details across the web, genuine customer reviews, and — for multi-area businesses — dedicated pages per suburb served."
+    },
+    {
+      "question": "How do I find out what's holding my Leeds business website back?",
+      "answer": "Run our free AI audit — it checks SEO, performance, trust, mobile-friendliness, conversion and local SEO factors specific to your site in under 30 seconds."
+    }
+  ]
+}

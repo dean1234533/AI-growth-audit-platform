@@ -4,14 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:worker": "npm run build && wrangler dev",
-    "build": "tsc -b && vite build",
-    "deploy": "npm run build && wrangler deploy",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "deploy": "npm run build && wrangler deploy dist/server/entry.mjs --assets dist/client --config wrangler.toml",
+    "generate-content": "node scripts/generate-content.mjs",
+    "lint": "oxlint"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^14.1.7",
+    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/react": "^6.0.2",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.1.6",
     "framer-motion": "^12.43.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.27.0",
@@ -20,18 +25,16 @@
     "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20260729.1",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.3",
-    "autoprefixer": "^10.5.4",
     "oxlint": "^1.71.0",
-    "postcss": "^8.5.25",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1",
     "wrangler": "^4.115.0"
   }
 }

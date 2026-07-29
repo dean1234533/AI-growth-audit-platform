@@ -1,0 +1,5 @@
+{
+  "question": "Why is my website slow?",
+  "answer": "The most common causes are unoptimised images (large files not resized or compressed for the web), render-blocking CSS and JavaScript that delay the page from displaying, missing text compression, and no browser caching for returning visitors. Google's Core Web Vitals (Largest Contentful Paint, Cumulative Layout Shift and Interaction to Next Paint) measure exactly these issues. Run our free website audit to see which of these apply to your site, with real data from Google PageSpeed Insights.",
+  "category": "Page Speed"
+}

@@ -1,0 +1,81 @@
+---
+import { getCollection } from 'astro:content';
+import { Clock, ArrowRight } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+import { getReadingTime, sortByDateDesc } from '../../lib/blog';
+
+const allPosts = sortByDateDesc(await getCollection('blog'));
+const featured = allPosts.filter((p) => p.data.featured);
+const latest = allPosts;
+const categories = [...new Set(allPosts.map((p) => p.data.category))];
+---
+
+<BaseLayout
+  title="Blog"
+  description="Practical, no-nonsense advice on website SEO, performance, accessibility and conversion for small business owners."
+  path="/blog"
+>
+  <Breadcrumbs items={[{ name: 'Blog', path: '/blog' }]} />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">The Blog</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        Practical, plain-English guides on website SEO, speed, accessibility and conversion — no jargon, no fluff.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-10 flex flex-wrap items-center justify-center gap-2">
+      {
+        categories.map((cat) => (
+          <a href={`/blog/category/${cat.toLowerCase().replace(/\s+/g, '-')}`} class="glass rounded-full px-4 py-1.5 text-sm font-semibold text-slate transition-colors hover:text-brand-500">
+            {cat}
+          </a>
+        ))
+      }
+    </div>
+
+    {
+      featured.length > 0 && (
+        <div class="mx-auto mt-14 max-w-6xl">
+          <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">Featured</h2>
+          <div class="mt-4 grid gap-5 sm:grid-cols-3">
+            {featured.map((post) => (
+              <a href={`/blog/${post.id}`} class="glass gradient-border gradient-border-brand flex h-full flex-col rounded-[24px] p-6 transition-transform hover:-translate-y-1">
+                <span class="text-xs font-bold uppercase tracking-wide text-brand-500">{post.data.category}</span>
+                <h3 class="mt-2 font-display font-bold text-ink dark:text-white">{post.data.title}</h3>
+                <p class="mt-2 flex-1 text-sm leading-relaxed text-slate">{post.data.description}</p>
+                <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-slate">
+                  <Clock className="size-3.5" /> {getReadingTime(post.body)} min read
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <div class="mx-auto mt-16 max-w-6xl">
+      <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">Latest</h2>
+      <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          latest.map((post) => (
+            <a href={`/blog/${post.id}`} class="glass flex h-full flex-col rounded-[24px] p-6 transition-transform hover:-translate-y-1">
+              <span class="text-xs font-bold uppercase tracking-wide text-brand-500">{post.data.category}</span>
+              <h3 class="mt-2 font-display font-bold text-ink dark:text-white">{post.data.title}</h3>
+              <p class="mt-2 flex-1 text-sm leading-relaxed text-slate">{post.data.description}</p>
+              <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-slate">
+                <Clock className="size-3.5" /> {getReadingTime(post.body)} min read
+                <ArrowRight className="ml-auto size-3.5 text-brand-500" />
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

@@ -1,0 +1,27 @@
+{
+  "name": "Painters & Decorators",
+  "seoTitle": "AI Website Audit for Painters & Decorators — Free Website Health Check",
+  "metaDescription": "Free AI website audit built for painters and decorators. Find out why your site isn't winning more quote requests — in under 30 seconds.",
+  "intro": "Painting and decorating is a visual trade, so the website selling it has to be visual too — but many trade sites bury genuinely impressive before-and-after work behind slow-loading, unoptimised image galleries that drive visitors away before they ever see the quality on offer.",
+  "painPoints": [
+    "Large, uncompressed before-and-after photos that make the site painfully slow on mobile, the exact device most homeowners browse from",
+    "No clear pricing guidance or \"request a quote\" path, leaving visitors unsure how to take the next step after browsing the gallery",
+    "Testimonials missing or buried at the bottom of the homepage, when social proof is one of the strongest converters for a trade that's fundamentally about trusting someone in your home",
+    "No structured data or dedicated pages distinguishing interior, exterior, and commercial decorating services, missing search traffic that's specific about what they need"
+  ],
+  "whyItMatters": "Homeowners hiring a decorator are inviting a stranger into their house for days at a time — the website's real job is reducing that anxiety with genuine photos, real reviews, and a fast, frictionless way to request a quote. A beautiful but slow-loading portfolio actively works against you, since Google and impatient visitors both penalise the load time before the photos even get a chance to impress.",
+  "faq": [
+    {
+      "question": "How should I show my portfolio without slowing down my site?",
+      "answer": "Compress and correctly size every image before upload, and use lazy loading so only the photos actually in view load immediately — our audit checks for both and flags oversized images specifically."
+    },
+    {
+      "question": "Do I need separate pages for interior and exterior decorating?",
+      "answer": "If you offer both, yes — separate service pages let each one target its own specific search terms and let you show the most relevant portfolio photos to each type of visitor, rather than one diluted general page."
+    },
+    {
+      "question": "Where should testimonials go on a decorator's website?",
+      "answer": "High on the homepage, ideally visible without scrolling past the fold, and repeated near your call-to-action — trust signals placed right before you ask for the enquiry consistently convert better than testimonials buried in a separate page."
+    }
+  ]
+}

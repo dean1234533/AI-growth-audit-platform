@@ -1,0 +1,5 @@
+{
+  "question": "What is website accessibility and why does it matter?",
+  "answer": "Website accessibility means your site can be used by everyone, including visitors using screen readers, keyboard-only navigation, or who have visual impairments — covering things like alt text on images, sufficient colour contrast, labelled form fields, and a logical heading structure. Beyond serving roughly 1 in 5 visitors with some form of disability, accessible sites tend to have cleaner underlying code that also helps SEO, and accessibility is increasingly a legal requirement in many sectors. Our free accessibility checker covers the highest-impact issues in seconds.",
+  "category": "Accessibility"
+}

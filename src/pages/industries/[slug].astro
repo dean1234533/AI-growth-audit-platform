@@ -1,0 +1,59 @@
+---
+export const prerender = true;
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { AlertTriangle } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import FaqAccordion from '../../components/seo/FaqAccordion.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+
+export async function getStaticPaths() {
+  const industries = await getCollection('industries');
+  return industries.map((industry) => ({ params: { slug: industry.id }, props: { industry } }));
+}
+
+interface Props {
+  industry: CollectionEntry<'industries'>;
+}
+
+const { industry } = Astro.props;
+const { name, seoTitle, metaDescription, intro, painPoints, whyItMatters, faq } = industry.data;
+---
+
+<BaseLayout title={seoTitle} description={metaDescription} path={`/industries/${industry.id}`}>
+  <Breadcrumbs items={[{ name: 'Industries', path: '/industries' }, { name, path: `/industries/${industry.id}` }]} />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <span class="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">For {name}</span>
+      <h1 class="mt-3 font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">
+        AI Website Audit for {name}
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">{intro}</p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-8">
+    <h2 class="font-display text-3xl font-extrabold tracking-tight text-ink dark:text-white">
+      Common website problems for {name.toLowerCase()}
+    </h2>
+    <div class="mt-8 grid gap-3 sm:grid-cols-2">
+      {
+        painPoints.map((point) => (
+          <div class="glass flex items-start gap-3 rounded-2xl px-4 py-3.5 text-sm leading-relaxed text-ink dark:text-slate-100">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+            {point}
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="glass mt-10 rounded-[24px] p-8">
+      <h3 class="font-display text-xl font-bold text-ink dark:text-white">Why this matters</h3>
+      <p class="mt-3 leading-relaxed text-slate">{whyItMatters}</p>
+    </div>
+  </section>
+
+  <FaqAccordion items={faq} />
+  <CtaBanner heading={`Run a Free Audit for Your ${name} Website`} />
+</BaseLayout>

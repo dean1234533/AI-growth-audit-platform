@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import { ArrowRight } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+
+const industries = await getCollection('industries');
+---
+
+<BaseLayout
+  title="AI Website Audits by Industry"
+  description="Free AI website audits tailored to your industry — see the specific issues that hold back businesses like yours."
+  path="/industries"
+>
+  <Breadcrumbs items={[{ name: 'Industries', path: '/industries' }]} />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">Audits by Industry</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        Every industry has different website priorities — see the issues that matter most for businesses like yours.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-3xl gap-4 sm:grid-cols-2">
+      {
+        industries.map((industry) => (
+          <a href={`/industries/${industry.id}`} class="glass gradient-border gradient-border-brand group flex items-center justify-between gap-3 rounded-[20px] px-6 py-5 transition-transform hover:-translate-y-1">
+            <span class="font-display font-bold text-ink dark:text-white">{industry.data.name}</span>
+            <ArrowRight className="size-4 text-brand-500 transition-transform group-hover:translate-x-1" />
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

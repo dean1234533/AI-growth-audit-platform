@@ -1,0 +1,27 @@
+{
+  "name": "Restaurants",
+  "seoTitle": "AI Website Audit for Restaurants — Free Website Health Check",
+  "metaDescription": "Free AI website audit built for restaurants. Find out why your site isn't winning more bookings and orders — in under 30 seconds.",
+  "intro": "Most restaurant searches happen on a phone, minutes before someone wants to eat — they want the menu, the opening hours, and a way to book, in that order, in seconds. A restaurant website that buries any of these behind a slow-loading hero video or a PDF menu is losing hungry, ready-to-book customers to the place next door.",
+  "painPoints": [
+    "Menu only available as a slow-loading PDF or image, which is invisible to Google search and painful to read on a small screen",
+    "No visible online booking or ordering link on mobile, forcing visitors to call during a busy service instead of booking themselves",
+    "Missing or outdated opening hours, one of the most searched pieces of information and one of the most damaging to get wrong",
+    "No structured data or review count displayed, missing out on the star-rating rich snippets that make a listing stand out in search results"
+  ],
+  "whyItMatters": "Restaurant decisions are fast and mobile-first — the businesses that win are the ones where a hungry visitor can see the menu, confirm you're open, and book a table within seconds of landing on the site. Slow load times and hidden information don't just hurt SEO, they directly cost covers on your busiest nights when people are choosing between you and three other options in the same search results page.",
+  "faq": [
+    {
+      "question": "Should my menu be a PDF or a real web page?",
+      "answer": "A real, text-based web page — PDFs are slow to load on mobile, can't be indexed properly by Google for dish-specific searches, and are frustrating to read on a small screen compared to a simple, fast HTML menu."
+    },
+    {
+      "question": "How much does website speed matter for a restaurant?",
+      "answer": "A great deal — restaurant searches are overwhelmingly mobile and time-pressured, so a slow-loading site loses bookings directly to faster competitors in the same search results, not just to lower Google rankings."
+    },
+    {
+      "question": "Why do reviews matter so much for restaurant websites?",
+      "answer": "Displaying your review count and rating directly on-site (alongside your Google Business Profile) reinforces the same trust signal a visitor already saw in search results, and structured data can help that rating appear as a rich snippet in Google search itself."
+    }
+  ]
+}

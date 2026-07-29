@@ -1,0 +1,29 @@
+{
+  "industrySlug": "dentists",
+  "locationSlug": "leeds",
+  "industryName": "Dentists",
+  "locationName": "Leeds",
+  "seoTitle": "Website Audit for Dentists in Leeds \u2014 Free Health Check",
+  "metaDescription": "Free AI website audit for Leeds dental practices. Find out why your site isn't converting more new patient enquiries across the city.",
+  "intro": "Leeds patients researching a new dentist typically compare two or three practice websites before booking, often on mobile, often anxious \u2014 the practice whose site loads fastest and makes booking easiest tends to win the enquiry regardless of which has the stronger reputation.",
+  "painPoints": [
+    "Booking process requiring multiple steps or a phone call only, adding friction that loses anxious patients to a practice with instant online booking",
+    "No dedicated pages for high-intent treatments like Invisalign or implants, missing searches specific to what Leeds patients are actually looking for",
+    "Accessibility gaps (small text, low contrast, unlabelled forms) creating unnecessary barriers for older or anxious patients",
+    "Opening hours or emergency availability not clearly stated, a common source of lost enquiries during genuine dental emergencies"
+  ],
+  "faq": [
+    {
+      "question": "Do Leeds patients compare multiple dental practice websites before booking?",
+      "answer": "Typically yes \u2014 most patients research two or three options before choosing, which means site speed, clarity and ease of booking often matter as much as reputation in winning the enquiry."
+    },
+    {
+      "question": "Should a Leeds dental practice have a page for each treatment?",
+      "answer": "Yes, especially for higher-intent treatments like Invisalign or implants \u2014 dedicated pages let you rank for and directly answer those specific searches rather than relying on one general services page."
+    },
+    {
+      "question": "How does accessibility affect a dental practice's enquiries?",
+      "answer": "Directly \u2014 many patients are older, anxious, or researching mid-emergency, so clear text, good contrast and properly labelled booking forms measurably affect how many visitors convert into booked appointments."
+    }
+  ]
+}

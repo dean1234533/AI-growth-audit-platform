@@ -1,0 +1,72 @@
+---
+export const prerender = true;
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { CheckCircle2 } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+import { SITE_NAME } from '../../lib/seo/site';
+
+export async function getStaticPaths() {
+  const items = await getCollection('compare');
+  return items.map((item) => ({ params: { slug: item.id }, props: { item } }));
+}
+
+interface Props {
+  item: CollectionEntry<'compare'>;
+}
+
+const { item } = Astro.props;
+const { competitor, seoTitle, metaDescription, intro, competitorStrengths, ourStrengths, verdict } = item.data;
+---
+
+<BaseLayout title={seoTitle} description={metaDescription} path={`/compare/${item.id}`}>
+  <Breadcrumbs items={[{ name: 'Compare', path: '/compare' }, { name: `${competitor} vs ${SITE_NAME}`, path: `/compare/${item.id}` }]} />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl dark:text-white">
+        {competitor} vs {SITE_NAME}
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">{intro}</p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-6 py-8">
+    <div class="grid gap-6 sm:grid-cols-2">
+      <div class="glass rounded-[24px] p-8">
+        <h2 class="font-display text-xl font-bold text-ink dark:text-white">{competitor} strengths</h2>
+        <ul class="mt-5 space-y-3">
+          {
+            competitorStrengths.map((s) => (
+              <li class="flex items-start gap-2.5 text-sm leading-relaxed text-slate">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-accent-500" />
+                {s}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div class="glass gradient-border gradient-border-brand rounded-[24px] p-8">
+        <h2 class="font-display text-xl font-bold text-ink dark:text-white">{SITE_NAME} strengths</h2>
+        <ul class="mt-5 space-y-3">
+          {
+            ourStrengths.map((s) => (
+              <li class="flex items-start gap-2.5 text-sm leading-relaxed text-slate">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-mint-500" />
+                {s}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="glass mt-8 rounded-[24px] p-8">
+      <h2 class="font-display text-xl font-bold text-ink dark:text-white">Verdict</h2>
+      <p class="mt-3 leading-relaxed text-slate">{verdict}</p>
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import { ArrowRight } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+import { SITE_NAME } from '../../lib/seo/site';
+
+const items = await getCollection('compare');
+---
+
+<BaseLayout
+  title="Compare"
+  description={`See how ${SITE_NAME} compares to other website audit and SEO tools.`}
+  path="/compare"
+>
+  <Breadcrumbs items={[{ name: 'Compare', path: '/compare' }]} />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">Compare</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        Honest comparisons between {SITE_NAME} and other popular website tools.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-3xl gap-4 sm:grid-cols-2">
+      {
+        items.map((item) => (
+          <a href={`/compare/${item.id}`} class="glass gradient-border gradient-border-brand group flex items-center justify-between gap-3 rounded-[20px] px-6 py-5 transition-transform hover:-translate-y-1">
+            <span class="font-display font-bold text-ink dark:text-white">{item.data.competitor} vs {SITE_NAME}</span>
+            <ArrowRight className="size-4 shrink-0 text-brand-500 transition-transform group-hover:translate-x-1" />
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

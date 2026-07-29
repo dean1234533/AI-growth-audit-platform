@@ -1,0 +1,109 @@
+---
+import { Mail, CalendarCheck } from 'lucide-react';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import { BRAND_EMAIL, CONSULTATION_URL } from '../lib/seo/site';
+---
+
+<BaseLayout
+  title="Contact"
+  description="Get in touch with Dean Da Dev — questions about your audit, a project enquiry, or anything else."
+  path="/contact"
+>
+  <Breadcrumbs items={[{ name: 'Contact', path: '/contact' }]} />
+
+  <section class="px-6 pt-10 pb-20 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">Get in Touch</h1>
+      <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate">
+        Questions about your audit results, or want to talk through a project? Send a message or book a free call directly.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-4xl gap-6 sm:grid-cols-2">
+      <div class="glass rounded-[24px] p-8">
+        <h2 class="font-display text-xl font-bold text-ink dark:text-white">Send a message</h2>
+        <form id="contact-form" class="mt-6 space-y-3">
+          <input
+            type="text"
+            name="name"
+            required
+            placeholder="Your name"
+            class="w-full rounded-2xl border border-ink/10 bg-transparent px-4 py-3 text-sm text-ink outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+          />
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="Email address"
+            class="w-full rounded-2xl border border-ink/10 bg-transparent px-4 py-3 text-sm text-ink outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+          />
+          <textarea
+            name="message"
+            required
+            rows={4}
+            placeholder="How can we help?"
+            class="w-full rounded-2xl border border-ink/10 bg-transparent px-4 py-3 text-sm text-ink outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+          />
+          <button
+            type="submit"
+            class="w-full rounded-2xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_36px_-12px_rgba(108,99,255,0.55)]"
+          >
+            Send Message
+          </button>
+          <p id="contact-message" class="text-center text-xs font-medium text-slate" />
+        </form>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <a href={`mailto:${BRAND_EMAIL}`} class="glass flex items-center gap-4 rounded-[24px] p-6 transition-transform hover:-translate-y-1">
+          <span class="inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+            <Mail className="size-5" />
+          </span>
+          <div>
+            <div class="text-xs font-medium text-slate">Email</div>
+            <div class="font-semibold text-ink dark:text-white">{BRAND_EMAIL}</div>
+          </div>
+        </a>
+        <a href={CONSULTATION_URL} target="_blank" rel="noopener" class="glass gradient-border gradient-border-brand flex items-center gap-4 rounded-[24px] p-6 transition-transform hover:-translate-y-1">
+          <span class="inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+            <CalendarCheck className="size-5" />
+          </span>
+          <div>
+            <div class="text-xs font-medium text-slate">Prefer to talk?</div>
+            <div class="font-semibold text-ink dark:text-white">Book a free discovery call</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const message = document.getElementById('contact-message');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!message) return;
+    const data = new FormData(form);
+    const payload = {
+      name: String(data.get('name') ?? ''),
+      email: String(data.get('email') ?? ''),
+      message: String(data.get('message') ?? ''),
+    };
+    message.textContent = 'Sending…';
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error();
+      message.textContent = "Thanks — we'll be in touch soon.";
+      form.reset();
+    } catch {
+      message.textContent = 'Something went wrong. Please try again or email us directly.';
+    }
+  });
+</script>

@@ -1,0 +1,19 @@
+{
+  "competitor": "GTmetrix",
+  "seoTitle": "GTmetrix vs AI Website Audit — Which Should You Use?",
+  "metaDescription": "Comparing GTmetrix and our free AI Website Audit — what each tool measures, and when to use which one for your website.",
+  "intro": "GTmetrix is a well-established performance testing tool popular with developers for its detailed waterfall charts and historical performance monitoring. Our AI Website Audit is built for a different audience and a different job — small business owners who want to know, in plain English, what's actually stopping their website from winning more customers.",
+  "competitorStrengths": [
+    "Detailed waterfall charts showing exactly which resources load when and how long each takes",
+    "Historical performance monitoring and alerting for tracking changes over time",
+    "Test location and device/connection simulation options for developers debugging specific scenarios",
+    "Established, developer-trusted tool with a long track record"
+  ],
+  "ourStrengths": [
+    "No technical knowledge required — every finding is explained in plain English with a clear severity and difficulty rating",
+    "Covers the full picture beyond speed: SEO, accessibility, trust, mobile, conversion and local SEO",
+    "Estimates real business impact (potential enquiries, visibility improvement) rather than just technical scores",
+    "Free branded PDF report and a natural path to professional help fixing what's found"
+  ],
+  "verdict": "If you're a developer who needs granular waterfall-level performance debugging, GTmetrix is built exactly for that. If you're a business owner who wants a fast, plain-English answer to \"what's wrong with my website and how much is it costing me\" across every factor that affects enquiries — not just load time — our free AI Website Audit is the more useful starting point."
+}

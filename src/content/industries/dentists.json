@@ -1,0 +1,27 @@
+{
+  "name": "Dentists",
+  "seoTitle": "AI Website Audit for Dentists — Free Website Health Check",
+  "metaDescription": "Free AI website audit built for dental practices. Find out why your site isn't converting more new patient enquiries — in under 30 seconds.",
+  "intro": "Choosing a dentist is a high-trust, often anxious decision, and most people research online before ever calling. A dental practice website needs to do more than list treatments — it needs to feel calm, professional, and easy to book with, or nervous visitors simply move on to the next search result.",
+  "painPoints": [
+    "Booking process buried several clicks deep instead of a prominent \"Book an Appointment\" button visible on every page",
+    "No accessibility considerations for older or anxious patients — small text, low contrast, or forms with no clear labels create unnecessary friction",
+    "Missing or thin content on specific treatments (e.g. Invisalign, implants, emergency dentistry), losing high-intent searches to practices with dedicated treatment pages",
+    "No structured data or visible opening hours, making it harder for anxious patients to quickly confirm you're open and reachable"
+  ],
+  "whyItMatters": "Dental websites convert on reassurance and accessibility as much as on services offered — patients are often anxious, sometimes in pain, and want the path from \"searching\" to \"booked\" to feel effortless. Practices that pair clear treatment information with an accessible, fast, easy-to-navigate site consistently see more new patient enquiries than those relying on reputation alone.",
+  "faq": [
+    {
+      "question": "Should each dental treatment have its own page?",
+      "answer": "Yes — dedicated pages for high-intent treatments like Invisalign, implants or teeth whitening let you target the specific searches patients make, rather than hoping a generic \"Services\" page ranks for everything at once."
+    },
+    {
+      "question": "How important is accessibility for a dental practice website?",
+      "answer": "Very — your patient base likely includes older adults, anxious first-time visitors, and people researching mid-emergency, so clear text sizing, good contrast, and properly labelled booking forms directly affect how many enquiries you convert."
+    },
+    {
+      "question": "What's the single highest-impact fix for a dental website?",
+      "answer": "A prominent, always-visible \"Book an Appointment\" call-to-action — dental sites that bury booking behind multiple clicks lose a significant share of visitors who would have converted with one clear, obvious next step."
+    }
+  ]
+}

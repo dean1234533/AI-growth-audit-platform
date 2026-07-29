@@ -1,0 +1,62 @@
+---
+export const prerender = true;
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { AlertTriangle } from 'lucide-react';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/seo/Breadcrumbs.astro';
+import FaqAccordion from '../../../components/seo/FaqAccordion.astro';
+import CtaBanner from '../../../components/site/CtaBanner.astro';
+
+export async function getStaticPaths() {
+  const combos = await getCollection('combos');
+  return combos.map((combo) => ({
+    params: { service: combo.data.industrySlug, location: combo.data.locationSlug },
+    props: { combo },
+  }));
+}
+
+interface Props {
+  combo: CollectionEntry<'combos'>;
+}
+
+const { combo } = Astro.props;
+const { industryName, locationName, industrySlug, locationSlug, seoTitle, metaDescription, intro, painPoints, faq } = combo.data;
+const path = `/audit/${industrySlug}/${locationSlug}`;
+---
+
+<BaseLayout title={seoTitle} description={metaDescription} path={path}>
+  <Breadcrumbs
+    items={[
+      { name: industryName, path: `/industries/${industrySlug}` },
+      { name: `In ${locationName}`, path },
+    ]}
+  />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">
+        Website Audit for {industryName} in {locationName}
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">{intro}</p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-8">
+    <h2 class="font-display text-3xl font-extrabold tracking-tight text-ink dark:text-white">
+      Common issues for {industryName.toLowerCase()} in {locationName}
+    </h2>
+    <div class="mt-8 grid gap-3 sm:grid-cols-2">
+      {
+        painPoints.map((point) => (
+          <div class="glass flex items-start gap-3 rounded-2xl px-4 py-3.5 text-sm leading-relaxed text-ink dark:text-slate-100">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+            {point}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <FaqAccordion items={faq} />
+  <CtaBanner heading={`Run a Free Audit for Your ${locationName} Business`} />
+</BaseLayout>

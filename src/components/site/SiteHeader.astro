@@ -1,0 +1,58 @@
+---
+import { Sparkles, Menu } from 'lucide-react';
+
+const NAV = [
+  { label: 'Tools', href: '/tools' },
+  { label: 'Industries', href: '/industries' },
+  { label: 'Locations', href: '/locations' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'About', href: '/about' },
+];
+---
+
+<header class="sticky top-0 z-40 border-b border-ink/[0.06] bg-canvas/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/80">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+    <a href="/" class="inline-flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
+      <span class="inline-flex size-8 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
+        <Sparkles className="size-4" />
+      </span>
+      Growth Audit
+    </a>
+
+    <nav class="hidden items-center gap-7 text-sm font-semibold text-slate lg:flex">
+      {NAV.map((item) => (
+        <a href={item.href} class="transition-colors hover:text-ink dark:hover:text-white">
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="hidden items-center gap-3 lg:flex">
+      <a href="/contact" class="text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white">Contact</a>
+      <a
+        href="/"
+        class="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_16px_36px_-12px_rgba(108,99,255,0.55)] transition-shadow hover:shadow-[0_20px_44px_-10px_rgba(108,99,255,0.65)]"
+      >
+        Run a Free Audit
+      </a>
+    </div>
+
+    <details class="group relative lg:hidden">
+      <summary class="flex size-10 cursor-pointer list-none items-center justify-center rounded-xl text-ink dark:text-white [&::-webkit-details-marker]:hidden">
+        <Menu className="size-5" />
+      </summary>
+      <nav class="glass absolute right-0 top-12 flex w-56 flex-col gap-1 rounded-2xl p-3 text-sm font-semibold text-ink dark:text-white">
+        {NAV.map((item) => (
+          <a href={item.href} class="rounded-xl px-3 py-2 transition-colors hover:bg-brand-500/10">
+            {item.label}
+          </a>
+        ))}
+        <a href="/contact" class="rounded-xl px-3 py-2 transition-colors hover:bg-brand-500/10">Contact</a>
+        <a href="/" class="mt-1 rounded-xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-3 py-2 text-center text-white">
+          Run a Free Audit
+        </a>
+      </nav>
+    </details>
+  </div>
+</header>

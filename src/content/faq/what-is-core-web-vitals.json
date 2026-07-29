@@ -1,0 +1,5 @@
+{
+  "question": "What is Core Web Vitals?",
+  "answer": "Core Web Vitals are three specific metrics Google uses to measure real-world user experience: Largest Contentful Paint (how fast your main content appears, ideally under 2.5 seconds), Cumulative Layout Shift (how much elements move around while loading, ideally under 0.1), and Interaction to Next Paint (how quickly the page responds to clicks and taps). They're a confirmed Google ranking factor, and our free website speed test measures all three using the same data Google itself uses.",
+  "category": "Page Speed"
+}

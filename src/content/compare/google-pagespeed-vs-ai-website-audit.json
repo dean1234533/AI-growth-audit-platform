@@ -1,0 +1,19 @@
+{
+  "competitor": "Google PageSpeed Insights",
+  "seoTitle": "Google PageSpeed vs AI Website Audit — Which Should You Use?",
+  "metaDescription": "Comparing Google PageSpeed Insights and our free AI Website Audit — what each tool measures, and when to use which one.",
+  "intro": "Google PageSpeed Insights is the industry-standard tool for measuring Core Web Vitals and page speed — and it's genuinely excellent at that one job. Our AI Website Audit actually uses PageSpeed Insights data as part of its performance category, but goes considerably further, because speed is only one of the seven things that determine whether a website turns visitors into customers.",
+  "competitorStrengths": [
+    "The authoritative source for Core Web Vitals data — the same metrics Google itself uses as a ranking factor",
+    "Extremely detailed technical performance diagnostics for developers",
+    "Free, fast, and maintained directly by Google",
+    "Field data (real user CrUX data) as well as lab data, when available for a domain"
+  ],
+  "ourStrengths": [
+    "Covers SEO, accessibility, trust, mobile-friendliness, conversion optimisation and local SEO — not just speed",
+    "Translates technical performance issues into plain-English, prioritised recommendations rather than raw metrics",
+    "Estimates the business impact of fixing issues (potential enquiries, visibility, conversion improvement)",
+    "Produces a downloadable, branded PDF report suitable for sharing with a business owner or team"
+  ],
+  "verdict": "If you specifically need deep, technical Core Web Vitals diagnostics, PageSpeed Insights is the right specialist tool — and it's exactly what powers our own performance checks. If you want to understand your website's overall health across SEO, trust, accessibility and conversion in one plain-English report — not just speed — run our free AI Website Audit instead. Many businesses use both: PageSpeed Insights for deep technical performance work, and our audit for the full picture."
+}

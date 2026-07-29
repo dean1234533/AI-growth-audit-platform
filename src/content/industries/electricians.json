@@ -1,0 +1,27 @@
+{
+  "name": "Electricians",
+  "seoTitle": "AI Website Audit for Electricians — Free Website Health Check",
+  "metaDescription": "Free AI website audit built for electricians. Find out why your site isn't winning more callouts, quotes and contracts — in under 30 seconds.",
+  "intro": "When someone's fuse box has just tripped or they need a rewire quoted, they search on their phone and call whoever looks most trustworthy in the first few results. For electricians, a website's job isn't to look clever — it's to prove you're qualified, local, and easy to reach right now.",
+  "painPoints": [
+    "No visible NICEIC/NAPIT accreditation or Part P certification badges, so visitors can't quickly verify you're qualified to work on their property",
+    "Phone number buried below the fold or missing entirely on mobile, losing emergency callout enquiries to a competitor one scroll away",
+    "No dedicated pages for the different towns or suburbs covered, so the site never shows up for \"electrician near me\" searches outside the immediate area",
+    "Slow-loading photo galleries of past work that push the call-to-action off-screen on mobile, where most callout searches happen"
+  ],
+  "whyItMatters": "Electrical work is a trust-and-urgency purchase — most enquiries happen when something's already gone wrong, so the businesses that convert are the ones that load fast, prove credentials instantly, and make calling or requesting a quote obvious within seconds. A slow, generic-looking site doesn't just lose SEO rankings, it loses the customer to whichever competitor answers the phone first.",
+  "faq": [
+    {
+      "question": "What should an electrician's website include to win more work?",
+      "answer": "Visible accreditation (NICEIC/NAPIT/Part P), a phone number that's clickable and visible without scrolling on mobile, genuine customer reviews, clear service areas, and a fast-loading gallery of completed work — all things our free audit checks automatically."
+    },
+    {
+      "question": "Why do I need location pages if I already show up on Google Maps?",
+      "answer": "Google Business Profile handles local map results, but a dedicated page per town you cover (e.g. \"Electrician in Ilford\") gives Google separate, indexable content to rank for each area's searches — Maps and website SEO work together, not instead of each other."
+    },
+    {
+      "question": "How fast should an electrician's website load?",
+      "answer": "Under 2.5 seconds for the main content to appear (Largest Contentful Paint) is the benchmark Google uses — slower than that and you're losing both search ranking and impatient mobile visitors searching mid-emergency."
+    }
+  ]
+}

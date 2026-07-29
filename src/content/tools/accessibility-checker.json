@@ -1,0 +1,30 @@
+{
+  "name": "Accessibility Checker",
+  "category": "accessibility",
+  "seoTitle": "Free Website Accessibility Checker — AI Accessibility Audit",
+  "metaDescription": "Check your website's accessibility for free. Our AI accessibility checker finds missing alt text, contrast issues, unlabelled forms and more.",
+  "intro": "An inaccessible website turns away visitors using screen readers or keyboard navigation, and increasingly carries legal risk under accessibility regulations. Our free accessibility checker scans your homepage for the issues that matter most, in plain English.",
+  "whatWeCheck": [
+    "Missing alt text on images",
+    "Unlabelled form fields",
+    "Colour contrast issues in inline styles",
+    "Heading hierarchy — skipped levels that confuse screen readers",
+    "ARIA attributes on interactive elements",
+    "Buttons missing accessible names",
+    "Visible focus states for keyboard navigation"
+  ],
+  "faq": [
+    {
+      "question": "Why does website accessibility matter for a small business?",
+      "answer": "Beyond serving the roughly 1 in 5 visitors with a disability, accessible sites tend to have cleaner code that also helps SEO, and accessibility is increasingly a legal requirement under regulations like the Equality Act in the UK."
+    },
+    {
+      "question": "What's the easiest accessibility fix to start with?",
+      "answer": "Alt text on images is usually the fastest win — it directly helps screen reader users and also feeds into SEO, since Google reads alt text to understand image content."
+    },
+    {
+      "question": "Does this replace a full WCAG audit?",
+      "answer": "This free checker covers the highest-impact, most common accessibility issues for a fast first read. For full WCAG 2.1/2.2 compliance work, book a free consultation."
+    }
+  ]
+}

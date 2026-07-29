@@ -1,0 +1,73 @@
+---
+import { Sparkles, Heart, Target } from 'lucide-react';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../components/site/CtaBanner.astro';
+import { BRAND_NAME } from '../lib/seo/site';
+---
+
+<BaseLayout
+  title="About"
+  description={`About ${BRAND_NAME} and why we built a free AI website audit tool for small businesses.`}
+  path="/about"
+>
+  <Breadcrumbs items={[{ name: 'About', path: '/about' }]} />
+
+  <section class="px-6 pt-10 pb-20 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">About This Tool</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        Built by <strong class="font-semibold text-ink dark:text-white">{BRAND_NAME}</strong>, a web development business,
+        to help small business owners understand exactly what's holding their website back — for free, before spending a
+        penny on professional help.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-16 grid max-w-4xl gap-6 sm:grid-cols-3">
+      <div class="glass rounded-[24px] p-7">
+        <span class="inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <Sparkles className="size-5" />
+        </span>
+        <h2 class="mt-4 font-display font-bold text-ink dark:text-white">Real, not generic</h2>
+        <p class="mt-2 text-sm leading-relaxed text-slate">
+          Every recommendation is based on what's actually detected on your site — real checks against your real HTML,
+          not templated advice.
+        </p>
+      </div>
+      <div class="glass rounded-[24px] p-7">
+        <span class="inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <Heart className="size-5" />
+        </span>
+        <h2 class="mt-4 font-display font-bold text-ink dark:text-white">Genuinely free</h2>
+        <p class="mt-2 text-sm leading-relaxed text-slate">
+          Running the audit and reading your full dashboard costs nothing and never will — we only ask for your details
+          to send the branded PDF report.
+        </p>
+      </div>
+      <div class="glass rounded-[24px] p-7">
+        <span class="inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <Target className="size-5" />
+        </span>
+        <h2 class="mt-4 font-display font-bold text-ink dark:text-white">No pressure</h2>
+        <p class="mt-2 text-sm leading-relaxed text-slate">
+          Use the report yourself, hand it to your own developer, or talk to us — whichever makes sense for you.
+        </p>
+      </div>
+    </div>
+
+    <div class="glass mx-auto mt-16 max-w-3xl rounded-[24px] p-8 leading-relaxed text-slate">
+      <p>
+        Most small business owners aren't SEO or web performance experts, and most agency audits are either prohibitively
+        expensive or so technical they're impossible to act on without hiring someone. This tool exists to close that gap —
+        a genuinely useful, plain-English audit anyone can run in under 30 seconds, covering everything from SEO and page
+        speed to accessibility, trust signals and local search visibility.
+      </p>
+      <p class="mt-4">
+        If the report shows issues you'd rather have fixed by someone else, that's what {BRAND_NAME} does day to day —
+        but there's never any obligation to take it further.
+      </p>
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

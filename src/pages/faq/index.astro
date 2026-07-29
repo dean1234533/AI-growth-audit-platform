@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import { ArrowRight } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import JsonLd from '../../components/seo/JsonLd.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+import { buildFaqSchema } from '../../lib/seo/schema';
+
+const entries = await getCollection('faq');
+const byCategory = entries.reduce<Record<string, typeof entries>>((acc, entry) => {
+  const key = entry.data.category;
+  acc[key] = acc[key] ?? [];
+  acc[key].push(entry);
+  return acc;
+}, {});
+
+const schema = buildFaqSchema(entries.map((e) => ({ question: e.data.question, answer: e.data.answer })));
+---
+
+<BaseLayout
+  title="Website & SEO FAQ Hub"
+  description="Answers to the most common website, SEO, speed and conversion questions small business owners ask — with real, actionable advice."
+  path="/faq"
+>
+  <JsonLd schema={schema} />
+  <Breadcrumbs items={[{ name: 'FAQ', path: '/faq' }]} />
+
+  <section class="px-6 pt-10 pb-16 sm:pt-16">
+    <div class="mx-auto max-w-3xl text-center">
+      <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-6xl dark:text-white">FAQ Hub</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate">
+        Straight answers to the questions we hear most from small business owners about their websites.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 max-w-3xl space-y-10">
+      {
+        Object.entries(byCategory).map(([category, items]) => (
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">{category}</h2>
+            <div class="mt-4 space-y-3">
+              {items.map((item) => (
+                <a href={`/faq/${item.id}`} class="glass group flex items-center justify-between gap-4 rounded-2xl px-5 py-4 transition-transform hover:-translate-y-0.5">
+                  <span class="font-medium text-ink dark:text-white">{item.data.question}</span>
+                  <ArrowRight className="size-4 shrink-0 text-brand-500 transition-transform group-hover:translate-x-1" />
+                </a>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>

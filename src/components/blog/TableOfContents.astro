@@ -1,0 +1,31 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  items.length > 0 && (
+    <nav class="glass sticky top-24 rounded-2xl p-5">
+      <div class="text-xs font-bold uppercase tracking-wide text-slate">On this page</div>
+      <ul class="mt-3 space-y-2 text-sm">
+        {items.map((h) => (
+          <li class={h.depth === 3 ? 'pl-3' : ''}>
+            <a href={`#${h.slug}`} class="text-slate transition-colors hover:text-brand-500">
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

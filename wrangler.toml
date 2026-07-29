@@ -1,13 +1,15 @@
 name = "ai-website-growth-audit-platform"
-main = "worker/index.ts"
+# `main` is intentionally omitted here: @astrojs/cloudflare validates this file's existence
+# at the START of `astro build`, before dist/server/entry.mjs has been produced, which would
+# otherwise fail every build. It's passed explicitly to `wrangler deploy` instead (see the
+# "deploy" script in package.json).
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
-directory = "./dist"
+directory = "dist/client"
 binding = "ASSETS"
-not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
+html_handling = "drop-trailing-slash"
 
 [ai]
 binding = "AI"
