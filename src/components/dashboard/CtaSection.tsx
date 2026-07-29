@@ -13,12 +13,13 @@ interface CtaSectionProps {
 
 const DEFAULT_URL = 'https://dean-da-dev.co.uk';
 const CONSULTATION_URL = 'https://www.dean-da-dev.co.uk/DiscoveryCall';
+const PORTFOLIO_URL = 'https://www.dean-da-dev.co.uk/portfolio';
 
 export function CtaSection({
   recommendations,
   consultationUrl = CONSULTATION_URL,
   quoteUrl = DEFAULT_URL,
-  portfolioUrl = DEFAULT_URL,
+  portfolioUrl = PORTFOLIO_URL,
 }: CtaSectionProps) {
   const topIssues = recommendations.slice(0, 6);
 
