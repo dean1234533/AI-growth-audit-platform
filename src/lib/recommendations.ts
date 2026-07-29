@@ -38,6 +38,11 @@ const RULES: Record<string, RecommendationRule> = {
     description: () => 'No meta description was found. This is the summary text shown under your listing in Google search results, and its absence hurts click-through rate.',
     impact: 'medium', difficulty: 'easy', estimatedTime: '15 minutes',
   },
+  'seo.metaDescriptionLength': {
+    title: (d) => `Fine-tune your meta description length (${d})`,
+    description: (d) => `Your meta description is ${d}. Descriptions outside the 50-160 character range often get truncated in search results or waste the space Google gives you.`,
+    impact: 'low', difficulty: 'easy', estimatedTime: '10 minutes',
+  },
   'seo.missingH1': {
     title: () => 'Add a single clear H1 heading',
     description: () => 'Your homepage has no H1 tag. Search engines use the H1 to understand the primary topic of the page.',

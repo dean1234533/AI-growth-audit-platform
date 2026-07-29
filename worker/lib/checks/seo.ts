@@ -17,7 +17,11 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
   }
 
   const desc = page.metaDescription?.trim() ?? '';
-  results.push(check('seo.missingMetaDescription', 'Meta description present', desc.length > 0 && desc.length >= 50 && desc.length <= 160, desc.length === 0 ? 'No meta description found' : `Meta description is ${desc.length} characters`, 'high', 8));
+  results.push(check('seo.missingMetaDescription', 'Meta description present', desc.length > 0, desc.length === 0 ? 'No meta description found' : `Meta description is ${desc.length} characters`, 'high', 8));
+  if (desc.length > 0) {
+    const optimalLength = desc.length >= 50 && desc.length <= 160;
+    results.push(check('seo.metaDescriptionLength', 'Meta description length optimal (50-160 chars)', optimalLength, `Meta description is ${desc.length} characters`, 'low', 4));
+  }
 
   results.push(check('seo.missingH1', 'Exactly one H1 present', page.h1s.length === 1, page.h1s.length === 0 ? 'No H1 tag found' : `${page.h1s.length} H1 tag(s) found`, 'high', 8));
   if (page.h1s.length > 1) {
