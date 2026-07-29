@@ -26,31 +26,37 @@ export function ScanningState() {
   const Current = STAGES[stage];
 
   return (
-    <div className="relative flex min-h-[80vh] items-center justify-center px-6">
+    <div className="relative flex min-h-[85vh] items-center justify-center px-6">
       <FloatingBackground />
       <div className="relative w-full max-w-lg">
-        <GlassCard className="p-10 text-center">
+        <GlassCard gradientBorder static className="p-12 text-center">
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
-            className="mx-auto mb-6 inline-flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 text-white"
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            className="relative mx-auto mb-8 inline-flex size-20 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white shadow-[0_20px_44px_-12px_rgba(108,99,255,0.6)]"
           >
-            <Current.icon className="size-8" />
+            <div className="animate-glow-pulse absolute inset-0 rounded-3xl bg-brand-500/40 blur-xl" />
+            <Current.icon className="relative size-9" />
           </motion.div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Analysing your website</h2>
-          <motion.p key={stage} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Analysing your website</h2>
+          <motion.p key={stage} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-2.5 text-sm font-medium text-slate">
             {Current.label}
           </motion.p>
 
-          <div className="mt-8 space-y-2.5">
+          <div className="mt-10 space-y-3">
             <Skeleton className="h-3 w-full" />
             <Skeleton className="h-3 w-5/6" />
             <Skeleton className="h-3 w-4/6" />
           </div>
 
-          <div className="mt-6 flex justify-center gap-1.5">
+          <div className="mt-8 flex justify-center gap-2">
             {STAGES.map((_, i) => (
-              <div key={i} className={`h-1.5 w-8 rounded-full transition-colors ${i <= stage ? 'bg-brand-500' : 'bg-black/10 dark:bg-white/10'}`} />
+              <motion.div
+                key={i}
+                className="h-1.5 w-9 rounded-full"
+                animate={{ backgroundColor: i <= stage ? '#6c63ff' : 'rgba(108,99,255,0.12)' }}
+                transition={{ duration: 0.4 }}
+              />
             ))}
           </div>
         </GlassCard>

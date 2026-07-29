@@ -27,20 +27,20 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
+    <div className="min-h-screen bg-canvas text-ink dark:bg-[#0a0a12] dark:text-white">
       <AnimatePresence mode="wait">
         {view === 'landing' && (
-          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
             <LandingPage onAnalyse={handleAnalyse} loading={false} errorMessage={error} />
           </motion.div>
         )}
         {view === 'scanning' && (
-          <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
             <ScanningState />
           </motion.div>
         )}
         {view === 'report' && audit && (
-          <motion.div key="report" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="report" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
             <ReportPage audit={audit} onBack={() => setView('landing')} />
           </motion.div>
         )}

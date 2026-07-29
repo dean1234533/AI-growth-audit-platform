@@ -22,37 +22,45 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section className="relative px-6 py-20 sm:py-28">
+    <section className="relative px-6 py-28 sm:py-40">
       <div className="mx-auto max-w-6xl">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto mb-14 max-w-2xl text-center"
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-auto mb-20 max-w-2xl text-center"
         >
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl dark:text-white">How it works</h2>
-          <p className="mt-3 text-slate-600 dark:text-slate-300">
-            A complete website growth audit, done automatically in three steps.
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">How it works</span>
+          <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl dark:text-white">
+            Three steps to clarity
+          </h2>
+          <p className="mt-5 text-lg leading-relaxed text-slate">
+            A complete website growth audit, done automatically — no forms, no waiting on an agency.
           </p>
         </motion.div>
 
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-3">
           {STEPS.map((step, i) => (
             <motion.div
               key={step.title}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 36 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5, delay: i * 0.12 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, delay: i * 0.14, ease: [0.16, 1, 0.3, 1] }}
             >
-              <GlassCard className="group h-full p-8 transition-transform hover:-translate-y-1">
-                <div className="mb-5 inline-flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-lg shadow-brand-500/25">
+              <GlassCard gradientBorder className="relative h-full overflow-hidden p-10">
+                <span className="font-display absolute -right-2 -top-6 text-[7rem] font-black leading-none text-brand-500/[0.06] dark:text-white/[0.04]">
+                  {i + 1}
+                </span>
+                <div className="relative mb-7 inline-flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white shadow-[0_16px_32px_-10px_rgba(108,99,255,0.55)]">
                   <step.icon className="size-6" />
                 </div>
-                <div className="mb-1 text-sm font-semibold text-brand-500">Step {i + 1}</div>
-                <h3 className="mb-2 text-xl font-bold text-slate-900 dark:text-white">{step.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300">{step.description}</p>
+                <div className="relative mb-2 text-xs font-bold uppercase tracking-[0.18em] text-brand-500">
+                  Step {i + 1}
+                </div>
+                <h3 className="relative mb-3 font-display text-2xl font-bold text-ink dark:text-white">{step.title}</h3>
+                <p className="relative leading-relaxed text-slate">{step.description}</p>
               </GlassCard>
             </motion.div>
           ))}

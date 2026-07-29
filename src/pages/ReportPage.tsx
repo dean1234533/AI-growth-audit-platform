@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Globe } from 'lucide-react';
-import { ScoreCircle } from '../components/dashboard/ScoreCircle';
+import { ArrowLeft, CheckCircle2, Globe, AlertTriangle } from 'lucide-react';
+import { WebsiteHealthHero } from '../components/dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../components/dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../components/dashboard/Charts';
 import { GrowthEstimateSection } from '../components/dashboard/GrowthEstimate';
@@ -28,60 +28,79 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
   }
 
   return (
-    <div className="relative px-6 py-12 sm:py-16">
+    <div className="relative px-6 py-16 sm:py-24">
       <FloatingBackground />
-      <div className="relative mx-auto max-w-6xl space-y-12">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-white">
-            <ArrowLeft className="size-4" /> Analyse another site
-          </button>
-          <div className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-            <Globe className="size-4" />
-            {audit.url}
+      <div className="relative mx-auto max-w-6xl space-y-20 sm:space-y-28">
+        <div>
+          <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
+            <button
+              onClick={onBack}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white"
+            >
+              <ArrowLeft className="size-4" /> Analyse another site
+            </button>
+            <div className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-slate">
+              <Globe className="size-4 text-brand-500" />
+              {audit.url}
+            </div>
           </div>
-        </div>
 
-        {audit.meta.partial && (
-          <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
-            This audit is based on partial data: {audit.meta.warnings.join(' ')}
-          </div>
-        )}
+          {audit.meta.partial && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass mb-10 flex items-start gap-3 rounded-2xl px-5 py-4 text-sm text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:text-amber-300"
+            >
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <span>This audit is based on partial data: {audit.meta.warnings.join(' ')}</span>
+            </motion.div>
+          )}
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col items-center gap-8 sm:flex-row sm:justify-center">
-          <ScoreCircle score={audit.overallScore} />
-          <div className="max-w-sm text-center sm:text-left">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Website Growth Audit</h1>
-            <p className="mt-2 text-slate-600 dark:text-slate-300">
-              We found {audit.recommendations.length} opportunit{audit.recommendations.length === 1 ? 'y' : 'ies'} to improve
-              your enquiries, visibility and conversion rate.
-            </p>
-            <Button size="lg" className="mt-5" onClick={() => setModalOpen(true)} disabled={downloaded}>
+          <WebsiteHealthHero
+            score={audit.overallScore}
+            categories={audit.categories}
+            recommendationCount={audit.recommendations.length}
+            scannedAt={audit.scannedAt}
+          />
+
+          <div className="mt-8 flex justify-center sm:justify-start">
+            <Button size="lg" onClick={() => setModalOpen(true)} disabled={downloaded} success={downloaded}>
               {downloaded ? (
-                <span className="inline-flex items-center gap-2">
+                <>
                   <CheckCircle2 className="size-4" /> Report downloaded
-                </span>
+                </>
               ) : (
-                'Download Full PDF Report'
+                'Unlock My Professional Report'
               )}
             </Button>
           </div>
-        </motion.div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {audit.categories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              recommendations={audit.recommendations.filter((r) => r.category === category.id)}
-            />
-          ))}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <RadarScoreChart categories={audit.categories} />
-          <SeverityBarChart recommendations={audit.recommendations} />
-          <PerformanceBreakdownChart categories={audit.categories} />
-        </div>
+        <section>
+          <SectionHeading eyebrow="Category breakdown" title="Where you stand" />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {audit.categories.map((category, i) => (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.5, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <CategoryCard category={category} recommendations={audit.recommendations.filter((r) => r.category === category.id)} />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <SectionHeading eyebrow="Visual analysis" title="The full picture" />
+          <div className="grid gap-6 lg:grid-cols-3">
+            <RadarScoreChart categories={audit.categories} />
+            <SeverityBarChart recommendations={audit.recommendations} />
+            <PerformanceBreakdownChart categories={audit.categories} />
+          </div>
+        </section>
 
         <GrowthEstimateSection estimate={audit.growthEstimate} />
 
@@ -90,5 +109,14 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
 
       <LeadCaptureModal open={modalOpen} onClose={() => setModalOpen(false)} audit={audit} onSuccess={handleLeadSuccess} />
     </div>
+  );
+}
+
+function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.5 }} className="mb-8">
+      <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">{eyebrow}</span>
+      <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl dark:text-white">{title}</h2>
+    </motion.div>
   );
 }
