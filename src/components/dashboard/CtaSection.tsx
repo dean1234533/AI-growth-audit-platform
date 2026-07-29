@@ -11,7 +11,14 @@ interface CtaSectionProps {
   portfolioUrl?: string;
 }
 
-export function CtaSection({ recommendations, consultationUrl = '#', quoteUrl = '#', portfolioUrl = '#' }: CtaSectionProps) {
+const DEFAULT_URL = 'https://dean-da-dev.co.uk';
+
+export function CtaSection({
+  recommendations,
+  consultationUrl = DEFAULT_URL,
+  quoteUrl = DEFAULT_URL,
+  portfolioUrl = DEFAULT_URL,
+}: CtaSectionProps) {
   const topIssues = recommendations.slice(0, 6);
 
   return (

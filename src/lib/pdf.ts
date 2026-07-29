@@ -1,8 +1,8 @@
 import jsPDF from 'jspdf';
 import type { AuditResult, Lead } from './types';
 
-const BRAND_NAME = 'Your Web Development Business';
-const BRAND_CONTACT = 'hello@yourbusiness.co.uk  ·  www.yourbusiness.co.uk  ·  01234 567890';
+const BRAND_NAME = 'Dean Da Dev';
+const BRAND_CONTACT = 'dean@dean-da-dev.co.uk  ·  dean-da-dev.co.uk';
 const PAGE_MARGIN = 40;
 const PAGE_WIDTH = 595.28; // A4 pt
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2;
