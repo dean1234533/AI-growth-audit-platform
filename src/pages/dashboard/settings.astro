@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardHeader from '../../components/dashboard-app/DashboardHeader.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import Settings from '../../components/dashboard-app/Settings';
+---
+
+<BaseLayout title="Settings" description="Manage your account and notification preferences." path="/dashboard/settings" noindex bare>
+  <DashboardHeader active="settings" />
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <Settings client:only="react" />
+  </div>
+</BaseLayout>

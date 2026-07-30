@@ -8,6 +8,9 @@ import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
 import { ScoreTrendChart } from './ScoreTrendChart';
+import AiCoach from './AiCoach';
+import CompetitorsSection from './CompetitorsSection';
+import ReportsSection from './ReportsSection';
 import { Button } from '../ui/Button';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
 
@@ -137,6 +140,18 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             categories={latest.categories}
             recommendationCount={latest.recommendations.length}
             scannedAt={latest.scannedAt}
+          />
+
+          <AiCoach siteName={website.name} audit={latest} />
+
+          <CompetitorsSection websiteId={website.id} ourScore={latest.overallScore} />
+
+          <ReportsSection
+            siteName={website.name}
+            siteUrl={website.url}
+            userEmail={user.email ?? ''}
+            current={latest}
+            previous={scans.length > 1 ? scans[scans.length - 2] : null}
           />
 
           <ScoreTrendChart scans={scans} />

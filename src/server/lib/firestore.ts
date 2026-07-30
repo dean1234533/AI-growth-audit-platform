@@ -107,7 +107,9 @@ function docNameToId(name: string): string {
 }
 
 function fieldsToDoc(name: string, fields: Record<string, FirestoreValue>): Record<string, unknown> {
-  const obj: Record<string, unknown> = { id: docNameToId(name) };
+  // `documents/websites/{websiteId}/competitors/{competitorId}` -> ['websites', websiteId, 'competitors', competitorId]
+  const pathParts = name.split('/documents/')[1]?.split('/') ?? [];
+  const obj: Record<string, unknown> = { id: docNameToId(name), path: pathParts };
   for (const [k, v] of Object.entries(fields)) obj[k] = fromFirestoreValue(v);
   return obj;
 }
@@ -178,11 +180,17 @@ export interface QueryFilter {
   value: string | number | boolean | Date;
 }
 
-/** Runs a structured query (collection + simple AND-ed field filters) and returns plain document objects. */
+/**
+ * Runs a structured query (collection + simple AND-ed field filters) and returns plain
+ * document objects, each with an added `path` array (the full resource path segments) so
+ * callers can recover parent document IDs — useful for collection-group queries where a
+ * result's parent isn't otherwise derivable.
+ */
 export async function runQuery(
   serviceAccount: ServiceAccount,
   collection: string,
   filters: QueryFilter[],
+  options: { allDescendants?: boolean } = {},
 ): Promise<Record<string, unknown>[]> {
   const token = await getAccessToken(serviceAccount);
 
@@ -200,7 +208,7 @@ export async function runQuery(
 
   const body = {
     structuredQuery: {
-      from: [{ collectionId: collection }],
+      from: [{ collectionId: collection, allDescendants: options.allDescendants ?? false }],
       ...(where ? { where } : {}),
     },
   };

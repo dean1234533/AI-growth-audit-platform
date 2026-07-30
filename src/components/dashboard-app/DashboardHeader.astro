@@ -2,7 +2,7 @@
 import { Sparkles } from 'lucide-react';
 
 interface Props {
-  active?: 'dashboard' | 'audit';
+  active?: 'dashboard' | 'audit' | 'coach' | 'competitors' | 'reports' | 'settings' | 'billing';
 }
 
 const { active } = Astro.props;
@@ -10,11 +10,11 @@ const { active } = Astro.props;
 const NAV = [
   { label: 'Dashboard', href: '/dashboard', key: 'dashboard', enabled: true },
   { label: 'Website Audit', href: '/', key: 'audit', enabled: true },
-  { label: 'AI SEO Coach', href: null, key: 'coach', enabled: false },
-  { label: 'Competitors', href: null, key: 'competitors', enabled: false },
-  { label: 'Reports', href: null, key: 'reports', enabled: false },
-  { label: 'Settings', href: null, key: 'settings', enabled: false },
-  { label: 'Billing', href: null, key: 'billing', enabled: false },
+  { label: 'AI SEO Coach', href: '/dashboard/coach', key: 'coach', enabled: true },
+  { label: 'Competitors', href: '/dashboard/competitors', key: 'competitors', enabled: true },
+  { label: 'Reports', href: '/dashboard/reports', key: 'reports', enabled: true },
+  { label: 'Settings', href: '/dashboard/settings', key: 'settings', enabled: true },
+  { label: 'Billing', href: '/dashboard/billing', key: 'billing', enabled: true },
 ];
 ---
 

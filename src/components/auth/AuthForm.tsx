@@ -8,6 +8,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../lib/firebaseClient';
+import { ensureUserDoc } from '../../lib/userSettings';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 
@@ -41,11 +42,11 @@ export default function AuthForm() {
     setLoading(true);
     setError(null);
     try {
-      if (mode === 'signup') {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
+      const cred =
+        mode === 'signup'
+          ? await createUserWithEmailAndPassword(auth, email, password)
+          : await signInWithEmailAndPassword(auth, email, password);
+      await ensureUserDoc(cred.user.uid, cred.user.displayName ?? cred.user.email ?? '');
       redirectToDashboard();
     } catch (err) {
       setError(friendlyAuthError(err));
@@ -57,7 +58,8 @@ export default function AuthForm() {
     setLoading(true);
     setError(null);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const cred = await signInWithPopup(auth, googleProvider);
+      await ensureUserDoc(cred.user.uid, cred.user.displayName ?? cred.user.email ?? '');
       redirectToDashboard();
     } catch (err) {
       setError(friendlyAuthError(err));

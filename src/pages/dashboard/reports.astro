@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardHeader from '../../components/dashboard-app/DashboardHeader.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import SitePicker from '../../components/dashboard-app/SitePicker';
+---
+
+<BaseLayout title="Reports" description="Weekly website health reports and what changed." path="/dashboard/reports" noindex bare>
+  <DashboardHeader active="reports" />
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <SitePicker
+      client:only="react"
+      anchor="reports"
+      eyebrow="Reports"
+      title="Which website?"
+      subtitle="Pick a monitored website to see its weekly report."
+      emptyTitle="No website to report on yet"
+      emptyBody="Add a website to monitor first — reports compare each scan against the last."
+    />
+  </div>
+</BaseLayout>

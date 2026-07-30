@@ -64,3 +64,32 @@ export async function runManualScan(websiteId: string, url: string, frequency: S
 
   return audit;
 }
+
+// Competitors default to a weekly re-scan cadence — there's no per-competitor frequency
+// picker (that would be a lot of UI for a secondary feature); weekly is a sane default that
+// keeps the comparison reasonably current without burning through the free Workers AI quota.
+const COMPETITOR_FREQUENCY: ScanFrequency = 'weekly';
+
+/** Runs the first audit for a competitor URL and adds it under the primary website. */
+export async function addCompetitorWithFirstScan(
+  websiteId: string,
+  url: string,
+): Promise<{ competitorId: string; audit: AuditResult }> {
+  const audit = await runAudit(url);
+  const now = new Date();
+  const nextScanDue = computeNextScanDue(COMPETITOR_FREQUENCY, now);
+
+  const competitorRef = await addDoc(collection(db, 'websites', websiteId, 'competitors'), {
+    url: audit.url,
+    name: deriveName(audit.url),
+    addedAt: serverTimestamp(),
+    lastScannedAt: serverTimestamp(),
+    nextScanDue: nextScanDue ? Timestamp.fromDate(nextScanDue) : null,
+    latestOverallScore: audit.overallScore,
+    latestCategoryScores: audit.categories.map((c) => ({ id: c.id, score: c.score })),
+  });
+
+  await addDoc(collection(db, 'websites', websiteId, 'competitors', competitorRef.id, 'scans'), audit);
+
+  return { competitorId: competitorRef.id, audit };
+}

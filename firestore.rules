@@ -20,6 +20,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // User profile/settings — owned solely by the signed-in user it belongs to.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Monitored websites — owned by the signed-in user who created them.
     match /websites/{websiteId} {
       allow read: if request.auth != null && request.auth.uid == resource.data.uid;
@@ -40,6 +45,20 @@ service cloud.firestore {
         allow create: if request.auth != null
           && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid;
         allow update, delete: if false;
+      }
+
+      // Competitor websites tracked against this monitored website — same ownership model:
+      // only the parent website's owner can read/add/update/remove a competitor, and only
+      // the owner (or the cron service account, which bypasses rules) can write its scans.
+      match /competitors/{competitorId} {
+        allow read, create, update, delete: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid;
+
+        match /scans/{scanId} {
+          allow read, create: if request.auth != null
+            && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid;
+          allow update, delete: if false;
+        }
       }
     }
   }

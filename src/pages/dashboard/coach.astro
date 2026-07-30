@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardHeader from '../../components/dashboard-app/DashboardHeader.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import SitePicker from '../../components/dashboard-app/SitePicker';
+---
+
+<BaseLayout title="AI SEO Coach" description="Ask the AI coach about your monitored website." path="/dashboard/coach" noindex bare>
+  <DashboardHeader active="coach" />
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <SitePicker
+      client:only="react"
+      anchor="coach"
+      eyebrow="AI SEO Coach"
+      title="Which website?"
+      subtitle="Pick a monitored website to talk to its coach."
+      emptyTitle="No website to coach yet"
+      emptyBody="Add a website to monitor first — the coach answers using its real scan data."
+    />
+  </div>
+</BaseLayout>

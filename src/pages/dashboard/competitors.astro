@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardHeader from '../../components/dashboard-app/DashboardHeader.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import SitePicker from '../../components/dashboard-app/SitePicker';
+---
+
+<BaseLayout title="Competitors" description="See how your monitored website compares to its competitors." path="/dashboard/competitors" noindex bare>
+  <DashboardHeader active="competitors" />
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <SitePicker
+      client:only="react"
+      anchor="competitors"
+      eyebrow="Competitors"
+      title="Which website?"
+      subtitle="Pick a monitored website to see its competitor comparison."
+      emptyTitle="No website to compare yet"
+      emptyBody="Add a website to monitor first — then add competitors to compare against it."
+    />
+  </div>
+</BaseLayout>
