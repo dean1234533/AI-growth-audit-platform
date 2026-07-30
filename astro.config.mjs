@@ -5,7 +5,7 @@ import mdx from '@astrojs/mdx';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 
-const SITE_URL = process.env.SITE_URL ?? 'https://ai-website-growth-audit-platform.deanburt1308.workers.dev';
+const SITE_URL = process.env.SITE_URL ?? 'https://app.dean-da-dev.co.uk';
 
 export default defineConfig({
   site: SITE_URL,
