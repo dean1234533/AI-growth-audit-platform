@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Share, Sparkles, X } from 'lucide-react';
+import { Share, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 const DISMISSED_KEY = 'ga_install_dismissed';
@@ -72,9 +72,7 @@ export function InstallBanner() {
           transition={{ type: 'spring', stiffness: 300, damping: 28 }}
           className="glass fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-start gap-3 rounded-2xl p-4 shadow-[0_24px_48px_-16px_rgba(0,0,0,0.35)] sm:inset-x-auto sm:right-6 sm:bottom-6"
         >
-          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
-            <Sparkles className="size-4" />
-          </span>
+          <img src="/logo.jpg" alt="" width="40" height="40" className="size-10 shrink-0 rounded-xl" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-ink dark:text-white">Install Growth Audit</p>
             {ios ? (

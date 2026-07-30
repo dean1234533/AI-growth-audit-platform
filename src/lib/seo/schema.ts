@@ -8,7 +8,7 @@ export function buildOrganizationSchema(): SchemaObject {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
-    logo: canonicalUrl('/favicon.svg'),
+    logo: canonicalUrl('/icon-512.png'),
   };
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Sparkles } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -82,9 +82,7 @@ export default function AuthForm() {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-md">
       <GlassCard gradientBorder className="p-8">
-        <div className="mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white shadow-[0_16px_32px_-10px_rgba(108,99,255,0.55)]">
-          <Sparkles className="size-5" />
-        </div>
+        <img src="/logo.jpg" alt="" width="48" height="48" className="mb-2 size-12 rounded-2xl shadow-[0_16px_32px_-10px_rgba(108,99,255,0.55)]" />
         <h1 className="font-display text-2xl font-bold text-ink dark:text-white">
           {mode === 'signup' ? 'Create your free account' : 'Welcome back'}
         </h1>
