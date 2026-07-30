@@ -3,7 +3,8 @@ import { db } from './firebaseClient';
 import type { ScanFrequency } from './types';
 
 export type PlanId = 'free' | 'pro';
-export type NotificationPref = 'push' | 'email' | 'both' | 'none';
+/** Users only ever receive push notifications (never email) — this is a simple on/off. */
+export type NotificationPref = 'push' | 'none';
 
 export interface WorkingHours {
   startHour: number;
@@ -12,7 +13,6 @@ export interface WorkingHours {
 
 export interface UserSettings {
   displayName: string;
-  weeklyDigestEnabled: boolean;
   notificationPref: NotificationPref;
   defaultScanFrequency: ScanFrequency;
   /** Push alerts are held to the Notification Centre only outside this UTC hour window; null = no restriction. */
@@ -26,7 +26,6 @@ export interface UserSettings {
 
 const DEFAULTS: UserSettings = {
   displayName: '',
-  weeklyDigestEnabled: true,
   notificationPref: 'push',
   defaultScanFrequency: 'weekly',
   workingHours: null,

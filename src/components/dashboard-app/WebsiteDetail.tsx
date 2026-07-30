@@ -309,7 +309,6 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             <ReportsSection
               siteName={website.name}
               siteUrl={website.url}
-              userEmail={user.email ?? ''}
               userName={user.displayName ?? undefined}
               current={latest}
               previous={previous}

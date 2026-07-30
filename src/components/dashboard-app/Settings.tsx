@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { updateProfile, deleteUser, signOut } from 'firebase/auth';
 import { collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
-import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor } from 'lucide-react';
+import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor, CreditCard } from 'lucide-react';
 import { auth, db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
-import { getUserSettings, saveUserSettings, type UserSettings, type NotificationPref, type WorkingHours } from '../../lib/userSettings';
+import { getUserSettings, saveUserSettings, type UserSettings, type WorkingHours, type NotificationPref } from '../../lib/userSettings';
 import { setTheme, getStoredTheme, type ThemePreference } from '../../lib/theme';
 import {
   isPushSupported,
@@ -17,14 +17,8 @@ import {
 } from '../../lib/pushSubscribe';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
+import BillingSection from './BillingSection';
 import type { ScanFrequency } from '../../lib/types';
-
-const NOTIFICATION_PREF_OPTIONS: { id: NotificationPref; label: string; hint: string }[] = [
-  { id: 'push', label: 'Push only', hint: 'Instant alerts on this device, no email.' },
-  { id: 'email', label: 'Email only', hint: 'A weekly digest and important alerts by email.' },
-  { id: 'both', label: 'Push + Email', hint: 'Instant alerts plus a weekly email summary.' },
-  { id: 'none', label: 'None', hint: "Don't notify me — I'll check the dashboard myself." },
-];
 
 const FREQUENCY_OPTIONS: { id: ScanFrequency; label: string }[] = [
   { id: 'daily', label: 'Daily' },
@@ -122,13 +116,6 @@ export default function Settings() {
     setDevices(await listPushSubscriptions(user.uid));
   }
 
-  async function updateNotificationPref(pref: NotificationPref) {
-    if (!user || !settings) return;
-    const next = { ...settings, notificationPref: pref };
-    setSettings(next);
-    await saveUserSettings(user.uid, { notificationPref: pref });
-  }
-
   async function handleSave() {
     if (!user) return;
     setSaving(true);
@@ -136,7 +123,7 @@ export default function Settings() {
     setError(null);
     try {
       await updateProfile(user, { displayName });
-      await saveUserSettings(user.uid, { displayName, weeklyDigestEnabled: settings?.weeklyDigestEnabled ?? true });
+      await saveUserSettings(user.uid, { displayName });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {
@@ -146,11 +133,11 @@ export default function Settings() {
     }
   }
 
-  async function toggleDigest() {
+  async function togglePush() {
     if (!user || !settings) return;
-    const next = { ...settings, weeklyDigestEnabled: !settings.weeklyDigestEnabled };
-    setSettings(next);
-    await saveUserSettings(user.uid, { weeklyDigestEnabled: next.weeklyDigestEnabled });
+    const next: NotificationPref = settings.notificationPref === 'push' ? 'none' : 'push';
+    setSettings({ ...settings, notificationPref: next });
+    await saveUserSettings(user.uid, { notificationPref: next });
   }
 
   async function handleDeleteAccount() {
@@ -309,36 +296,19 @@ export default function Settings() {
           <Bell className="size-5" />
         </div>
         <h2 className="font-display text-lg font-bold text-ink dark:text-white">Notifications</h2>
-
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          {NOTIFICATION_PREF_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => updateNotificationPref(opt.id)}
-              className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
-                settings.notificationPref === opt.id
-                  ? 'border-brand-400 bg-brand-500/10'
-                  : 'border-ink/10 hover:border-ink/20 dark:border-white/10 dark:hover:border-white/20'
-              }`}
-            >
-              <div className="text-sm font-semibold text-ink dark:text-white">{opt.label}</div>
-              <div className="mt-0.5 text-xs text-slate">{opt.hint}</div>
-            </button>
-          ))}
-        </div>
+        <p className="mt-1 text-xs text-slate">Growth Audit only ever sends push notifications — no email spam, just instant alerts on your device.</p>
 
         <div className="mt-5 flex w-full items-center justify-between gap-4 rounded-2xl border border-ink/10 px-4 py-3.5 dark:border-white/10">
           <div>
-            <div className="text-sm font-semibold text-ink dark:text-white">Weekly website health email</div>
-            <div className="text-xs text-slate">A summary of scans, changes and recommendations, once a week.</div>
+            <div className="text-sm font-semibold text-ink dark:text-white">Push notifications</div>
+            <div className="text-xs text-slate">Critical alerts, health changes, weekly reports and more.</div>
           </div>
-          <button type="button" onClick={toggleDigest} aria-label="Toggle weekly digest email">
+          <button type="button" onClick={togglePush} aria-label="Toggle push notifications">
             <span
-              className={`relative block h-6 w-11 shrink-0 rounded-full transition-colors ${settings.weeklyDigestEnabled ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}
+              className={`relative block h-6 w-11 shrink-0 rounded-full transition-colors ${settings.notificationPref === 'push' ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}
             >
               <span
-                className={`absolute top-0.5 size-5 rounded-full bg-white transition-transform ${settings.weeklyDigestEnabled ? 'translate-x-5' : 'translate-x-0.5'}`}
+                className={`absolute top-0.5 size-5 rounded-full bg-white transition-transform ${settings.notificationPref === 'push' ? 'translate-x-5' : 'translate-x-0.5'}`}
               />
             </span>
           </button>
@@ -390,6 +360,14 @@ export default function Settings() {
         ) : (
           <p className="mt-5 text-xs text-slate">Push notifications aren't supported in this browser.</p>
         )}
+      </GlassCard>
+
+      <GlassCard className="p-8">
+        <div className="mb-5 inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <CreditCard className="size-5" />
+        </div>
+        <h2 className="font-display text-lg font-bold text-ink dark:text-white">Billing</h2>
+        <BillingSection />
       </GlassCard>
 
       <GlassCard className="border-rose-500/20 p-8">

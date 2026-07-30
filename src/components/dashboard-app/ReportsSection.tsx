@@ -1,23 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Sparkles, FileText, CheckCircle2, AlertTriangle, Mail } from 'lucide-react';
+import { Sparkles, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
-import { Button } from '../ui/Button';
 import { buildWeeklyDigest } from '../../lib/reports';
 import type { AuditResult } from '../../lib/types';
 
 interface ReportsSectionProps {
   siteName: string;
   siteUrl: string;
-  userEmail: string;
   userName?: string;
   current: AuditResult;
   previous: AuditResult | null;
 }
 
-export default function ReportsSection({ siteName, siteUrl, userEmail, userName, current, previous }: ReportsSectionProps) {
+export default function ReportsSection({ siteName, siteUrl, userName, current, previous }: ReportsSectionProps) {
   const digest = buildWeeklyDigest(siteName, siteUrl, current, previous);
-  const [sending, setSending] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
 
@@ -43,40 +39,16 @@ export default function ReportsSection({ siteName, siteUrl, userEmail, userName,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current.scannedAt]);
 
-  async function handleEmail() {
-    setSending(true);
-    setStatus(null);
-    try {
-      const res = await fetch('/api/send-report', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ to: userEmail, digest }),
-      });
-      const json = (await res.json()) as { sent?: boolean; reason?: string; error?: string };
-      if (!res.ok) throw new Error(json.error ?? 'Something went wrong');
-      setStatus(json.sent ? `Sent to ${userEmail}.` : (json.reason ?? 'Email delivery is not configured yet.'));
-    } catch {
-      setStatus('Could not send the report. Please try again.');
-    } finally {
-      setSending(false);
-    }
-  }
-
   return (
     <GlassCard gradientBorder id="reports" className="p-7">
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
-            <FileText className="size-5" />
-          </span>
-          <div>
-            <h3 className="font-display text-lg font-bold text-ink dark:text-white">Weekly Report</h3>
-            <p className="text-xs text-slate">What changed since the last scan</p>
-          </div>
+      <div className="mb-5 flex items-center gap-3">
+        <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
+          <FileText className="size-5" />
+        </span>
+        <div>
+          <h3 className="font-display text-lg font-bold text-ink dark:text-white">Weekly Report</h3>
+          <p className="text-xs text-slate">What changed since the last scan</p>
         </div>
-        <Button size="md" variant="secondary" icon={<Mail className="size-4" />} onClick={handleEmail} loading={sending}>
-          Email Me This
-        </Button>
       </div>
 
       <div className="mb-5 flex items-start gap-3 rounded-2xl bg-brand-500/[0.06] px-4 py-3.5 ring-1 ring-inset ring-brand-500/10">
@@ -134,8 +106,6 @@ export default function ReportsSection({ siteName, siteUrl, userEmail, userName,
       {digest.resolvedIssues.length === 0 && digest.newIssues.length === 0 && previous && (
         <p className="text-sm text-slate">No new or resolved issues since the last scan.</p>
       )}
-
-      {status && <p className="mt-4 text-xs font-medium text-slate">{status}</p>}
     </GlassCard>
   );
 }

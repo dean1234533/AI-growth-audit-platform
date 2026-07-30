@@ -38,7 +38,7 @@ async function deliverNotifications(
       : utcHour >= workingHours.startHour || utcHour < workingHours.endHour;
   })();
 
-  const shouldPush = (notificationPref === 'push' || notificationPref === 'both') && withinWorkingHours;
+  const shouldPush = notificationPref !== 'none' && withinWorkingHours;
 
   for (const draft of drafts) {
     await addFirestoreDocument(serviceAccount, `users/${uid}/notifications`, {
