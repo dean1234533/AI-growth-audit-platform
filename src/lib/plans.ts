@@ -19,7 +19,7 @@ export const PLANS: PlanDefinition[] = [
   {
     id: 'pro',
     name: 'Pro',
-    price: '£14/mo',
+    price: '£5/mo',
     websiteLimit: 10,
     features: [
       'Up to 10 monitored websites',
