@@ -184,7 +184,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
 
           <AiCoach siteName={website.name} audit={latest} />
 
-          <CompetitorsSection websiteId={website.id} ourScore={latest.overallScore} />
+          <CompetitorsSection websiteId={website.id} ourScore={latest.overallScore} siteUrl={website.url} pageTitle={latest.meta.pageTitle} />
 
           <ReportsSection
             siteName={website.name}
