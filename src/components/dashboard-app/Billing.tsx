@@ -1,29 +1,75 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, CreditCard } from 'lucide-react';
+import { CheckCircle2, CreditCard, ExternalLink } from 'lucide-react';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { getUserSettings } from '../../lib/userSettings';
 import { PLANS } from '../../lib/plans';
-import type { PlanId } from '../../lib/userSettings';
+import type { PlanId, UserSettings } from '../../lib/userSettings';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
-import { CONSULTATION_URL } from '../../lib/seo/site';
 
 export default function Billing() {
   const user = useAuthUser();
-  const [plan, setPlan] = useState<PlanId | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
+  const [busyPlan, setBusyPlan] = useState<PlanId | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    getUserSettings(user.uid).then((s) => setPlan(s.plan));
+    getUserSettings(user.uid).then(setSettings);
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success')) setNotice("You're on Pro! It may take a few seconds to reflect below.");
+    if (params.get('canceled')) setNotice('Checkout was canceled — you were not charged.');
   }, [user]);
 
-  if (!user || plan === null) {
+  async function handleUpgrade() {
+    if (!user) return;
+    setBusyPlan('pro');
+    setError(null);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ uid: user.uid, email: user.email }),
+      });
+      const json = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !json.url) throw new Error(json.error ?? 'Could not start checkout.');
+      window.location.href = json.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not start checkout. Please try again.');
+      setBusyPlan(null);
+    }
+  }
+
+  async function handleManageBilling() {
+    if (!user || !settings?.stripeCustomerId) return;
+    setBusyPlan('pro');
+    setError(null);
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ customerId: settings.stripeCustomerId }),
+      });
+      const json = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !json.url) throw new Error(json.error ?? 'Could not open the billing portal.');
+      window.location.href = json.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not open the billing portal. Please try again.');
+      setBusyPlan(null);
+    }
+  }
+
+  if (!user || settings === null) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="glass rounded-2xl px-6 py-4 text-sm font-medium text-slate">Loading…</div>
       </div>
     );
   }
+
+  const plan = settings.plan;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -35,14 +81,16 @@ export default function Billing() {
         </p>
       </div>
 
-      <div className="glass mb-8 flex items-start gap-3 rounded-2xl px-5 py-4 text-sm text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:text-amber-300">
-        <CreditCard className="mt-0.5 size-4 shrink-0" />
-        <span>
-          Self-service upgrades aren't live yet — get in touch and we'll upgrade your account directly while that's being wired up.
-        </span>
-      </div>
+      {notice && (
+        <div className="glass mb-6 rounded-2xl px-5 py-4 text-sm font-medium text-ink dark:text-white">{notice}</div>
+      )}
+      {error && (
+        <div className="glass mb-6 flex items-start gap-3 rounded-2xl px-5 py-4 text-sm text-rose-600 ring-1 ring-inset ring-rose-500/20 dark:text-rose-400">
+          <CreditCard className="mt-0.5 size-4 shrink-0" /> {error}
+        </div>
+      )}
 
-      <div className="grid gap-6 sm:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 sm:max-w-3xl">
         {PLANS.map((p) => (
           <GlassCard key={p.id} gradientBorder={p.id === plan} className="flex flex-col p-8">
             <span className="text-xs font-bold uppercase tracking-wide text-brand-500">{p.name}</span>
@@ -55,15 +103,25 @@ export default function Billing() {
               ))}
             </ul>
             {p.id === plan ? (
-              <div className="mt-6 rounded-2xl bg-brand-500/10 px-4 py-2.5 text-center text-sm font-semibold text-brand-600">Current plan</div>
-            ) : (
-              <Button
-                variant="secondary"
-                className="mt-6 w-full"
-                onClick={() => window.open(CONSULTATION_URL, '_blank')}
-              >
-                Contact to Upgrade
+              p.id === 'pro' ? (
+                <Button
+                  variant="secondary"
+                  className="mt-6 w-full"
+                  loading={busyPlan === 'pro'}
+                  icon={<ExternalLink className="size-4" />}
+                  onClick={handleManageBilling}
+                >
+                  Manage Billing
+                </Button>
+              ) : (
+                <div className="mt-6 rounded-2xl bg-brand-500/10 px-4 py-2.5 text-center text-sm font-semibold text-brand-600">Current plan</div>
+              )
+            ) : p.id === 'pro' ? (
+              <Button className="mt-6 w-full" loading={busyPlan === 'pro'} onClick={handleUpgrade}>
+                Upgrade to Pro
               </Button>
+            ) : (
+              <div className="mt-6 rounded-2xl px-4 py-2.5 text-center text-sm font-semibold text-slate">Downgrade via Manage Billing</div>
             )}
           </GlassCard>
         ))}

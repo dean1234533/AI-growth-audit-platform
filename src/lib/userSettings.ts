@@ -2,7 +2,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebaseClient';
 import type { ScanFrequency } from './types';
 
-export type PlanId = 'free' | 'pro' | 'business';
+export type PlanId = 'free' | 'pro';
 export type NotificationPref = 'push' | 'email' | 'both' | 'none';
 
 export interface WorkingHours {
@@ -18,6 +18,9 @@ export interface UserSettings {
   /** Push alerts are held to the Notification Centre only outside this UTC hour window; null = no restriction. */
   workingHours: WorkingHours | null;
   plan: PlanId;
+  /** Set only by the Stripe webhook (server-side, trusted) — never written by the client. */
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
   createdAt?: unknown;
 }
 

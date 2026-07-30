@@ -20,9 +20,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // User profile/settings — owned solely by the signed-in user it belongs to.
+    // User profile/settings — owned solely by the signed-in user it belongs to. Billing fields
+    // (plan, stripeCustomerId, stripeSubscriptionId) are excluded from client writes — those
+    // are set exclusively by the Stripe webhook's service account (api/stripe/webhook.ts),
+    // which bypasses these rules entirely, so a signed-in user can't just grant themselves
+    // the Pro plan by editing the doc from devtools.
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['plan', 'stripeCustomerId', 'stripeSubscriptionId']);
 
       // Web Push subscriptions for this user's installed devices — the client writes its
       // own subscription right after the browser grants notification permission.

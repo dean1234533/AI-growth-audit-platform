@@ -26,3 +26,6 @@ crons = ["0 6 * * *"]
 # The VAPID public key is safe to expose (it's also baked into the client bundle at build time
 # as PUBLIC_VAPID_KEY); the matching private key lives only in the VAPID_PRIVATE_KEY_JWK secret.
 PUBLIC_VAPID_KEY = "BEJacEYCXkvDlw1OTLFiK0kadycJzZBz9qlJfi-YnEvw9WOmYc3FeHV1AOQ1qV9HI9SzePMX17h1ohXs0gDrNaQ"
+# Stripe price for the Pro plan (£14/mo, live mode) — not sensitive, it's already visible in
+# every Checkout URL. STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET are set as secrets instead.
+STRIPE_PRO_PRICE_ID = "price_1TyrPyCVEvtoR0jJMSuD9SZq"

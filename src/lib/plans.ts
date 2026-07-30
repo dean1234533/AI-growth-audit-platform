@@ -14,21 +14,20 @@ export const PLANS: PlanDefinition[] = [
     name: 'Free',
     price: '£0',
     websiteLimit: 1,
-    features: ['1 monitored website', 'Weekly scans', 'AI SEO Coach', 'Basic reports'],
+    features: ['1 monitored website', 'Weekly scans', 'AI SEO Coach', 'Push notifications'],
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: '£29/mo',
+    price: '£14/mo',
     websiteLimit: 10,
-    features: ['Up to 10 monitored websites', 'Daily scans', 'Competitor monitoring', 'AI SEO Coach', 'Weekly email reports'],
-  },
-  {
-    id: 'business',
-    name: 'Business',
-    price: '£99/mo',
-    websiteLimit: null,
-    features: ['Unlimited monitored websites', 'Daily scans', 'Competitor monitoring', 'White-label reports', 'Priority scans', 'API access'],
+    features: [
+      'Up to 10 monitored websites',
+      'Daily scans',
+      'Competitor monitoring',
+      'AI SEO Coach',
+      'Push notifications + weekly AI reports',
+    ],
   },
 ];
 
