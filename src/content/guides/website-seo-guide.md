@@ -49,7 +49,7 @@ Structured data is a standardised way of describing your content that search eng
 - **BreadcrumbList schema**: helps Google display a clean navigation path
 - **Article schema**: for blog content, helps Google understand publish dates and authorship
 
-You can check what structured data your site currently has (and what's missing) with our [free SEO checker](/tools/seo-checker).
+You can check what structured data your site currently has (and what's missing) with our [free SEO checker](/).
 
 ## 2. Technical SEO
 
@@ -100,7 +100,7 @@ Outdated content — old prices, discontinued services, stale statistics — ero
 
 ## 4. Local SEO
 
-For any business serving a local area, local SEO is often the single highest-leverage category — see our [complete local SEO checker](/tools/local-seo-checker) for a deeper dive, but the fundamentals are:
+For any business serving a local area, local SEO is often the single highest-leverage category — see our [complete local SEO checker](/) for a deeper dive, but the fundamentals are:
 
 ### Google Business Profile
 

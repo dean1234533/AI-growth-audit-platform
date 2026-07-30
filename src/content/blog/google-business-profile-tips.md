@@ -32,7 +32,7 @@ Google Business Profile lets you publish short updates directly to your listing 
 
 ## 6. Match your website to your profile
 
-Your Google Business Profile and your website should reinforce each other — the same NAP details, ideally an embedded map, and for multi-area businesses, website content specific to each area your profile lists as a service area. Our [free local SEO checker](/tools/local-seo-checker) checks exactly this alignment.
+Your Google Business Profile and your website should reinforce each other — the same NAP details, ideally an embedded map, and for multi-area businesses, website content specific to each area your profile lists as a service area. Our [free local SEO checker](/) checks exactly this alignment.
 
 ## 7. Monitor and respond to questions
 

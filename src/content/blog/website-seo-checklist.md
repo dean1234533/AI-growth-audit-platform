@@ -58,6 +58,6 @@ Structured data helps Google understand your content well enough to show rich re
 
 ## Check your site against this list automatically
 
-Manually auditing every item on this checklist takes time — our [free SEO checker](/tools/seo-checker) runs through the technical and structural items automatically in under 30 seconds, and tells you exactly what's missing with a clear priority order.
+Manually auditing every item on this checklist takes time — our [free SEO checker](/) runs through the technical and structural items automatically in under 30 seconds, and tells you exactly what's missing with a clear priority order.
 
 **Ready to see your results?** [Run a free website audit](/) now.

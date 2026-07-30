@@ -2,9 +2,6 @@
 import { Sparkles, Menu } from 'lucide-react';
 
 const NAV = [
-  { label: 'Tools', href: '/tools' },
-  { label: 'Industries', href: '/industries' },
-  { label: 'Locations', href: '/locations' },
   { label: 'Blog', href: '/blog' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
@@ -30,6 +27,7 @@ const NAV = [
 
     <div class="hidden items-center gap-3 lg:flex">
       <a href="/contact" class="text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white">Contact</a>
+      <a href="/login" class="text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white">Sign In</a>
       <a
         href="/"
         class="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_16px_36px_-12px_rgba(108,99,255,0.55)] transition-shadow hover:shadow-[0_20px_44px_-10px_rgba(108,99,255,0.65)]"
@@ -49,6 +47,7 @@ const NAV = [
           </a>
         ))}
         <a href="/contact" class="rounded-xl px-3 py-2 transition-colors hover:bg-brand-500/10">Contact</a>
+        <a href="/login" class="rounded-xl px-3 py-2 transition-colors hover:bg-brand-500/10">Sign In</a>
         <a href="/" class="mt-1 rounded-xl bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] px-3 py-2 text-center text-white">
           Run a Free Audit
         </a>

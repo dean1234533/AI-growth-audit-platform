@@ -76,21 +76,6 @@ const locations = defineCollection({
   schema: locationContentSchema,
 });
 
-const toolContentSchema = z.object({
-  name: z.string(),
-  category: z.enum(['seo', 'performance', 'accessibility', 'trust', 'mobile', 'conversion', 'localSeo']),
-  seoTitle: z.string(),
-  metaDescription: z.string(),
-  intro: z.string(),
-  whatWeCheck: z.array(z.string()),
-  faq: z.array(z.object({ question: z.string(), answer: z.string() })),
-});
-
-const tools = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/tools' }),
-  schema: toolContentSchema,
-});
-
 const comboContentSchema = z.object({
   industrySlug: z.string(),
   locationSlug: z.string(),
@@ -134,4 +119,4 @@ const guides = defineCollection({
   }),
 });
 
-export const collections = { blog, faq, industries, locations, tools, combos, compare, guides };
+export const collections = { blog, faq, industries, locations, combos, compare, guides };

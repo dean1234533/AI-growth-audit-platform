@@ -49,7 +49,7 @@ If images or embeds don't have their dimensions specified in the HTML, the brows
 
 ## How to check where you actually stand
 
-Rather than guessing which of these apply to your site, the fastest way to know for certain is to test it directly. Google's own [PageSpeed Insights](https://pagespeed.web.dev) gives you real Core Web Vitals data, and our [free website speed test](/tools/website-speed-test) uses that same data to give you a prioritised, plain-English list of exactly what's slowing your site down — as part of a full audit covering SEO, accessibility, trust and conversion too.
+Rather than guessing which of these apply to your site, the fastest way to know for certain is to test it directly. Google's own [PageSpeed Insights](https://pagespeed.web.dev) gives you real Core Web Vitals data, and our [free website speed test](/) uses that same data to give you a prioritised, plain-English list of exactly what's slowing your site down — as part of a full audit covering SEO, accessibility, trust and conversion too.
 
 ## The bottom line
 

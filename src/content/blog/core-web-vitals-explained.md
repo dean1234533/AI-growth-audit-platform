@@ -46,7 +46,7 @@ Core Web Vitals are three specific, measurable aspects of user experience that G
 
 ## How to check your Core Web Vitals
 
-Google's own [PageSpeed Insights](https://pagespeed.web.dev) tool measures all three directly against your live site. Our [free website speed test](/tools/website-speed-test) uses that same underlying data and translates it into a prioritised, plain-English action list — as part of a broader audit covering SEO, accessibility and conversion too.
+Google's own [PageSpeed Insights](https://pagespeed.web.dev) tool measures all three directly against your live site. Our [free website speed test](/) uses that same underlying data and translates it into a prioritised, plain-English action list — as part of a broader audit covering SEO, accessibility and conversion too.
 
 ## Do Core Web Vitals actually affect rankings?
 

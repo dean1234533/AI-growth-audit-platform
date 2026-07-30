@@ -1,0 +1,52 @@
+---
+import { Sparkles } from 'lucide-react';
+
+interface Props {
+  active?: 'dashboard' | 'audit';
+}
+
+const { active } = Astro.props;
+
+const NAV = [
+  { label: 'Dashboard', href: '/dashboard', key: 'dashboard', enabled: true },
+  { label: 'Website Audit', href: '/', key: 'audit', enabled: true },
+  { label: 'AI SEO Coach', href: null, key: 'coach', enabled: false },
+  { label: 'Competitors', href: null, key: 'competitors', enabled: false },
+  { label: 'Reports', href: null, key: 'reports', enabled: false },
+  { label: 'Settings', href: null, key: 'settings', enabled: false },
+  { label: 'Billing', href: null, key: 'billing', enabled: false },
+];
+---
+
+<header class="sticky top-0 z-40 border-b border-ink/[0.06] bg-canvas/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/80">
+  <div class="mx-auto flex max-w-6xl items-center gap-6 overflow-x-auto px-6 py-4">
+    <a href="/dashboard" class="inline-flex shrink-0 items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
+      <span class="inline-flex size-8 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
+        <Sparkles className="size-4" />
+      </span>
+      Growth Audit
+    </a>
+
+    <nav class="flex items-center gap-1 text-sm font-semibold">
+      {
+        NAV.map((item) =>
+          item.enabled ? (
+            <a
+              href={item.href!}
+              class={`whitespace-nowrap rounded-xl px-3 py-1.5 transition-colors ${
+                active === item.key ? 'bg-brand-500/10 text-brand-600 dark:text-brand-300' : 'text-slate hover:text-ink dark:hover:text-white'
+              }`}
+            >
+              {item.label}
+            </a>
+          ) : (
+            <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-slate/50">
+              {item.label}
+              <span class="rounded-full bg-slate/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">Soon</span>
+            </span>
+          ),
+        )
+      }
+    </nav>
+  </div>
+</header>
