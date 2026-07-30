@@ -10,7 +10,8 @@ import { Button } from '../ui/Button';
 import { ScoreCircle } from '../dashboard/ScoreCircle';
 import { scoreBand } from '../../lib/scoreBand';
 import { AddWebsiteModal } from './AddWebsiteModal';
-import type { CategoryId } from '../../lib/types';
+import { getUserSettings } from '../../lib/userSettings';
+import type { CategoryId, ScanFrequency } from '../../lib/types';
 
 interface WebsiteDoc {
   id: string;
@@ -27,6 +28,7 @@ export default function WebsiteHealthCentre() {
   const user = useAuthUser();
   const [websites, setWebsites] = useState<WebsiteDoc[] | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [defaultFrequency, setDefaultFrequency] = useState<ScanFrequency>('weekly');
 
   useEffect(() => {
     if (!user) return;
@@ -41,6 +43,11 @@ export default function WebsiteHealthCentre() {
     if (!user) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get('url')) setModalOpen(true);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    getUserSettings(user.uid).then((s) => setDefaultFrequency(s.defaultScanFrequency));
   }, [user]);
 
   if (!user) {
@@ -143,6 +150,7 @@ export default function WebsiteHealthCentre() {
         onClose={() => setModalOpen(false)}
         uid={user.uid}
         initialUrl={initialUrl}
+        defaultFrequency={defaultFrequency}
         onCreated={(websiteId) => {
           setModalOpen(false);
           window.location.href = `/dashboard/${websiteId}`;

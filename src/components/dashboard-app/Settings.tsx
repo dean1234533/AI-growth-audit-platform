@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { updateProfile, deleteUser, signOut } from 'firebase/auth';
 import { collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
-import { User, Bell, Trash2, Save, Smartphone, X } from 'lucide-react';
+import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor } from 'lucide-react';
 import { auth, db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
-import { getUserSettings, saveUserSettings, type UserSettings, type NotificationPref } from '../../lib/userSettings';
+import { getUserSettings, saveUserSettings, type UserSettings, type NotificationPref, type WorkingHours } from '../../lib/userSettings';
+import { setTheme, getStoredTheme, type ThemePreference } from '../../lib/theme';
 import {
   isPushSupported,
   listPushSubscriptions,
@@ -16,6 +17,7 @@ import {
 } from '../../lib/pushSubscribe';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
+import type { ScanFrequency } from '../../lib/types';
 
 const NOTIFICATION_PREF_OPTIONS: { id: NotificationPref; label: string; hint: string }[] = [
   { id: 'push', label: 'Push only', hint: 'Instant alerts on this device, no email.' },
@@ -23,6 +25,21 @@ const NOTIFICATION_PREF_OPTIONS: { id: NotificationPref; label: string; hint: st
   { id: 'both', label: 'Push + Email', hint: 'Instant alerts plus a weekly email summary.' },
   { id: 'none', label: 'None', hint: "Don't notify me — I'll check the dashboard myself." },
 ];
+
+const FREQUENCY_OPTIONS: { id: ScanFrequency; label: string }[] = [
+  { id: 'daily', label: 'Daily' },
+  { id: 'weekly', label: 'Weekly' },
+  { id: 'monthly', label: 'Monthly' },
+  { id: 'manual', label: 'Manual' },
+];
+
+const THEME_OPTIONS: { id: ThemePreference; label: string; icon: typeof Sun }[] = [
+  { id: 'light', label: 'Light', icon: Sun },
+  { id: 'dark', label: 'Dark', icon: Moon },
+  { id: 'system', label: 'System', icon: Monitor },
+];
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export default function Settings() {
   const user = useAuthUser();
@@ -35,15 +52,46 @@ export default function Settings() {
   const [devices, setDevices] = useState<StoredPushSubscription[]>([]);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
+  const [theme, setThemeState] = useState<ThemePreference>('system');
+  const [workingHoursEnabled, setWorkingHoursEnabled] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     getUserSettings(user.uid).then((s) => {
       setSettings(s);
       setDisplayName(s.displayName || user.displayName || '');
+      setWorkingHoursEnabled(s.workingHours !== null);
     });
     listPushSubscriptions(user.uid).then(setDevices);
+    setThemeState(getStoredTheme());
   }, [user]);
+
+  function handleThemeChange(pref: ThemePreference) {
+    setTheme(pref);
+    setThemeState(pref);
+  }
+
+  async function updateDefaultFrequency(frequency: ScanFrequency) {
+    if (!user || !settings) return;
+    setSettings({ ...settings, defaultScanFrequency: frequency });
+    await saveUserSettings(user.uid, { defaultScanFrequency: frequency });
+  }
+
+  async function updateWorkingHours(next: WorkingHours | null) {
+    if (!user || !settings) return;
+    setSettings({ ...settings, workingHours: next });
+    await saveUserSettings(user.uid, { workingHours: next });
+  }
+
+  function toggleWorkingHours() {
+    if (workingHoursEnabled) {
+      setWorkingHoursEnabled(false);
+      updateWorkingHours(null);
+    } else {
+      setWorkingHoursEnabled(true);
+      updateWorkingHours({ startHour: 8, endHour: 18 });
+    }
+  }
 
   async function handleEnablePush() {
     if (!user) return;
@@ -162,6 +210,97 @@ export default function Settings() {
           <Button onClick={handleSave} loading={saving} success={saved} icon={<Save className="size-4" />}>
             {saved ? 'Saved' : 'Save Changes'}
           </Button>
+        </div>
+      </GlassCard>
+
+      <GlassCard className="p-8">
+        <div className="mb-5 inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <SlidersHorizontal className="size-5" />
+        </div>
+        <h2 className="font-display text-lg font-bold text-ink dark:text-white">Preferences</h2>
+
+        <div className="mt-5">
+          <label className="text-xs font-semibold text-slate">Theme</label>
+          <div className="mt-1.5 grid grid-cols-3 gap-2">
+            {THEME_OPTIONS.map((opt) => {
+              const Icon = opt.icon;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => handleThemeChange(opt.id)}
+                  className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition-colors ${
+                    theme === opt.id
+                      ? 'border-brand-400 bg-brand-500/10 text-ink dark:text-white'
+                      : 'border-ink/10 text-slate hover:border-ink/20 dark:border-white/10 dark:hover:border-white/20'
+                  }`}
+                >
+                  <Icon className="size-4" /> {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <label className="text-xs font-semibold text-slate">Default scan frequency for new websites</label>
+          <div className="mt-1.5 grid grid-cols-4 gap-2">
+            {FREQUENCY_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => updateDefaultFrequency(opt.id)}
+                className={`rounded-2xl border px-3 py-2.5 text-sm font-semibold transition-colors ${
+                  settings.defaultScanFrequency === opt.id
+                    ? 'border-brand-400 bg-brand-500/10 text-ink dark:text-white'
+                    : 'border-ink/10 text-slate hover:border-ink/20 dark:border-white/10 dark:hover:border-white/20'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-ink/10 px-4 py-3.5 dark:border-white/10">
+          <button type="button" onClick={toggleWorkingHours} className="flex w-full items-center justify-between gap-4 text-left">
+            <div>
+              <div className="text-sm font-semibold text-ink dark:text-white">Working hours</div>
+              <div className="text-xs text-slate">Only send push alerts during these hours (UTC) — everything else waits in your Notification Centre.</div>
+            </div>
+            <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${workingHoursEnabled ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}>
+              <span
+                className={`absolute top-0.5 size-5 rounded-full bg-white transition-transform ${workingHoursEnabled ? 'translate-x-5' : 'translate-x-0.5'}`}
+              />
+            </span>
+          </button>
+          {workingHoursEnabled && settings.workingHours && (
+            <div className="mt-3 flex items-center gap-3 text-sm">
+              <select
+                value={settings.workingHours.startHour}
+                onChange={(e) => updateWorkingHours({ startHour: Number(e.target.value), endHour: settings.workingHours!.endHour })}
+                className="rounded-xl border border-ink/10 bg-canvas px-3 py-2 text-xs font-semibold text-ink outline-none dark:border-white/10 dark:bg-[#0a0a12] dark:text-white"
+              >
+                {HOURS.map((h) => (
+                  <option key={h} value={h}>
+                    {h.toString().padStart(2, '0')}:00
+                  </option>
+                ))}
+              </select>
+              <span className="text-slate">to</span>
+              <select
+                value={settings.workingHours.endHour}
+                onChange={(e) => updateWorkingHours({ startHour: settings.workingHours!.startHour, endHour: Number(e.target.value) })}
+                className="rounded-xl border border-ink/10 bg-canvas px-3 py-2 text-xs font-semibold text-ink outline-none dark:border-white/10 dark:bg-[#0a0a12] dark:text-white"
+              >
+                {HOURS.map((h) => (
+                  <option key={h} value={h}>
+                    {h.toString().padStart(2, '0')}:00
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </GlassCard>
 

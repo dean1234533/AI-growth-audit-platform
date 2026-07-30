@@ -1,13 +1,22 @@
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebaseClient';
+import type { ScanFrequency } from './types';
 
 export type PlanId = 'free' | 'pro' | 'business';
 export type NotificationPref = 'push' | 'email' | 'both' | 'none';
+
+export interface WorkingHours {
+  startHour: number;
+  endHour: number;
+}
 
 export interface UserSettings {
   displayName: string;
   weeklyDigestEnabled: boolean;
   notificationPref: NotificationPref;
+  defaultScanFrequency: ScanFrequency;
+  /** Push alerts are held to the Notification Centre only outside this UTC hour window; null = no restriction. */
+  workingHours: WorkingHours | null;
   plan: PlanId;
   createdAt?: unknown;
 }
@@ -16,6 +25,8 @@ const DEFAULTS: UserSettings = {
   displayName: '',
   weeklyDigestEnabled: true,
   notificationPref: 'push',
+  defaultScanFrequency: 'weekly',
+  workingHours: null,
   plan: 'free',
 };
 

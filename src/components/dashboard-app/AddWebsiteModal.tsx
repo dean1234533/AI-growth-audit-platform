@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Globe, Plus } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
@@ -12,6 +12,7 @@ interface AddWebsiteModalProps {
   onClose: () => void;
   uid: string;
   initialUrl?: string;
+  defaultFrequency?: ScanFrequency;
   onCreated: (websiteId: string) => void;
 }
 
@@ -22,9 +23,14 @@ const FREQUENCIES: { value: ScanFrequency; label: string; desc: string }[] = [
   { value: 'manual', label: 'Manual', desc: 'Only when you click Scan Now' },
 ];
 
-export function AddWebsiteModal({ open, onClose, uid, initialUrl, onCreated }: AddWebsiteModalProps) {
+export function AddWebsiteModal({ open, onClose, uid, initialUrl, defaultFrequency, onCreated }: AddWebsiteModalProps) {
   const [url, setUrl] = useState(initialUrl ?? '');
-  const [frequency, setFrequency] = useState<ScanFrequency>('weekly');
+  const [frequency, setFrequency] = useState<ScanFrequency>(defaultFrequency ?? 'weekly');
+
+  useEffect(() => {
+    if (open) setFrequency(defaultFrequency ?? 'weekly');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

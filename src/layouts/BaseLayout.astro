@@ -5,6 +5,7 @@ import JsonLd from '../components/seo/JsonLd.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import SiteFooter from '../components/site/SiteFooter.astro';
 import { InstallBanner } from '../components/pwa/InstallBanner';
+import { THEME_INIT_SCRIPT } from '../lib/theme';
 import { buildOrganizationSchema, buildSoftwareApplicationSchema } from '../lib/seo/schema';
 
 interface Props {
@@ -25,6 +26,7 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script is:inline set:html={THEME_INIT_SCRIPT} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
