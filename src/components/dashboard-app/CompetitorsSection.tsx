@@ -1,17 +1,19 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { collection, query, onSnapshot } from 'firebase/firestore';
-import { Users, Plus, TrendingUp, TrendingDown, Minus, Sparkles, Check } from 'lucide-react';
+import { collection, deleteDoc, doc, query, onSnapshot } from 'firebase/firestore';
+import { Users, Plus, TrendingUp, TrendingDown, Minus, Sparkles, Check, ChevronDown, Trash2 } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { addCompetitorWithFirstScan } from '../../lib/monitoring';
 import { ApiError } from '../../lib/api';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
+import type { CategoryScore } from '../../lib/types';
 
 interface CompetitorDoc {
   id: string;
   name: string;
   url: string;
   latestOverallScore: number | null;
+  latestCategoryScores: { id: string; score: number }[] | null;
 }
 
 interface CompetitorSuggestion {
@@ -22,11 +24,23 @@ interface CompetitorSuggestion {
 interface CompetitorsSectionProps {
   websiteId: string;
   ourScore: number;
+  ourCategories: CategoryScore[];
   siteUrl: string;
   pageTitle: string | null;
 }
 
-export default function CompetitorsSection({ websiteId, ourScore, siteUrl, pageTitle }: CompetitorsSectionProps) {
+function biggestGap(ourCategories: CategoryScore[], theirs: { id: string; score: number }[]): { label: string; diff: number } | null {
+  let worst: { label: string; diff: number } | null = null;
+  for (const cat of ourCategories) {
+    const theirScore = theirs.find((t) => t.id === cat.id)?.score;
+    if (theirScore === undefined) continue;
+    const diff = cat.score - theirScore; // negative = they're ahead
+    if (!worst || diff < worst.diff) worst = { label: cat.label, diff };
+  }
+  return worst;
+}
+
+export default function CompetitorsSection({ websiteId, ourScore, ourCategories, siteUrl, pageTitle }: CompetitorsSectionProps) {
   const [competitors, setCompetitors] = useState<CompetitorDoc[] | null>(null);
   const [url, setUrl] = useState('');
   const [adding, setAdding] = useState(false);
@@ -37,6 +51,8 @@ export default function CompetitorsSection({ websiteId, ourScore, siteUrl, pageT
   const [suggestions, setSuggestions] = useState<CompetitorSuggestion[] | null>(null);
   const [addedUrls, setAddedUrls] = useState<Set<string>>(new Set());
   const [addingUrl, setAddingUrl] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   useEffect(() => {
     const q = query(collection(db, 'websites', websiteId, 'competitors'));
@@ -92,6 +108,15 @@ export default function CompetitorsSection({ websiteId, ourScore, siteUrl, pageT
       setFindError('Could not add that competitor. Please try again.');
     } finally {
       setAddingUrl(null);
+    }
+  }
+
+  async function handleRemove(competitorId: string) {
+    setRemovingId(competitorId);
+    try {
+      await deleteDoc(doc(db, 'websites', websiteId, 'competitors', competitorId));
+    } finally {
+      setRemovingId(null);
     }
   }
 
@@ -177,23 +202,84 @@ export default function CompetitorsSection({ websiteId, ourScore, siteUrl, pageT
           {competitors.map((c) => {
             const score = c.latestOverallScore ?? 0;
             const diff = ourScore - score;
+            const theirCategories = c.latestCategoryScores ?? [];
+            const expanded = expandedId === c.id;
+            const gap = biggestGap(ourCategories, theirCategories);
+
             return (
-              <div key={c.id} className="glass flex items-center justify-between gap-4 rounded-2xl px-4 py-3.5">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-ink dark:text-white">{c.name}</div>
-                  <div className="truncate text-xs text-slate">{c.url}</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-lg font-bold text-ink dark:text-white">{score}</span>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                      diff > 0 ? 'bg-mint-500/10 text-mint-600' : diff < 0 ? 'bg-rose-500/10 text-rose-500' : 'bg-slate/10 text-slate'
-                    }`}
-                  >
-                    {diff > 0 ? <TrendingUp className="size-3.5" /> : diff < 0 ? <TrendingDown className="size-3.5" /> : <Minus className="size-3.5" />}
-                    {diff === 0 ? 'Even' : `${diff > 0 ? '+' : ''}${diff} vs you`}
-                  </span>
-                </div>
+              <div key={c.id} className="glass rounded-2xl px-4 py-3.5">
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(expanded ? null : c.id)}
+                  className="flex w-full items-center justify-between gap-4 text-left"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-ink dark:text-white">{c.name}</div>
+                    <div className="truncate text-xs text-slate">{c.url}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-display text-lg font-bold text-ink dark:text-white">{score}</span>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                        diff > 0 ? 'bg-mint-500/10 text-mint-600' : diff < 0 ? 'bg-rose-500/10 text-rose-500' : 'bg-slate/10 text-slate'
+                      }`}
+                    >
+                      {diff > 0 ? <TrendingUp className="size-3.5" /> : diff < 0 ? <TrendingDown className="size-3.5" /> : <Minus className="size-3.5" />}
+                      {diff === 0 ? 'Even' : `${diff > 0 ? '+' : ''}${diff} vs you`}
+                    </span>
+                    <ChevronDown className={`size-4 shrink-0 text-slate transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+
+                {expanded && (
+                  <div className="mt-4 border-t border-ink/[0.06] pt-4 dark:border-white/10">
+                    {gap && (
+                      <p className="mb-3 text-xs font-semibold text-ink dark:text-white">
+                        {gap.diff < 0
+                          ? `They're beating you most on ${gap.label} (${gap.diff} points behind).`
+                          : `You're ahead of them on every category we could compare — biggest lead: ${gap.label} (+${gap.diff}).`}
+                      </p>
+                    )}
+                    {theirCategories.length === 0 ? (
+                      <p className="text-xs text-slate">Category breakdown isn't available for this competitor yet.</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {ourCategories.map((cat) => {
+                          const theirScore = theirCategories.find((t) => t.id === cat.id)?.score;
+                          if (theirScore === undefined) return null;
+                          const catDiff = cat.score - theirScore;
+                          return (
+                            <div key={cat.id} className="flex items-center justify-between gap-3 text-xs">
+                              <span className="text-slate">{cat.label}</span>
+                              <span className="flex items-center gap-2">
+                                <span className="text-ink dark:text-white">
+                                  {cat.score} <span className="text-slate">vs</span> {theirScore}
+                                </span>
+                                <span
+                                  className={`inline-flex items-center rounded-full px-1.5 py-0.5 font-bold ${
+                                    catDiff > 0 ? 'bg-mint-500/10 text-mint-600' : catDiff < 0 ? 'bg-rose-500/10 text-rose-500' : 'bg-slate/10 text-slate'
+                                  }`}
+                                >
+                                  {catDiff === 0 ? '0' : `${catDiff > 0 ? '+' : ''}${catDiff}`}
+                                </span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <Button
+                      size="md"
+                      variant="ghost"
+                      loading={removingId === c.id}
+                      icon={<Trash2 className="size-3.5" />}
+                      onClick={() => handleRemove(c.id)}
+                      className="mt-4 text-rose-500 hover:bg-rose-500/10"
+                    >
+                      Remove competitor
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })}
