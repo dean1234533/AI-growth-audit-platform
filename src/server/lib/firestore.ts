@@ -171,6 +171,57 @@ export async function updateFirestoreDocument(
   }
 }
 
+/** Fetches a single document by its collection path + ID. Returns null if it doesn't exist. */
+export async function getFirestoreDocument(
+  serviceAccount: ServiceAccount,
+  collectionPath: string,
+  docId: string,
+): Promise<Record<string, unknown> | null> {
+  const token = await getAccessToken(serviceAccount);
+  const res = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${serviceAccount.project_id}/databases/(default)/documents/${collectionPath}/${docId}`,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Firestore get failed: ${res.status} ${text}`);
+  }
+  const json = (await res.json()) as { name: string; fields: Record<string, FirestoreValue> };
+  return fieldsToDoc(json.name, json.fields);
+}
+
+/** Lists every document directly under a collection path (e.g. `users/{uid}/pushSubscriptions`). */
+export async function listFirestoreDocuments(
+  serviceAccount: ServiceAccount,
+  collectionPath: string,
+): Promise<Record<string, unknown>[]> {
+  const token = await getAccessToken(serviceAccount);
+  const res = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${serviceAccount.project_id}/databases/(default)/documents/${collectionPath}`,
+    { headers: { authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Firestore list failed: ${res.status} ${text}`);
+  }
+  const json = (await res.json()) as { documents?: { name: string; fields: Record<string, FirestoreValue> }[] };
+  return (json.documents ?? []).map((d) => fieldsToDoc(d.name, d.fields));
+}
+
+/** Deletes a single document — used to remove push subscriptions the push service reports as expired. */
+export async function deleteFirestoreDocument(serviceAccount: ServiceAccount, collectionPath: string, docId: string): Promise<void> {
+  const token = await getAccessToken(serviceAccount);
+  const res = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${serviceAccount.project_id}/databases/(default)/documents/${collectionPath}/${docId}`,
+    { method: 'DELETE', headers: { authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok && res.status !== 404) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Firestore delete failed: ${res.status} ${text}`);
+  }
+}
+
 export interface QueryFilter {
   field: string;
   op: 'EQUAL' | 'LESS_THAN_OR_EQUAL' | 'LESS_THAN' | 'GREATER_THAN_OR_EQUAL' | 'GREATER_THAN';

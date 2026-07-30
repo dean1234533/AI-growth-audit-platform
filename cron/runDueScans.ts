@@ -10,25 +10,34 @@ import { runConversionChecks } from '../src/server/lib/checks/conversion';
 import { runLocalSeoChecks } from '../src/server/lib/checks/localSeo';
 import { runPerformanceChecks } from '../src/server/lib/checks/performance';
 import { enrichRecommendationsWithAi } from '../src/server/lib/aiNarrative';
-import { addFirestoreDocument, updateFirestoreDocument, runQuery, parseServiceAccount } from '../src/server/lib/firestore';
+import { addFirestoreDocument, updateFirestoreDocument, getFirestoreDocument, runQuery, parseServiceAccount } from '../src/server/lib/firestore';
+import { notifyWebsiteScan, notifyCompetitorScan } from '../src/server/lib/notifyScan';
 
 interface CronEnv {
   PAGESPEED_API_KEY?: string;
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
+  VAPID_PRIVATE_KEY_JWK?: string;
+  PUBLIC_VAPID_KEY?: string;
   AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
 }
 
 interface WebsiteDoc {
   id: string;
+  uid: string;
   url: string;
+  name: string;
   frequency: ScanFrequency;
   status: 'active' | 'paused';
+  latestOverallScore?: number;
+  latestCategoryScores?: { id: string; score: number }[];
 }
 
 interface CompetitorDoc {
   id: string;
   url: string;
+  name: string;
   path: string[];
+  latestOverallScore?: number;
 }
 
 const FREQUENCY_MS: Record<Exclude<ScanFrequency, 'manual'>, number> = {
@@ -103,6 +112,20 @@ export async function runDueScans(env: CronEnv): Promise<void> {
         latestOverallScore: audit.overallScore,
         latestCategoryScores: audit.categories.map((c) => ({ id: c.id, score: c.score })),
       });
+
+      const previous: import('../src/server/lib/notificationRules').ScanSnapshot | null =
+        website.latestOverallScore === undefined
+          ? null
+          : { overallScore: website.latestOverallScore, categoryScores: website.latestCategoryScores ?? [] };
+
+      await notifyWebsiteScan(serviceAccount, env, {
+        uid: website.uid,
+        websiteId: website.id,
+        websiteName: website.name,
+        frequency: website.frequency,
+        audit,
+        previous,
+      }).catch((err) => console.error(`runDueScans: notify failed for website ${website.id}:`, err));
     } catch (err) {
       console.error(`runDueScans: scan failed for website ${website.id} (${website.url}):`, err);
     }
@@ -134,6 +157,20 @@ export async function runDueScans(env: CronEnv): Promise<void> {
         latestOverallScore: audit.overallScore,
         latestCategoryScores: audit.categories.map((c) => ({ id: c.id, score: c.score })),
       });
+
+      const parentWebsite = (await getFirestoreDocument(serviceAccount, 'websites', websiteId)) as unknown as
+        | { uid: string; name: string }
+        | null;
+      if (parentWebsite) {
+        await notifyCompetitorScan(serviceAccount, env, {
+          uid: parentWebsite.uid,
+          websiteId,
+          websiteName: parentWebsite.name,
+          competitorName: competitor.name,
+          newScore: audit.overallScore,
+          previousScore: competitor.latestOverallScore ?? null,
+        }).catch((err) => console.error(`runDueScans: competitor notify failed for ${competitor.id}:`, err));
+      }
     } catch (err) {
       console.error(`runDueScans: competitor scan failed for ${competitor.id} (${competitor.url}):`, err);
     }

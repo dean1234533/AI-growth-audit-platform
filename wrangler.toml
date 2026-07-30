@@ -23,3 +23,6 @@ crons = ["0 6 * * *"]
 # For local dev, put PAGESPEED_API_KEY=... in a .dev.vars file (gitignored).
 [vars]
 # PAGESPEED_API_KEY is intentionally left unset here — provide it as a secret, not a committed var.
+# The VAPID public key is safe to expose (it's also baked into the client bundle at build time
+# as PUBLIC_VAPID_KEY); the matching private key lives only in the VAPID_PRIVATE_KEY_JWK secret.
+PUBLIC_VAPID_KEY = "BEJacEYCXkvDlw1OTLFiK0kadycJzZBz9qlJfi-YnEvw9WOmYc3FeHV1AOQ1qV9HI9SzePMX17h1ohXs0gDrNaQ"

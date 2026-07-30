@@ -23,6 +23,22 @@ service cloud.firestore {
     // User profile/settings — owned solely by the signed-in user it belongs to.
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      // Web Push subscriptions for this user's installed devices — the client writes its
+      // own subscription right after the browser grants notification permission.
+      match /pushSubscriptions/{subId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // In-app Notification Centre feed. Only ever created by the cron job's service
+      // account (which bypasses these rules) or a trusted server route — the client may
+      // only read its own notifications and mark them as read (update), never create or
+      // delete them directly.
+      match /notifications/{notificationId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow update: if request.auth != null && request.auth.uid == uid;
+        allow create, delete: if false;
+      }
     }
 
     // Monitored websites — owned by the signed-in user who created them.

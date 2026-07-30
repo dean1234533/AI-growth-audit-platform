@@ -10,6 +10,8 @@ import { runDueScans } from './runDueScans';
 interface Env {
   PAGESPEED_API_KEY?: string;
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
+  VAPID_PRIVATE_KEY_JWK?: string;
+  PUBLIC_VAPID_KEY?: string;
   AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
 }
 

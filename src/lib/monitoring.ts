@@ -1,7 +1,26 @@
-import { addDoc, collection, doc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from './firebaseClient';
 import { runAudit } from './api';
 import type { AuditResult, ScanFrequency } from './types';
+
+interface NotifyScanPayload {
+  uid: string;
+  websiteId: string;
+  websiteName: string;
+  frequency: ScanFrequency;
+  audit: AuditResult;
+  previous: { overallScore: number; categoryScores: { id: string; score: number }[] } | null;
+}
+
+/** Fire-and-forget: asks the server to diff this scan against the previous one and deliver
+ * Notification Centre entries + push alerts. Never blocks or fails the scan itself. */
+function notifyScan(payload: NotifyScanPayload): void {
+  fetch('/api/notify-scan', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
 
 export function computeNextScanDue(frequency: ScanFrequency, from: Date): Date | null {
   if (frequency === 'manual') return null;
@@ -45,11 +64,25 @@ export async function addWebsiteWithFirstScan(
 
   await addDoc(collection(db, 'websites', websiteRef.id, 'scans'), audit);
 
+  notifyScan({
+    uid,
+    websiteId: websiteRef.id,
+    websiteName: deriveName(audit.url),
+    frequency,
+    audit,
+    previous: null,
+  });
+
   return { websiteId: websiteRef.id, audit };
 }
 
 /** Runs a fresh audit for an existing monitored website and appends it to scan history. */
 export async function runManualScan(websiteId: string, url: string, frequency: ScanFrequency): Promise<AuditResult> {
+  const websiteSnap = await getDoc(doc(db, 'websites', websiteId));
+  const websiteData = websiteSnap.data() as
+    | { uid: string; name: string; latestOverallScore?: number; latestCategoryScores?: { id: string; score: number }[] }
+    | undefined;
+
   const audit = await runAudit(url);
   const now = new Date();
   const nextScanDue = computeNextScanDue(frequency, now);
@@ -61,6 +94,20 @@ export async function runManualScan(websiteId: string, url: string, frequency: S
     latestOverallScore: audit.overallScore,
     latestCategoryScores: audit.categories.map((c) => ({ id: c.id, score: c.score })),
   });
+
+  if (websiteData) {
+    notifyScan({
+      uid: websiteData.uid,
+      websiteId,
+      websiteName: websiteData.name,
+      frequency,
+      audit,
+      previous:
+        websiteData.latestOverallScore === undefined
+          ? null
+          : { overallScore: websiteData.latestOverallScore, categoryScores: websiteData.latestCategoryScores ?? [] },
+    });
+  }
 
   return audit;
 }

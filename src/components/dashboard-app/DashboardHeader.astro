@@ -1,5 +1,6 @@
 ---
 import { Sparkles } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
 interface Props {
   active?: 'dashboard' | 'audit' | 'coach' | 'competitors' | 'reports' | 'settings' | 'billing';
@@ -48,5 +49,9 @@ const NAV = [
         )
       }
     </nav>
+
+    <div class="ml-auto shrink-0">
+      <NotificationBell client:only="react" />
+    </div>
   </div>
 </header>

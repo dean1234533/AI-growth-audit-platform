@@ -2,10 +2,12 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebaseClient';
 
 export type PlanId = 'free' | 'pro' | 'business';
+export type NotificationPref = 'push' | 'email' | 'both' | 'none';
 
 export interface UserSettings {
   displayName: string;
   weeklyDigestEnabled: boolean;
+  notificationPref: NotificationPref;
   plan: PlanId;
   createdAt?: unknown;
 }
@@ -13,6 +15,7 @@ export interface UserSettings {
 const DEFAULTS: UserSettings = {
   displayName: '',
   weeklyDigestEnabled: true,
+  notificationPref: 'push',
   plan: 'free',
 };
 

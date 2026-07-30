@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CheckCircle2, Globe, AlertTriangle, Activity } from 'lucide-react';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
@@ -10,6 +10,7 @@ import { LeadCaptureModal } from '../leadgen/LeadCaptureModal';
 import { Button } from '../ui/Button';
 import { FloatingBackground } from '../landing/FloatingBackground';
 import { generateAuditPdf } from '../../lib/pdf';
+import { markPwaInstallEligible } from '../pwa/InstallBanner';
 import type { AuditResult, Lead } from '../../lib/types';
 
 interface ReportPageProps {
@@ -20,6 +21,10 @@ interface ReportPageProps {
 export function ReportPage({ audit, onBack }: ReportPageProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+
+  useEffect(() => {
+    markPwaInstallEligible();
+  }, []);
 
   function handleLeadSuccess(lead: Lead) {
     generateAuditPdf(audit, lead);

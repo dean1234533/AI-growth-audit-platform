@@ -6,11 +6,13 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   onAuthStateChanged,
+  getAdditionalUserInfo,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../lib/firebaseClient';
 import { ensureUserDoc } from '../../lib/userSettings';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
+import { markPwaInstallEligible } from '../pwa/InstallBanner';
 
 function redirectToDashboard() {
   const params = new URLSearchParams(window.location.search);
@@ -47,6 +49,7 @@ export default function AuthForm() {
           ? await createUserWithEmailAndPassword(auth, email, password)
           : await signInWithEmailAndPassword(auth, email, password);
       await ensureUserDoc(cred.user.uid, cred.user.displayName ?? cred.user.email ?? '');
+      if (mode === 'signup') markPwaInstallEligible();
       redirectToDashboard();
     } catch (err) {
       setError(friendlyAuthError(err));
@@ -60,6 +63,7 @@ export default function AuthForm() {
     try {
       const cred = await signInWithPopup(auth, googleProvider);
       await ensureUserDoc(cred.user.uid, cred.user.displayName ?? cred.user.email ?? '');
+      if (getAdditionalUserInfo(cred)?.isNewUser) markPwaInstallEligible();
       redirectToDashboard();
     } catch (err) {
       setError(friendlyAuthError(err));
