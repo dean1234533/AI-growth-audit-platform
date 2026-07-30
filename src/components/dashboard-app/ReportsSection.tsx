@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { FileText, CheckCircle2, AlertTriangle, Mail } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Sparkles, FileText, CheckCircle2, AlertTriangle, Mail } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import { buildWeeklyDigest } from '../../lib/reports';
@@ -9,14 +9,39 @@ interface ReportsSectionProps {
   siteName: string;
   siteUrl: string;
   userEmail: string;
+  userName?: string;
   current: AuditResult;
   previous: AuditResult | null;
 }
 
-export default function ReportsSection({ siteName, siteUrl, userEmail, current, previous }: ReportsSectionProps) {
+export default function ReportsSection({ siteName, siteUrl, userEmail, userName, current, previous }: ReportsSectionProps) {
   const digest = buildWeeklyDigest(siteName, siteUrl, current, previous);
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setSummaryLoading(true);
+    fetch('/api/report-summary', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ digest, userName }),
+    })
+      .then((res) => res.json() as Promise<{ summary?: string }>)
+      .then((json) => {
+        if (!cancelled) setAiSummary(json.summary ?? null);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setSummaryLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current.scannedAt]);
 
   async function handleEmail() {
     setSending(true);
@@ -52,6 +77,15 @@ export default function ReportsSection({ siteName, siteUrl, userEmail, current, 
         <Button size="md" variant="secondary" icon={<Mail className="size-4" />} onClick={handleEmail} loading={sending}>
           Email Me This
         </Button>
+      </div>
+
+      <div className="mb-5 flex items-start gap-3 rounded-2xl bg-brand-500/[0.06] px-4 py-3.5 ring-1 ring-inset ring-brand-500/10">
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-brand-500" />
+        {summaryLoading ? (
+          <span className="h-4 w-2/3 animate-pulse rounded bg-brand-500/15" />
+        ) : (
+          <p className="text-sm leading-relaxed text-ink dark:text-slate-100">{aiSummary}</p>
+        )}
       </div>
 
       <div className="mb-5 flex items-center gap-3">

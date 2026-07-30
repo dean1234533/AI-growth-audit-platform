@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { doc, onSnapshot, collection, query, orderBy, deleteDoc, updateDoc } from 'firebase/firestore';
-import { ArrowLeft, RefreshCw, Trash2, Pause, Play } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Trash2, Pause, Play, MessageCircle, History, Download, CalendarClock } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { runManualScan } from '../../lib/monitoring';
+import { generateAuditPdf } from '../../lib/pdf';
+import { CONSULTATION_URL } from '../../lib/seo/site';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -11,7 +13,9 @@ import { ScoreTrendChart } from './ScoreTrendChart';
 import AiCoach from './AiCoach';
 import CompetitorsSection from './CompetitorsSection';
 import ReportsSection from './ReportsSection';
+import ScanHistory from './ScanHistory';
 import { Button } from '../ui/Button';
+import { GlassCard } from '../ui/GlassCard';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
 
 interface WebsiteDoc {
@@ -84,6 +88,22 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
     window.location.href = '/dashboard';
   }
 
+  function handleExportPdf() {
+    if (!website || !user) return;
+    const latestScan = scans[scans.length - 1];
+    if (!latestScan) return;
+    generateAuditPdf(latestScan, {
+      name: user.displayName ?? 'Website Owner',
+      email: user.email ?? '',
+      business: website.name,
+      website: website.url,
+    });
+  }
+
+  function scrollTo(anchor: string) {
+    document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   if (!user || website === undefined) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -142,6 +162,26 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             scannedAt={latest.scannedAt}
           />
 
+          <GlassCard static className="flex flex-wrap gap-3 p-5">
+            <Button variant="secondary" size="md" icon={<MessageCircle className="size-4" />} onClick={() => scrollTo('coach')}>
+              Ask AI
+            </Button>
+            <Button variant="secondary" size="md" icon={<History className="size-4" />} onClick={() => scrollTo('timeline')}>
+              View Timeline
+            </Button>
+            <Button variant="secondary" size="md" icon={<Download className="size-4" />} onClick={handleExportPdf}>
+              Export PDF
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              icon={<CalendarClock className="size-4" />}
+              onClick={() => window.open(CONSULTATION_URL, '_blank')}
+            >
+              Book Consultation
+            </Button>
+          </GlassCard>
+
           <AiCoach siteName={website.name} audit={latest} />
 
           <CompetitorsSection websiteId={website.id} ourScore={latest.overallScore} />
@@ -150,11 +190,14 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             siteName={website.name}
             siteUrl={website.url}
             userEmail={user.email ?? ''}
+            userName={user.displayName ?? undefined}
             current={latest}
             previous={scans.length > 1 ? scans[scans.length - 2] : null}
           />
 
           <ScoreTrendChart scans={scans} />
+
+          <ScanHistory siteName={website.name} siteUrl={website.url} scans={scans} />
 
           <div>
             <h2 className="mb-6 font-display text-2xl font-bold text-ink dark:text-white">Category Breakdown</h2>
