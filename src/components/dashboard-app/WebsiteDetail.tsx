@@ -1,11 +1,26 @@
 import { useEffect, useState } from 'react';
-import { doc, onSnapshot, collection, query, orderBy, deleteDoc, updateDoc } from 'firebase/firestore';
-import { ArrowLeft, RefreshCw, Trash2, Pause, Play, MessageCircle, History, Download, CalendarClock } from 'lucide-react';
+import { doc, onSnapshot, collection, query, orderBy, deleteDoc, updateDoc, type Timestamp } from 'firebase/firestore';
+import {
+  ArrowLeft,
+  RefreshCw,
+  Trash2,
+  Pause,
+  Play,
+  MessageCircle,
+  LineChart,
+  Download,
+  CalendarClock,
+  Clock,
+  CalendarCheck,
+  Bell,
+  Lightbulb,
+} from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { runManualScan } from '../../lib/monitoring';
 import { generateAuditPdf } from '../../lib/pdf';
 import { CONSULTATION_URL } from '../../lib/seo/site';
+import { subscribeToNotifications } from '../../lib/notifications';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -25,16 +40,24 @@ interface WebsiteDoc {
   name: string;
   frequency: ScanFrequency;
   status: 'active' | 'paused';
+  lastScannedAt: Timestamp | null;
+  nextScanDue: Timestamp | null;
 }
 
 interface WebsiteDetailProps {
   websiteId: string;
 }
 
+function formatTimestamp(ts: Timestamp | null): string {
+  if (!ts) return '—';
+  return new Date(ts.seconds * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const user = useAuthUser();
   const [website, setWebsite] = useState<WebsiteDoc | null | undefined>(undefined);
   const [scans, setScans] = useState<(AuditResult & { id: string })[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,9 +80,14 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
       setScans(snap.docs.map((d) => ({ id: d.id, ...(d.data() as AuditResult) })));
     });
 
+    const unsubNotifications = subscribeToNotifications(user.uid, (notifications) => {
+      setUnreadCount(notifications.filter((n) => !n.read && n.websiteId === websiteId).length);
+    });
+
     return () => {
       unsubWebsite();
       unsubScans();
+      unsubNotifications();
     };
   }, [user, websiteId]);
 
@@ -124,10 +152,12 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   }
 
   const latest = scans[scans.length - 1];
+  const previous = scans.length > 1 ? scans[scans.length - 2] : null;
+  const topRecommendation = latest?.recommendations[0] ?? null;
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 px-6 py-16">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div id="top" className="flex flex-wrap items-center justify-between gap-4">
         <a href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white">
           <ArrowLeft className="size-4" /> All websites
         </a>
@@ -155,6 +185,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
         <div className="glass rounded-[24px] p-16 text-center text-sm font-medium text-slate">No scans yet.</div>
       ) : (
         <>
+          {/* ── Dashboard: what's happening today? ── */}
           <WebsiteHealthHero
             score={latest.overallScore}
             categories={latest.categories}
@@ -162,12 +193,65 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             scannedAt={latest.scannedAt}
           />
 
+          <div className="grid gap-4 sm:grid-cols-3">
+            <GlassCard static className="p-5">
+              <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
+                <CalendarCheck className="size-3.5" /> Monitoring
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                    website.status === 'active' ? 'bg-mint-500/10 text-mint-600' : 'bg-slate/10 text-slate'
+                  }`}
+                >
+                  <span className={`size-1.5 rounded-full ${website.status === 'active' ? 'bg-mint-500' : 'bg-slate'}`} />
+                  {website.status === 'active' ? 'Active' : 'Paused'}
+                </span>
+                <span className="text-xs capitalize text-slate">{website.frequency} scans</span>
+              </div>
+              <div className="mt-3 space-y-1 text-xs text-slate">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="size-3 shrink-0" /> Last scan: {formatTimestamp(website.lastScannedAt)}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="size-3 shrink-0" /> Next scan: {website.frequency === 'manual' ? 'Manual only' : formatTimestamp(website.nextScanDue)}
+                </div>
+              </div>
+            </GlassCard>
+
+            <button type="button" onClick={() => (window.location.href = '/dashboard')} className="text-left">
+              <GlassCard className="h-full p-5">
+                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
+                  <Bell className="size-3.5" /> Notifications
+                </div>
+                <div className="font-display text-2xl font-extrabold text-ink dark:text-white">{unreadCount}</div>
+                <div className="text-xs text-slate">{unreadCount === 0 ? 'All caught up' : 'Unread for this site'}</div>
+              </GlassCard>
+            </button>
+
+            <button type="button" onClick={() => scrollTo('audit')} className="text-left">
+              <GlassCard className="h-full p-5">
+                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
+                  <Lightbulb className="size-3.5" /> Top recommendation
+                </div>
+                {topRecommendation ? (
+                  <>
+                    <div className="line-clamp-2 text-sm font-semibold text-ink dark:text-white">{topRecommendation.title}</div>
+                    <div className="mt-1 text-xs capitalize text-slate">{topRecommendation.impact} impact · {topRecommendation.estimatedTime}</div>
+                  </>
+                ) : (
+                  <div className="text-sm text-slate">No open recommendations</div>
+                )}
+              </GlassCard>
+            </button>
+          </div>
+
           <GlassCard static className="flex flex-wrap gap-3 p-5">
             <Button variant="secondary" size="md" icon={<MessageCircle className="size-4" />} onClick={() => scrollTo('coach')}>
               Ask AI
             </Button>
-            <Button variant="secondary" size="md" icon={<History className="size-4" />} onClick={() => scrollTo('timeline')}>
-              View Timeline
+            <Button variant="secondary" size="md" icon={<LineChart className="size-4" />} onClick={() => scrollTo('monitoring')}>
+              View Monitoring
             </Button>
             <Button variant="secondary" size="md" icon={<Download className="size-4" />} onClick={handleExportPdf}>
               Export PDF
@@ -182,31 +266,9 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             </Button>
           </GlassCard>
 
-          <AiCoach siteName={website.name} audit={latest} />
-
-          <CompetitorsSection
-            websiteId={website.id}
-            ourScore={latest.overallScore}
-            ourCategories={latest.categories}
-            siteUrl={website.url}
-            pageTitle={latest.meta.pageTitle}
-          />
-
-          <ReportsSection
-            siteName={website.name}
-            siteUrl={website.url}
-            userEmail={user.email ?? ''}
-            userName={user.displayName ?? undefined}
-            current={latest}
-            previous={scans.length > 1 ? scans[scans.length - 2] : null}
-          />
-
-          <ScoreTrendChart scans={scans} />
-
-          <ScanHistory siteName={website.name} siteUrl={website.url} scans={scans} />
-
-          <div>
-            <h2 className="mb-6 font-display text-2xl font-bold text-ink dark:text-white">Category Breakdown</h2>
+          {/* ── Audit: what problems exist? ── */}
+          <div id="audit" className="scroll-mt-24 space-y-6">
+            <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Category Breakdown</h2>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {latest.categories.map((category) => (
                 <CategoryCard
@@ -216,12 +278,43 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
                 />
               ))}
             </div>
+            <div className="grid gap-6 lg:grid-cols-3">
+              <RadarScoreChart categories={latest.categories} />
+              <SeverityBarChart recommendations={latest.recommendations} />
+              <PerformanceBreakdownChart categories={latest.categories} />
+            </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            <RadarScoreChart categories={latest.categories} />
-            <SeverityBarChart recommendations={latest.recommendations} />
-            <PerformanceBreakdownChart categories={latest.categories} />
+          {/* ── AI Coach: what should I do next? ── */}
+          <div className="scroll-mt-24">
+            <AiCoach siteName={website.name} audit={latest} />
+          </div>
+
+          {/* ── Monitoring: what has changed over time? ── */}
+          <div id="monitoring" className="scroll-mt-24 space-y-6">
+            <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Monitoring</h2>
+            <ScoreTrendChart scans={scans} />
+            <CompetitorsSection
+              websiteId={website.id}
+              ourScore={latest.overallScore}
+              ourCategories={latest.categories}
+              siteUrl={website.url}
+              pageTitle={latest.meta.pageTitle}
+            />
+          </div>
+
+          {/* ── Reports: what happened previously? ── */}
+          <div className="scroll-mt-24 space-y-6">
+            <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Reports</h2>
+            <ReportsSection
+              siteName={website.name}
+              siteUrl={website.url}
+              userEmail={user.email ?? ''}
+              userName={user.displayName ?? undefined}
+              current={latest}
+              previous={previous}
+            />
+            <ScanHistory siteName={website.name} siteUrl={website.url} scans={scans} />
           </div>
         </>
       )}

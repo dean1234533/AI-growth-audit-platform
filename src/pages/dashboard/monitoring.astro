@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardHeader from '../../components/dashboard-app/DashboardHeader.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import SitePicker from '../../components/dashboard-app/SitePicker';
+---
+
+<BaseLayout title="Monitoring" description="How your monitored website has changed over time, and how it compares to competitors." path="/dashboard/monitoring" noindex bare>
+  <DashboardHeader active="monitoring" />
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <SitePicker
+      client:only="react"
+      anchor="monitoring"
+      eyebrow="Monitoring"
+      title="Which website?"
+      subtitle="Pick a monitored website to see what's changed over time."
+      emptyTitle="No website to monitor yet"
+      emptyBody="Add a website to monitor first — its health trend, competitors and timeline will show up here."
+    />
+  </div>
+</BaseLayout>

@@ -50,7 +50,7 @@ export default function ScanHistory({ siteName, siteUrl, scans }: ScanHistoryPro
   if (scans.length === 0) return null;
 
   return (
-    <GlassCard gradientBorder id="timeline" className="p-7">
+    <GlassCard gradientBorder className="p-7">
       <div className="mb-5 flex items-center gap-3">
         <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
           <History className="size-5" />

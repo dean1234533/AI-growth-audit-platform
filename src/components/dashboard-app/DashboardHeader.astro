@@ -2,20 +2,22 @@
 import NotificationBell from './NotificationBell';
 
 interface Props {
-  active?: 'dashboard' | 'audit' | 'coach' | 'competitors' | 'reports' | 'settings' | 'billing';
+  active?: 'dashboard' | 'audit' | 'monitoring' | 'coach' | 'reports' | 'settings';
 }
 
 const { active } = Astro.props;
 
 const NAV = [
-  { label: 'Dashboard', href: '/dashboard', key: 'dashboard', enabled: true },
-  { label: 'Website Audit', href: '/', key: 'audit', enabled: true },
-  { label: 'AI SEO Coach', href: '/dashboard/coach', key: 'coach', enabled: true },
-  { label: 'Competitors', href: '/dashboard/competitors', key: 'competitors', enabled: true },
-  { label: 'Reports', href: '/dashboard/reports', key: 'reports', enabled: true },
-  { label: 'Settings', href: '/dashboard/settings', key: 'settings', enabled: true },
-  { label: 'Billing', href: '/dashboard/billing', key: 'billing', enabled: true },
+  { label: 'Dashboard', href: '/dashboard', key: 'dashboard' },
+  { label: 'Audit', href: '/dashboard/audit', key: 'audit' },
+  { label: 'Monitoring', href: '/dashboard/monitoring', key: 'monitoring' },
+  { label: 'AI Coach', href: '/dashboard/coach', key: 'coach' },
+  { label: 'Reports', href: '/dashboard/reports', key: 'reports' },
+  { label: 'Settings', href: '/dashboard/settings', key: 'settings' },
 ];
+
+const ACTIVE_CLASSES = ['bg-brand-500/10', 'text-brand-600', 'dark:text-brand-300'];
+const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white'];
 ---
 
 <header class="sticky top-0 z-40 border-b border-ink/[0.06] bg-canvas/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/80">
@@ -27,23 +29,17 @@ const NAV = [
 
     <nav class="flex items-center gap-1 text-sm font-semibold">
       {
-        NAV.map((item) =>
-          item.enabled ? (
-            <a
-              href={item.href!}
-              class={`whitespace-nowrap rounded-xl px-3 py-1.5 transition-colors ${
-                active === item.key ? 'bg-brand-500/10 text-brand-600 dark:text-brand-300' : 'text-slate hover:text-ink dark:hover:text-white'
-              }`}
-            >
-              {item.label}
-            </a>
-          ) : (
-            <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-1.5 text-slate/50">
-              {item.label}
-              <span class="rounded-full bg-slate/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">Soon</span>
-            </span>
-          ),
-        )
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            data-nav-key={item.key}
+            class={`whitespace-nowrap rounded-xl px-3 py-1.5 transition-colors ${
+              active === item.key ? ACTIVE_CLASSES.join(' ') : INACTIVE_CLASSES.join(' ')
+            }`}
+          >
+            {item.label}
+          </a>
+        ))
       }
     </nav>
 
@@ -52,3 +48,20 @@ const NAV = [
     </div>
   </div>
 </header>
+
+<script define:vars={{ ACTIVE_CLASSES, INACTIVE_CLASSES }}>
+  // On the per-site detail page (`/dashboard/[id]#anchor`), the server can't see the URL
+  // fragment to know which nav item to highlight — this corrects it client-side after the
+  // hash is available, so the nav stays accurate when arriving via a SitePicker redirect.
+  function syncActiveNavFromHash() {
+    const hash = window.location.hash.replace('#', '');
+    if (!hash) return;
+    document.querySelectorAll('[data-nav-key]').forEach((el) => {
+      const isActive = el.getAttribute('data-nav-key') === hash;
+      el.classList.remove(...ACTIVE_CLASSES, ...INACTIVE_CLASSES);
+      el.classList.add(...(isActive ? ACTIVE_CLASSES : INACTIVE_CLASSES));
+    });
+  }
+  syncActiveNavFromHash();
+  window.addEventListener('hashchange', syncActiveNavFromHash);
+</script>

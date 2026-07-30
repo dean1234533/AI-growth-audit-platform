@@ -16,6 +16,8 @@ export interface DraftNotification {
   title: string;
   body: string;
   url: string;
+  websiteId: string;
+  websiteName: string;
 }
 
 const HEALTH_DELTA_THRESHOLD = 5;
@@ -44,8 +46,11 @@ export function buildScanNotifications(
   const detailUrl = `/dashboard/${website.id}`;
   const scoreDelta = previous ? audit.overallScore - previous.overallScore : 0;
 
+  const base = { websiteId: website.id, websiteName: website.name };
+
   if (previous && scoreDelta <= -HEALTH_DELTA_THRESHOLD) {
     notifications.push({
+      ...base,
       type: 'health_declined',
       title: `${website.name} health dropped`,
       body: `Overall score fell from ${previous.overallScore} to ${audit.overallScore}. Check what changed.`,
@@ -53,6 +58,7 @@ export function buildScanNotifications(
     });
   } else if (previous && scoreDelta >= HEALTH_DELTA_THRESHOLD) {
     notifications.push({
+      ...base,
       type: 'health_improved',
       title: `${website.name} health improved`,
       body: `Overall score climbed from ${previous.overallScore} to ${audit.overallScore}. Nice work.`,
@@ -66,6 +72,7 @@ export function buildScanNotifications(
     if (tippedCritical) {
       const isSecurity = category.id === 'trust';
       notifications.push({
+        ...base,
         type: isSecurity ? 'security_warning' : 'critical_alert',
         title: isSecurity ? `Security issue on ${website.name}` : `Critical issue on ${website.name}`,
         body: `${categoryLabel(audit, category.id)} dropped to ${category.score}/100 — this needs attention.`,
@@ -78,6 +85,7 @@ export function buildScanNotifications(
   const perfNow = audit.categories.find((c) => c.id === 'performance')?.score ?? null;
   if (perfPrev !== null && perfNow !== null && perfPrev - perfNow >= PERFORMANCE_DROP_THRESHOLD) {
     notifications.push({
+      ...base,
       type: 'performance_drop',
       title: `${website.name} got slower`,
       body: `Performance score dropped ${perfPrev - perfNow} points, from ${perfPrev} to ${perfNow}.`,
@@ -87,10 +95,11 @@ export function buildScanNotifications(
 
   if (website.frequency === 'weekly') {
     notifications.push({
+      ...base,
       type: 'weekly_report',
       title: `${website.name} weekly report is ready`,
       body: `Your latest weekly health report is in — overall score ${audit.overallScore}/100.`,
-      url: `/dashboard/reports?site=${website.id}`,
+      url: `${detailUrl}#reports`,
     });
   }
 
@@ -102,6 +111,7 @@ export function buildScanNotifications(
     })[0];
     if (topRecommendation) {
       notifications.push({
+        ...base,
         type: 'content_recommendation',
         title: `New opportunity for ${website.name}`,
         body: topRecommendation.title,
@@ -123,9 +133,11 @@ export function buildCompetitorActivityNotification(
   if (Math.abs(delta) < HEALTH_DELTA_THRESHOLD * 2) return null;
   const direction = delta > 0 ? 'improved' : 'dropped';
   return {
+    websiteId: website.id,
+    websiteName: website.name,
     type: 'competitor_activity',
     title: `${competitorName} ${direction}`,
     body: `A competitor you're tracking against ${website.name} ${direction} by ${Math.abs(delta)} points, now ${competitorScore}/100.`,
-    url: `/dashboard/competitors?site=${website.id}`,
+    url: `/dashboard/${website.id}#monitoring`,
   };
 }

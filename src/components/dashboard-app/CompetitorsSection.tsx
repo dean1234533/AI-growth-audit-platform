@@ -121,7 +121,7 @@ export default function CompetitorsSection({ websiteId, ourScore, ourCategories,
   }
 
   return (
-    <GlassCard gradientBorder id="competitors" className="p-7">
+    <GlassCard gradientBorder className="p-7">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">

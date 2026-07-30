@@ -5,18 +5,18 @@ import { FloatingBackground } from '../../components/landing/FloatingBackground'
 import SitePicker from '../../components/dashboard-app/SitePicker';
 ---
 
-<BaseLayout title="Competitors" description="See how your monitored website compares to its competitors." path="/dashboard/competitors" noindex bare>
-  <DashboardHeader active="competitors" />
+<BaseLayout title="Audit" description="The full category breakdown and recommendations for your monitored website." path="/dashboard/audit" noindex bare>
+  <DashboardHeader active="audit" />
   <div class="relative min-h-screen">
     <FloatingBackground />
     <SitePicker
       client:only="react"
-      anchor="competitors"
-      eyebrow="Competitors"
+      anchor="audit"
+      eyebrow="Audit"
       title="Which website?"
-      subtitle="Pick a monitored website to see its competitor comparison."
-      emptyTitle="No website to compare yet"
-      emptyBody="Add a website to monitor first — then add competitors to compare against it."
+      subtitle="Pick a monitored website to see what problems exist."
+      emptyTitle="No website to audit yet"
+      emptyBody="Add a website to monitor first — its full category breakdown will show up here."
     />
   </div>
 </BaseLayout>
