@@ -1,11 +1,34 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { addFirestoreDocument, parseServiceAccount } from '../../server/lib/firestore';
+import { BRAND_EMAIL } from '../../lib/seo/site';
 
 export const prerender = false;
 
 interface Env {
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
+  RESEND_API_KEY?: string;
+  REPORT_FROM_EMAIL?: string;
+}
+
+async function notifyOwner(cfEnv: Env, name: string, email: string, message: string): Promise<void> {
+  if (!cfEnv.RESEND_API_KEY) return;
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${cfEnv.RESEND_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        from: cfEnv.REPORT_FROM_EMAIL ?? 'reports@dean-da-dev.co.uk',
+        to: BRAND_EMAIL,
+        reply_to: email,
+        subject: `New contact form message from ${name}`,
+        html: `<p><strong>${name}</strong> (${email}) sent:</p><p>${message.replace(/\n/g, '<br>')}</p>`,
+      }),
+    });
+  } catch (err) {
+    // Best-effort — the message is already safely stored in Firestore either way.
+    console.error('contact.ts: owner notification email failed:', err);
+  }
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,6 +68,8 @@ export const POST: APIRoute = async ({ request }) => {
   } catch {
     return jsonError('Could not send your message. Please try again.', 500);
   }
+
+  await notifyOwner(cfEnv, name, email, message);
 
   return new Response(JSON.stringify({ ok: true, stored: true }), { headers: { 'content-type': 'application/json' } });
 };

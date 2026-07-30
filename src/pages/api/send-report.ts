@@ -61,7 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        from: cfEnv.REPORT_FROM_EMAIL ?? 'reports@growthaudit.app',
+        from: cfEnv.REPORT_FROM_EMAIL ?? 'reports@dean-da-dev.co.uk',
         to: body.to,
         subject: `${body.digest.siteName} — Weekly Website Health Report`,
         html: digestToHtml(body.digest),

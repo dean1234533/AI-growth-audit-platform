@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, limit, query, updateDoc, serverTimestamp, Timestamp, where } from 'firebase/firestore';
 import { db } from './firebaseClient';
 import { runAudit } from './api';
 import type { AuditResult, ScanFrequency } from './types';
@@ -39,7 +39,26 @@ function deriveName(url: string): string {
   }
 }
 
-/** Runs the first audit for a new website and creates both the website doc and its first scan. */
+interface ExistingWebsiteMatch {
+  id: string;
+  name: string;
+  latestOverallScore?: number;
+  latestCategoryScores?: { id: string; score: number }[];
+}
+
+/** Finds a website this user is already monitoring at the given (normalized) URL, if any. */
+async function findExistingWebsite(uid: string, normalizedUrl: string): Promise<ExistingWebsiteMatch | null> {
+  const snap = await getDocs(query(collection(db, 'websites'), where('uid', '==', uid), where('url', '==', normalizedUrl), limit(1)));
+  if (snap.empty) return null;
+  const docSnap = snap.docs[0];
+  return { id: docSnap.id, ...(docSnap.data() as Omit<ExistingWebsiteMatch, 'id'>) };
+}
+
+/**
+ * Runs the first audit for a new website and creates both the website doc and its first scan —
+ * or, if this user is already monitoring that exact URL, records this as a fresh scan on the
+ * existing website instead of creating a duplicate entry.
+ */
 export async function addWebsiteWithFirstScan(
   uid: string,
   url: string,
@@ -48,6 +67,31 @@ export async function addWebsiteWithFirstScan(
   const audit = await runAudit(url);
   const now = new Date();
   const nextScanDue = computeNextScanDue(frequency, now);
+
+  const existing = await findExistingWebsite(uid, audit.url);
+  if (existing) {
+    await addDoc(collection(db, 'websites', existing.id, 'scans'), audit);
+    await updateDoc(doc(db, 'websites', existing.id), {
+      lastScannedAt: serverTimestamp(),
+      nextScanDue: nextScanDue ? Timestamp.fromDate(nextScanDue) : null,
+      latestOverallScore: audit.overallScore,
+      latestCategoryScores: audit.categories.map((c) => ({ id: c.id, score: c.score })),
+    });
+
+    notifyScan({
+      uid,
+      websiteId: existing.id,
+      websiteName: existing.name,
+      frequency,
+      audit,
+      previous:
+        existing.latestOverallScore === undefined
+          ? null
+          : { overallScore: existing.latestOverallScore, categoryScores: existing.latestCategoryScores ?? [] },
+    });
+
+    return { websiteId: existing.id, audit };
+  }
 
   const websiteRef = await addDoc(collection(db, 'websites'), {
     uid,
