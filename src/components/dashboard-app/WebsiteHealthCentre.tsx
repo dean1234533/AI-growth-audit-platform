@@ -11,6 +11,7 @@ import { ScoreCircle } from '../dashboard/ScoreCircle';
 import { scoreBand } from '../../lib/scoreBand';
 import { AddWebsiteModal } from './AddWebsiteModal';
 import { getUserSettings } from '../../lib/userSettings';
+import { getWebsiteQuota, type WebsiteQuota } from '../../lib/api';
 import type { CategoryId, ScanFrequency } from '../../lib/types';
 
 interface WebsiteDoc {
@@ -29,6 +30,17 @@ export default function WebsiteHealthCentre() {
   const [websites, setWebsites] = useState<WebsiteDoc[] | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [defaultFrequency, setDefaultFrequency] = useState<ScanFrequency>('weekly');
+  const [quota, setQuota] = useState<WebsiteQuota | null>(null);
+
+  // Refetched after the modal closes too, so the count/limit banner stays accurate right after
+  // adding a website — the server (src/pages/api/websites.ts) is the only source of truth for
+  // these numbers; nothing here hardcodes 1 / 5 / unlimited.
+  useEffect(() => {
+    if (!user || modalOpen) return;
+    getWebsiteQuota()
+      .then(setQuota)
+      .catch(() => setQuota(null));
+  }, [user, modalOpen]);
 
   useEffect(() => {
     if (!user) return;
@@ -69,6 +81,11 @@ export default function WebsiteHealthCentre() {
             Website Health Centre
           </h1>
           <p className="mt-1 text-sm text-slate">{user.email}</p>
+          {quota && (
+            <p className="mt-1 text-xs font-semibold text-slate">
+              {quota.unlimited ? 'Unlimited websites' : `${quota.currentCount} / ${quota.maxWebsites} websites`}
+            </p>
+          )}
         </div>
         <div className="flex gap-3">
           <Button onClick={() => setModalOpen(true)} icon={<Plus className="size-4" />}>
@@ -79,6 +96,14 @@ export default function WebsiteHealthCentre() {
           </Button>
         </div>
       </div>
+
+      {quota && !quota.canAdd && (
+        <div className="glass mb-10 flex items-start gap-3 rounded-2xl px-5 py-4 text-sm text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:text-amber-300">
+          <span>
+            <strong className="font-semibold">Website limit reached.</strong> {quota.limitMessage}
+          </span>
+        </div>
+      )}
 
       {websites === null && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

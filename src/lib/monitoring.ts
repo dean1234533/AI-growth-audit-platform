@@ -1,6 +1,6 @@
 import { addDoc, collection, doc, getDoc, getDocs, limit, query, updateDoc, serverTimestamp, Timestamp, where } from 'firebase/firestore';
 import { auth, db } from './firebaseClient';
-import { runAudit } from './api';
+import { runAudit, createWebsite } from './api';
 import type { AuditResult, ScanFrequency } from './types';
 
 /** Fire-and-forget admin alert for events that only happen client-side. */
@@ -102,24 +102,15 @@ export async function addWebsiteWithFirstScan(
     return { websiteId: existing.id, audit };
   }
 
-  const websiteRef = await addDoc(collection(db, 'websites'), {
-    uid,
-    url: audit.url,
-    name: deriveName(audit.url),
-    frequency,
-    status: 'active',
-    createdAt: serverTimestamp(),
-    lastScannedAt: serverTimestamp(),
-    nextScanDue: nextScanDue ? Timestamp.fromDate(nextScanDue) : null,
-    latestOverallScore: audit.overallScore,
-    latestCategoryScores: audit.categories.map((c) => ({ id: c.id, score: c.score })),
-  });
-
-  await addDoc(collection(db, 'websites', websiteRef.id, 'scans'), audit);
+  // Creation (unlike the rescan-existing-website branch above) is subject to the plan-based
+  // website limit, enforced server-side — see src/pages/api/websites.ts and
+  // src/server/lib/access.ts. firestore.rules denies a direct client write here, so this is
+  // the only way a new website doc can come into existence.
+  const { websiteId } = await createWebsite(audit.url, deriveName(audit.url), frequency, audit);
 
   notifyScan({
     uid,
-    websiteId: websiteRef.id,
+    websiteId,
     websiteName: deriveName(audit.url),
     frequency,
     audit,
@@ -128,7 +119,7 @@ export async function addWebsiteWithFirstScan(
 
   notifyAdmin('new_website', { websiteUrl: audit.url, websiteName: deriveName(audit.url), frequency });
 
-  return { websiteId: websiteRef.id, audit };
+  return { websiteId, audit };
 }
 
 /** Runs a fresh audit for an existing monitored website and appends it to scan history. */

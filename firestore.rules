@@ -51,7 +51,11 @@ service cloud.firestore {
     // Monitored websites — owned by the signed-in user who created them.
     match /websites/{websiteId} {
       allow read: if request.auth != null && request.auth.uid == resource.data.uid;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+      // Creation is server-only (POST /api/websites, via the service account, which bypasses
+      // these rules) — that route enforces the plan-based website limit (src/server/lib/access.ts)
+      // before writing. Allowing a direct client create here would let a client add unlimited
+      // websites by just calling the Firestore SDK instead of the quota-checked route.
+      allow create: if false;
       // Only allow the owner to update their own doc, and only when uid is unchanged.
       allow update: if request.auth != null
         && request.auth.uid == resource.data.uid

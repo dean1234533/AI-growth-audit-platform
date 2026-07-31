@@ -10,7 +10,8 @@
     "deploy": "npm run build && wrangler deploy cron/entry.ts --assets dist/client --config wrangler.toml",
     "generate-content": "node scripts/generate-content.mjs",
     "lint": "oxlint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:rules": "npx firebase-tools emulators:exec --only firestore \"vitest run --config vitest.rules.config.ts\""
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20260729.1",
+    "@firebase/rules-unit-testing": "^5.0.1",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.2",

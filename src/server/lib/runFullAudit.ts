@@ -5,6 +5,7 @@ import type { AuditResult, CheckResult, PageAuditResult } from '../../lib/types'
 import { fetchAndParse, discoverPages, checkLinkStatuses, checkHttpToHttpsRedirect, type PageData } from './fetchSite';
 import { renderPage, type RenderedPageData } from './renderPage';
 import { hasRenderBudget, recordRenderUsage } from './scanBudget';
+import { computeScanPartial } from './scanPartial';
 import { parseServiceAccount } from './firestore';
 import { runSeoChecks } from './checks/seo';
 import { runAccessibilityChecks } from './checks/accessibility';
@@ -195,7 +196,7 @@ export async function runFullAudit(
     growthEstimate,
     meta: {
       pageTitle: homepage.title,
-      partial: warnings.length > 0,
+      partial: computeScanPartial(warnings, crawlPages, rendered),
       warnings,
       ...(businessContext.businessName ? { businessName: businessContext.businessName } : {}),
       ...(businessContext.businessType ? { businessType: businessContext.businessType } : {}),

@@ -36,6 +36,16 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
     markPwaInstallEligible();
   }, []);
 
+  // meta.partial can come from a PageSpeed Insights warning (meta.warnings), a browser-rendering
+  // fallback (meta.warnings stays empty — see runFullAudit.ts), or both; show whichever applies
+  // rather than assuming warnings is always populated.
+  const partialReasons = [
+    ...audit.meta.warnings,
+    ...(audit.meta.partial && !audit.meta.scanQuality?.jsRenderingUsed
+      ? ['Some browser-based checks could not be completed. Results may be less comprehensive than a full browser-rendered scan.']
+      : []),
+  ];
+
   function handleLeadSuccess(lead: Lead) {
     generateAuditPdf(audit, lead);
     setModalOpen(false);
@@ -67,7 +77,9 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
               className="glass mb-10 flex items-start gap-3 rounded-2xl px-5 py-4 text-sm text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:text-amber-300"
             >
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-              <span>This audit is based on partial data: {audit.meta.warnings.join(' ')}</span>
+              <span>
+                <strong className="font-semibold">Partial scan.</strong> {partialReasons.join(' ')}
+              </span>
             </motion.div>
           )}
 

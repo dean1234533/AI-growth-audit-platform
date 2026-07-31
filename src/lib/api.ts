@@ -1,13 +1,61 @@
-import type { AuditResult, Lead, EnquiryLead } from './types';
+import type { AuditResult, Lead, EnquiryLead, ScanFrequency } from './types';
+import { auth } from './firebaseClient';
 
 export class ApiError extends Error {}
 
 interface ErrorResponse {
   error?: string;
+  message?: string;
 }
 
 async function parseErrorResponse(res: Response): Promise<ErrorResponse> {
   return (await res.json().catch(() => ({}))) as ErrorResponse;
+}
+
+async function authHeaders(): Promise<Record<string, string>> {
+  const idToken = await auth.currentUser?.getIdToken();
+  return idToken ? { authorization: `Bearer ${idToken}` } : {};
+}
+
+/** Mirrors src/server/lib/access.ts's WebsiteQuota — kept as a response shape only, never
+ * duplicating the actual limit numbers, which live solely on the server. */
+export interface WebsiteQuota {
+  planId: 'free' | 'pro' | 'admin';
+  currentCount: number;
+  maxWebsites: number | null;
+  unlimited: boolean;
+  canAdd: boolean;
+  limitMessage: string | null;
+}
+
+export async function getWebsiteQuota(): Promise<WebsiteQuota> {
+  const res = await fetch('/api/websites', { headers: await authHeaders() });
+  if (!res.ok) {
+    const json = await parseErrorResponse(res);
+    throw new ApiError(json.message ?? json.error ?? 'Could not load your website usage.');
+  }
+  return (await res.json()) as WebsiteQuota;
+}
+
+export interface CreateWebsiteResult {
+  websiteId: string;
+  audit: AuditResult;
+}
+
+/** Creates a new monitored website + its first scan. The plan-based website limit is enforced
+ * entirely server-side (src/pages/api/websites.ts) — this is the only path that can create a
+ * website doc; direct Firestore writes are denied by firestore.rules. */
+export async function createWebsite(url: string, name: string | undefined, frequency: ScanFrequency, audit: AuditResult): Promise<CreateWebsiteResult> {
+  const res = await fetch('/api/websites', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...(await authHeaders()) },
+    body: JSON.stringify({ url, name, frequency, audit }),
+  });
+  if (!res.ok) {
+    const json = await parseErrorResponse(res);
+    throw new ApiError(json.message ?? json.error ?? 'Could not add this website. Please try again.');
+  }
+  return (await res.json()) as CreateWebsiteResult;
 }
 
 export interface AuditIntakeContext {

@@ -32,4 +32,18 @@ describe('buildOverallScore', () => {
   it('still returns 0 when there are genuinely no scored checks anywhere', () => {
     expect(buildOverallScore([])).toBe(0);
   });
+
+  it('a not_verified check from a browser-rendering fallback does not dilute its category score', () => {
+    // Mirrors a real fallback scan: conv.stickyCta couldn't be verified without rendering, but
+    // the other conversion checks still passed — the category score must reflect only the
+    // checks that actually ran, not be pulled down by the weight-0 not_verified one.
+    const categories = buildCategoryScores([
+      makeCheck({ category: 'conversion', weight: 8, passed: true }),
+      makeCheck({ category: 'conversion', weight: 6, passed: true }),
+      makeCheck({ id: 'conv.stickyCta', category: 'conversion', weight: 0, passed: true, status: 'not_verified' }),
+    ]);
+    const conversion = categories.find((c) => c.id === 'conversion')!;
+    expect(conversion.score).toBe(100);
+    expect(buildOverallScore(categories)).toBe(100);
+  });
 });
