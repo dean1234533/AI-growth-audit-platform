@@ -17,6 +17,7 @@ import {
 } from '../../lib/pushSubscribe';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
+import { Toggle } from '../ui/Toggle';
 import BillingSection from './BillingSection';
 import WebsiteSettingsCard from './WebsiteSettingsCard';
 import PwaStatusCard from './PwaStatusCard';
@@ -293,17 +294,13 @@ export default function Settings() {
         </div>
 
         <div className="mt-5 rounded-2xl border border-ink/10 px-4 py-3.5 dark:border-white/10">
-          <button type="button" onClick={toggleWorkingHours} className="flex w-full items-center justify-between gap-4 text-left">
+          <div className="flex w-full items-center justify-between gap-4 text-left">
             <div>
               <div className="text-sm font-semibold text-ink dark:text-white">Working hours</div>
               <div className="text-xs text-slate">Only send push alerts during these hours (UTC) — everything else waits in your Notification Centre.</div>
             </div>
-            <span className={`relative h-7 w-12 shrink-0 rounded-full border transition-colors ${workingHoursEnabled ? 'border-brand-500 bg-brand-500' : 'border-ink/20 bg-ink/10 dark:border-white/25 dark:bg-white/10'}`}>
-              <span
-                className={`absolute top-0.5 size-6 rounded-full bg-white transition-transform ${workingHoursEnabled ? 'translate-x-5' : 'translate-x-0.5'}`}
-              />
-            </span>
-          </button>
+            <Toggle checked={workingHoursEnabled} onChange={toggleWorkingHours} label="Toggle working hours" />
+          </div>
           {workingHoursEnabled && settings.workingHours && (
             <div className="mt-3 flex items-center gap-3 text-sm">
               <select
@@ -346,15 +343,7 @@ export default function Settings() {
             <div className="text-sm font-semibold text-ink dark:text-white">Push notifications</div>
             <div className="text-xs text-slate">Critical alerts, health changes, weekly reports and more.</div>
           </div>
-          <button type="button" onClick={togglePush} aria-label="Toggle push notifications" className="shrink-0">
-            <span
-              className={`relative block h-7 w-12 rounded-full border transition-colors ${settings.notificationPref === 'push' ? 'border-brand-500 bg-brand-500' : 'border-ink/20 bg-ink/10 dark:border-white/25 dark:bg-white/10'}`}
-            >
-              <span
-                className={`absolute top-0.5 size-6 rounded-full bg-white transition-transform ${settings.notificationPref === 'push' ? 'translate-x-5' : 'translate-x-0.5'}`}
-              />
-            </span>
-          </button>
+          <Toggle checked={settings.notificationPref === 'push'} onChange={togglePush} label="Toggle push notifications" />
         </div>
 
         {isPushSupported() ? (
