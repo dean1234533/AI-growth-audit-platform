@@ -316,7 +316,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
           </div>
 
           {/* ── AI Coach: what should I do next? ── */}
-          <div className="scroll-mt-24">
+          <div id="coach" className="scroll-mt-24">
             <AiCoach websiteId={website.id} siteName={website.name} audit={latest} previous={previous} />
           </div>
 
@@ -367,7 +367,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
           </div>
 
           {/* ── Reports: what happened previously? ── */}
-          <div className="scroll-mt-24 space-y-6">
+          <div id="reports" className="scroll-mt-24 space-y-6">
             <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Reports</h2>
             <ReportsSection
               siteName={website.name}
