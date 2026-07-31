@@ -50,8 +50,17 @@ export function ScoreCircle({ score, size = 220, strokeWidth, showLabel = true }
       </svg>
       {showLabel && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display text-5xl font-extrabold tracking-tight text-ink dark:text-white">{displayScore}</span>
-          <span className="text-sm font-medium text-slate">/ 100</span>
+          <span
+            className="font-display font-extrabold tracking-tight text-ink dark:text-white"
+            style={{ fontSize: size * 0.21, lineHeight: 1 }}
+          >
+            {displayScore}
+          </span>
+          {size >= 90 && (
+            <span className="font-medium text-slate" style={{ fontSize: size * 0.062 }}>
+              / 100
+            </span>
+          )}
         </div>
       )}
     </div>
