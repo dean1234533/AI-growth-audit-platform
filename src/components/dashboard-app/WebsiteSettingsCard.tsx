@@ -151,12 +151,12 @@ export default function WebsiteSettingsCard({ uid }: WebsiteSettingsCardProps) {
             {saved ? 'Saved' : 'Save Details'}
           </Button>
 
-          <div className="border-t border-ink/[0.06] pt-5 dark:border-white/10">
-            <div className="mb-3 flex items-center justify-between">
+          <div className="border-t border-ink/[0.06] pt-5 pb-1 dark:border-white/10">
+            <div className="mb-4 flex items-center justify-between gap-4">
               <label className="text-xs font-semibold text-slate">Monitoring status</label>
-              <button type="button" onClick={handleToggleStatus}>
-                <span className={`relative block h-6 w-11 rounded-full transition-colors ${selected.status === 'active' ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}>
-                  <span className={`absolute top-0.5 size-5 rounded-full bg-white transition-transform ${selected.status === 'active' ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              <button type="button" onClick={handleToggleStatus} className="shrink-0">
+                <span className={`relative block h-7 w-12 rounded-full transition-colors ${selected.status === 'active' ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}>
+                  <span className={`absolute top-0.5 size-6 rounded-full bg-white transition-transform ${selected.status === 'active' ? 'translate-x-5' : 'translate-x-0.5'}`} />
                 </span>
               </button>
             </div>
