@@ -298,7 +298,7 @@ export default function Settings() {
               <div className="text-sm font-semibold text-ink dark:text-white">Working hours</div>
               <div className="text-xs text-slate">Only send push alerts during these hours (UTC) — everything else waits in your Notification Centre.</div>
             </div>
-            <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${workingHoursEnabled ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}>
+            <span className={`relative h-7 w-12 shrink-0 rounded-full border transition-colors ${workingHoursEnabled ? 'border-brand-500 bg-brand-500' : 'border-ink/20 bg-ink/10 dark:border-white/25 dark:bg-white/10'}`}>
               <span
                 className={`absolute top-0.5 size-6 rounded-full bg-white transition-transform ${workingHoursEnabled ? 'translate-x-5' : 'translate-x-0.5'}`}
               />
@@ -348,7 +348,7 @@ export default function Settings() {
           </div>
           <button type="button" onClick={togglePush} aria-label="Toggle push notifications" className="shrink-0">
             <span
-              className={`relative block h-7 w-12 rounded-full transition-colors ${settings.notificationPref === 'push' ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}
+              className={`relative block h-7 w-12 rounded-full border transition-colors ${settings.notificationPref === 'push' ? 'border-brand-500 bg-brand-500' : 'border-ink/20 bg-ink/10 dark:border-white/25 dark:bg-white/10'}`}
             >
               <span
                 className={`absolute top-0.5 size-6 rounded-full bg-white transition-transform ${settings.notificationPref === 'push' ? 'translate-x-5' : 'translate-x-0.5'}`}

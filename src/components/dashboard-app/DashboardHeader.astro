@@ -21,13 +21,13 @@ const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white
 ---
 
 <header class="sticky top-0 z-40 border-b border-ink/[0.06] bg-canvas/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/80">
-  <div class="mx-auto flex max-w-6xl items-center gap-6 overflow-x-auto px-6 py-4">
+  <div class="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
     <a href="/dashboard" class="inline-flex shrink-0 items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
       <img src="/logo.jpg" alt="" width="32" height="32" class="size-8 rounded-xl" />
       Growth Audit
     </a>
 
-    <nav class="flex items-center gap-1 text-sm font-semibold">
+    <nav class="hidden flex-1 items-center gap-1 overflow-x-auto text-sm font-semibold sm:flex">
       {
         NAV.map((item) => (
           <a
@@ -43,10 +43,44 @@ const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white
       }
     </nav>
 
-    <div class="ml-auto shrink-0">
+    <div class="ml-auto flex shrink-0 items-center gap-1">
       <NotificationBell client:only="react" />
+      <button
+        type="button"
+        id="mobile-nav-toggle"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-nav-panel"
+        class="inline-flex items-center justify-center rounded-xl p-2 text-slate transition-colors hover:bg-ink/5 sm:hidden dark:hover:bg-white/5"
+      >
+        <svg id="mobile-nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" x2="20" y1="6" y2="6" />
+          <line x1="4" x2="20" y1="12" y2="12" />
+          <line x1="4" x2="20" y1="18" y2="18" />
+        </svg>
+        <svg id="mobile-nav-icon-close" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden">
+          <line x1="18" x2="6" y1="6" y2="18" />
+          <line x1="6" x2="18" y1="6" y2="18" />
+        </svg>
+      </button>
     </div>
   </div>
+
+  <nav id="mobile-nav-panel" class="hidden flex-col gap-1 border-t border-ink/[0.06] px-6 py-3 sm:hidden dark:border-white/10">
+    {
+      NAV.map((item) => (
+        <a
+          href={item.href}
+          data-nav-key={item.key}
+          class={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+            active === item.key ? ACTIVE_CLASSES.join(' ') : INACTIVE_CLASSES.join(' ')
+          }`}
+        >
+          {item.label}
+        </a>
+      ))
+    }
+  </nav>
 </header>
 
 <script define:vars={{ ACTIVE_CLASSES, INACTIVE_CLASSES }}>
@@ -64,4 +98,22 @@ const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white
   }
   syncActiveNavFromHash();
   window.addEventListener('hashchange', syncActiveNavFromHash);
+
+  const toggle = document.getElementById('mobile-nav-toggle');
+  const panel = document.getElementById('mobile-nav-panel');
+  const iconOpen = document.getElementById('mobile-nav-icon-open');
+  const iconClose = document.getElementById('mobile-nav-icon-close');
+
+  function setMenuOpen(open) {
+    if (!toggle || !panel || !iconOpen || !iconClose) return;
+    panel.classList.toggle('hidden', !open);
+    panel.classList.toggle('flex', open);
+    iconOpen.classList.toggle('hidden', open);
+    iconClose.classList.toggle('hidden', !open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+
+  toggle?.addEventListener('click', () => setMenuOpen(panel?.classList.contains('hidden')));
+  panel?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setMenuOpen(false)));
 </script>

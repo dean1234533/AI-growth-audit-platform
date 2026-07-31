@@ -155,7 +155,7 @@ export default function WebsiteSettingsCard({ uid }: WebsiteSettingsCardProps) {
             <div className="mb-4 flex items-center justify-between gap-4">
               <label className="text-xs font-semibold text-slate">Monitoring status</label>
               <button type="button" onClick={handleToggleStatus} className="shrink-0">
-                <span className={`relative block h-7 w-12 rounded-full transition-colors ${selected.status === 'active' ? 'bg-brand-500' : 'bg-ink/15 dark:bg-white/15'}`}>
+                <span className={`relative block h-7 w-12 rounded-full border transition-colors ${selected.status === 'active' ? 'border-brand-500 bg-brand-500' : 'border-ink/20 bg-ink/10 dark:border-white/25 dark:bg-white/10'}`}>
                   <span className={`absolute top-0.5 size-6 rounded-full bg-white transition-transform ${selected.status === 'active' ? 'translate-x-5' : 'translate-x-0.5'}`} />
                 </span>
               </button>
