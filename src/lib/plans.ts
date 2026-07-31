@@ -14,7 +14,7 @@ export const PLANS: PlanDefinition[] = [
     name: 'Free',
     price: '£0',
     websiteLimit: 1,
-    features: ['1 monitored website', 'Weekly scans', 'AI SEO Coach', 'Push notifications'],
+    features: ['1 monitored website', 'Weekly scans', 'AI Coach', 'Push notifications'],
   },
   {
     id: 'pro',
@@ -25,7 +25,7 @@ export const PLANS: PlanDefinition[] = [
       'Up to 10 monitored websites',
       'Daily scans',
       'Competitor monitoring',
-      'AI SEO Coach',
+      'AI Coach',
       'Push notifications + weekly AI reports',
     ],
   },
