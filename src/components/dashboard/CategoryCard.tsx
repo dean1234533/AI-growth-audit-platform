@@ -16,7 +16,24 @@ import {
 import { GlassCard } from '../ui/GlassCard';
 import { SeverityBadge } from '../ui/SeverityBadge';
 import { scoreBand } from '../../lib/scoreBand';
-import type { CategoryScore, Recommendation } from '../../lib/types';
+import type { CategoryScore, MeasurementType, Recommendation } from '../../lib/types';
+
+/**
+ * Only 'measured' (real browser data) and 'inferred'/'not_available' (lower confidence, or
+ * genuinely unavailable) get a badge — 'detected' is the common baseline (a real fact from the
+ * actual HTTP response/HTML) and needs no extra decoration. Never lets an inference read as a
+ * measured fact.
+ */
+function MeasurementBadge({ type }: { type: MeasurementType }) {
+  if (type === 'detected') return null;
+  const config: Record<Exclude<MeasurementType, 'detected'>, { label: string; className: string }> = {
+    measured: { label: 'Measured', className: 'bg-brand-500/10 text-brand-600 dark:text-brand-300' },
+    inferred: { label: 'Estimate', className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+    not_available: { label: 'Not measured', className: 'bg-slate/10 text-slate' },
+  };
+  const { label, className } = config[type];
+  return <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${className}`}>{label}</span>;
+}
 
 const CATEGORY_ICONS: Record<CategoryScore['id'], LucideIcon> = {
   seo: Search,
@@ -102,7 +119,10 @@ export function CategoryCard({ category, recommendations }: CategoryCardProps) {
                     <XCircle className="mt-0.5 size-4 shrink-0 text-rose-500" />
                   )}
                   <div>
-                    <div className="font-medium text-ink dark:text-slate-100">{check.label}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-ink dark:text-slate-100">{check.label}</span>
+                      <MeasurementBadge type={check.measurementType} />
+                    </div>
                     <div className="text-xs text-slate">{check.detail}</div>
                   </div>
                 </div>

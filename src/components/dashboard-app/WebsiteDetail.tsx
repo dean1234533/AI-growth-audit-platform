@@ -36,6 +36,7 @@ import CompetitorsSection from './CompetitorsSection';
 import ReportsSection from './ReportsSection';
 import ReportHistoryList from './ReportHistoryList';
 import ScanHistory from './ScanHistory';
+import PageResultsList from './PageResultsList';
 import { Button } from '../ui/Button';
 import { GlassCard } from '../ui/GlassCard';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
@@ -297,6 +298,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
           {/* ── Audit: what problems exist? ── */}
           <div id="audit" className="scroll-mt-24 space-y-6">
             <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Category Breakdown</h2>
+            <PageResultsList audit={latest} />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {latest.categories.map((category) => (
                 <CategoryCard
