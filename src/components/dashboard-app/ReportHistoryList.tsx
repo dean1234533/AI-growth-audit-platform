@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Download } from 'lucide-react';
+import { ChevronDown, Download, Eye } from 'lucide-react';
 import { generateAuditPdf } from '../../lib/pdf';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
 
@@ -36,11 +36,7 @@ export default function ReportHistoryList({ scans, frequency, websiteName, websi
 
         return (
           <div key={scan.id} className="rounded-2xl border border-ink/10 dark:border-white/10">
-            <button
-              type="button"
-              onClick={() => setOpenId(open ? null : scan.id)}
-              className="flex w-full items-center justify-between gap-3 p-4 text-left"
-            >
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-ink dark:text-white">{title}</div>
                 <div className="text-xs text-slate">
@@ -48,20 +44,23 @@ export default function ReportHistoryList({ scans, frequency, websiteName, websi
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(scan);
-                  }}
-                  role="button"
-                  tabIndex={0}
+                <button
+                  type="button"
+                  onClick={() => setOpenId(open ? null : scan.id)}
                   className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate transition-colors hover:bg-black/5 hover:text-ink dark:hover:bg-white/10 dark:hover:text-white"
                 >
-                  <Download className="size-3.5" /> PDF
-                </span>
-                <ChevronDown className={`size-4 text-slate transition-transform ${open ? 'rotate-180' : ''}`} />
+                  <Eye className="size-3.5" /> View Report
+                  <ChevronDown className={`size-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownload(scan)}
+                  className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate transition-colors hover:bg-black/5 hover:text-ink dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <Download className="size-3.5" /> Download PDF
+                </button>
               </div>
-            </button>
+            </div>
 
             {open && (
               <div className="border-t border-ink/[0.06] px-4 py-4 dark:border-white/10">
