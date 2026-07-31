@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { updateProfile, deleteUser, signOut } from 'firebase/auth';
+import { updateProfile, deleteUser, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
-import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor, CreditCard } from 'lucide-react';
+import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor, CreditCard, Globe, KeyRound } from 'lucide-react';
 import { auth, db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { getUserSettings, saveUserSettings, type UserSettings, type WorkingHours, type NotificationPref } from '../../lib/userSettings';
@@ -18,6 +18,8 @@ import {
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import BillingSection from './BillingSection';
+import WebsiteSettingsCard from './WebsiteSettingsCard';
+import PwaStatusCard from './PwaStatusCard';
 import type { ScanFrequency } from '../../lib/types';
 
 const FREQUENCY_OPTIONS: { id: ScanFrequency; label: string }[] = [
@@ -48,6 +50,8 @@ export default function Settings() {
   const [pushError, setPushError] = useState<string | null>(null);
   const [theme, setThemeState] = useState<ThemePreference>('system');
   const [workingHoursEnabled, setWorkingHoursEnabled] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [passwordResetSent, setPasswordResetSent] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -133,6 +137,20 @@ export default function Settings() {
     }
   }
 
+  async function handlePasswordReset() {
+    if (!user?.email) return;
+    setResettingPassword(true);
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      setPasswordResetSent(true);
+      setTimeout(() => setPasswordResetSent(false), 4000);
+    } catch {
+      setError('Could not send a password reset email. Please try again.');
+    } finally {
+      setResettingPassword(false);
+    }
+  }
+
   async function togglePush() {
     if (!user || !settings) return;
     const next: NotificationPref = settings.notificationPref === 'push' ? 'none' : 'push';
@@ -194,9 +212,34 @@ export default function Settings() {
             </div>
           </div>
           {error && <p className="text-sm font-medium text-rose-500">{error}</p>}
-          <Button onClick={handleSave} loading={saving} success={saved} icon={<Save className="size-4" />}>
-            {saved ? 'Saved' : 'Save Changes'}
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={handleSave} loading={saving} success={saved} icon={<Save className="size-4" />}>
+              {saved ? 'Saved' : 'Save Changes'}
+            </Button>
+            {user.providerData.some((p) => p.providerId === 'password') && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handlePasswordReset}
+                loading={resettingPassword}
+                success={passwordResetSent}
+                icon={<KeyRound className="size-4" />}
+              >
+                {passwordResetSent ? 'Email sent' : 'Reset Password'}
+              </Button>
+            )}
+          </div>
+        </div>
+      </GlassCard>
+
+      <GlassCard className="p-8">
+        <div className="mb-5 inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <Globe className="size-5" />
+        </div>
+        <h2 className="font-display text-lg font-bold text-ink dark:text-white">Website &amp; Monitoring</h2>
+        <p className="mt-1 text-xs text-slate">Business details, industry and location help AI features (like competitor discovery) work better.</p>
+        <div className="mt-5">
+          <WebsiteSettingsCard uid={user.uid} />
         </div>
       </GlassCard>
 
@@ -360,6 +403,16 @@ export default function Settings() {
         ) : (
           <p className="mt-5 text-xs text-slate">Push notifications aren't supported in this browser.</p>
         )}
+      </GlassCard>
+
+      <GlassCard className="p-8">
+        <div className="mb-5 inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <Smartphone className="size-5" />
+        </div>
+        <h2 className="font-display text-lg font-bold text-ink dark:text-white">App Installation</h2>
+        <div className="mt-5">
+          <PwaStatusCard />
+        </div>
       </GlassCard>
 
       <GlassCard className="p-8">

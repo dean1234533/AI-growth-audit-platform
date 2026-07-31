@@ -74,14 +74,15 @@ export function InstallBanner() {
         >
           <img src="/logo.jpg" alt="" width="40" height="40" className="size-10 shrink-0 rounded-xl" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-ink dark:text-white">Install Growth Audit</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-500">Get your website updates wherever you are</p>
             {ios ? (
               <p className="mt-1 text-xs leading-relaxed text-slate">
-                Tap <Share className="inline size-3.5 -translate-y-0.5" /> Share, then "Add to Home Screen" for one-tap access and alerts.
+                Install Growth Audit to receive instant notifications when your website scan finds something important. Tap{' '}
+                <Share className="inline size-3.5 -translate-y-0.5" /> Share, then "Add to Home Screen".
               </p>
             ) : (
               <p className="mt-1 text-xs leading-relaxed text-slate">
-                Add it to your home screen for one-tap access and instant health alerts.
+                Install Growth Audit to receive instant notifications when your website scan finds something important.
               </p>
             )}
             {!ios && (
