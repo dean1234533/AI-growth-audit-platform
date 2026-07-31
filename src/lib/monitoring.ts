@@ -1,7 +1,16 @@
 import { addDoc, collection, doc, getDoc, getDocs, limit, query, updateDoc, serverTimestamp, Timestamp, where } from 'firebase/firestore';
-import { db } from './firebaseClient';
+import { auth, db } from './firebaseClient';
 import { runAudit } from './api';
 import type { AuditResult, ScanFrequency } from './types';
+
+/** Fire-and-forget admin alert for events that only happen client-side. */
+function notifyAdmin(event: 'new_website', fields: Record<string, string>): void {
+  fetch('/api/admin-notify', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ event, email: auth.currentUser?.email ?? '', ...fields }),
+  }).catch(() => {});
+}
 
 interface NotifyScanPayload {
   uid: string;
@@ -116,6 +125,8 @@ export async function addWebsiteWithFirstScan(
     audit,
     previous: null,
   });
+
+  notifyAdmin('new_website', { websiteUrl: audit.url, websiteName: deriveName(audit.url), frequency });
 
   return { websiteId: websiteRef.id, audit };
 }

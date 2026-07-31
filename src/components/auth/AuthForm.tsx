@@ -14,6 +14,14 @@ import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import { markPwaInstallEligible } from '../pwa/InstallBanner';
 
+function notifyAdminNewUser(email: string): void {
+  fetch('/api/admin-notify', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ event: 'new_user', email }),
+  }).catch(() => {});
+}
+
 function redirectToDashboard() {
   const params = new URLSearchParams(window.location.search);
   const url = params.get('url');
@@ -49,7 +57,10 @@ export default function AuthForm() {
           ? await createUserWithEmailAndPassword(auth, email, password)
           : await signInWithEmailAndPassword(auth, email, password);
       await ensureUserDoc(cred.user.uid, cred.user.displayName ?? cred.user.email ?? '');
-      if (mode === 'signup') markPwaInstallEligible();
+      if (mode === 'signup') {
+        markPwaInstallEligible();
+        notifyAdminNewUser(cred.user.email ?? email);
+      }
       redirectToDashboard();
     } catch (err) {
       setError(friendlyAuthError(err));
@@ -63,7 +74,10 @@ export default function AuthForm() {
     try {
       const cred = await signInWithPopup(auth, googleProvider);
       await ensureUserDoc(cred.user.uid, cred.user.displayName ?? cred.user.email ?? '');
-      if (getAdditionalUserInfo(cred)?.isNewUser) markPwaInstallEligible();
+      if (getAdditionalUserInfo(cred)?.isNewUser) {
+        markPwaInstallEligible();
+        notifyAdminNewUser(cred.user.email ?? '');
+      }
       redirectToDashboard();
     } catch (err) {
       setError(friendlyAuthError(err));

@@ -1,6 +1,7 @@
 import { addFirestoreDocument, getFirestoreDocument, listFirestoreDocuments, deleteFirestoreDocument } from './firestore';
 import { sendPushNotification, type PushSubscriptionJSON } from './push';
 import { buildScanNotifications, buildCompetitorActivityNotification, type ScanSnapshot, type DraftNotification } from './notificationRules';
+import { notifyAdmin, type AdminAlertEnv } from './adminAlert';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
 
 interface ServiceAccount {
@@ -9,7 +10,7 @@ interface ServiceAccount {
   project_id: string;
 }
 
-interface NotifyEnv {
+interface NotifyEnv extends AdminAlertEnv {
   VAPID_PRIVATE_KEY_JWK?: string;
   PUBLIC_VAPID_KEY?: string;
 }
@@ -47,6 +48,10 @@ async function deliverNotifications(
       createdAt: new Date(),
     });
 
+    if (draft.type === 'security_warning') {
+      await notifyAdmin(env, 'Security issue detected', [`${draft.websiteName}: ${draft.body}`]);
+    }
+
     if (!shouldPush || !env.VAPID_PRIVATE_KEY_JWK || !env.PUBLIC_VAPID_KEY) continue;
 
     for (const sub of subscriptions) {
@@ -63,6 +68,7 @@ async function deliverNotifications(
         }
       } catch (err) {
         console.error(`notifyScan: push send failed for ${uid}:`, err);
+        await notifyAdmin(env, 'Push notification failure', [`Push send failed for user ${uid} (${draft.type}): ${err instanceof Error ? err.message : String(err)}`]);
       }
     }
   }

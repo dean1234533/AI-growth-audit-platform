@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Sparkles, Clock, ListChecks } from 'lucide-react';
+import { Sparkles, Clock, ListChecks, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { ScoreCircle } from './ScoreCircle';
 import { scoreBand } from '../../lib/scoreBand';
@@ -10,9 +10,11 @@ interface WebsiteHealthHeroProps {
   categories: CategoryScore[];
   recommendationCount: number;
   scannedAt: string;
+  /** Score change vs the previous scan — omit when there's no previous scan yet (first scan). */
+  scoreDelta?: number | null;
 }
 
-export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt }: WebsiteHealthHeroProps) {
+export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta }: WebsiteHealthHeroProps) {
   const { label, color } = scoreBand(score);
   const sorted = [...categories].filter((c) => c.checks.length > 0).sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
@@ -43,6 +45,17 @@ export function WebsiteHealthHero({ score, categories, recommendationCount, scan
             >
               {label}
             </motion.span>
+
+            {scoreDelta !== undefined && scoreDelta !== null && (
+              <span
+                className={`mt-2 inline-flex items-center gap-1 text-sm font-bold ${
+                  scoreDelta > 0 ? 'text-mint-600' : scoreDelta < 0 ? 'text-rose-500' : 'text-slate'
+                }`}
+              >
+                {scoreDelta > 0 ? <TrendingUp className="size-4" /> : scoreDelta < 0 ? <TrendingDown className="size-4" /> : <Minus className="size-4" />}
+                {scoreDelta === 0 ? 'No change since last scan' : `${scoreDelta > 0 ? '+' : ''}${scoreDelta} since last scan`}
+              </span>
+            )}
           </div>
 
           <div className="w-full max-w-sm space-y-5 text-center sm:text-left">

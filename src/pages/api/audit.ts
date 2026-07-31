@@ -12,10 +12,11 @@ import { runConversionChecks } from '../../server/lib/checks/conversion';
 import { runLocalSeoChecks } from '../../server/lib/checks/localSeo';
 import { runPerformanceChecks } from '../../server/lib/checks/performance';
 import { enrichRecommendationsWithAi } from '../../server/lib/aiNarrative';
+import { notifyAdmin, type AdminAlertEnv } from '../../server/lib/adminAlert';
 
 export const prerender = false;
 
-interface Env {
+interface Env extends AdminAlertEnv {
   PAGESPEED_API_KEY?: string;
   AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
 }
@@ -96,6 +97,8 @@ export const POST: APIRoute = async ({ request }) => {
       warnings,
     },
   };
+
+  await notifyAdmin(cfEnv, 'Audit completed', [`${result.url} scored ${overallScore}/100.`]);
 
   return new Response(JSON.stringify(result), {
     headers: { 'content-type': 'application/json' },

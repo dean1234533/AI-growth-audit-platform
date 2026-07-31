@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Sparkles, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Sparkles, FileText } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { buildWeeklyDigest } from '../../lib/reports';
 import type { AuditResult } from '../../lib/types';
@@ -12,6 +12,7 @@ interface ReportsSectionProps {
   previous: AuditResult | null;
 }
 
+/** The latest report's AI-written headline — "what happened", not "what's changing" (that's Monitoring's job). */
 export default function ReportsSection({ siteName, siteUrl, userName, current, previous }: ReportsSectionProps) {
   const digest = buildWeeklyDigest(siteName, siteUrl, current, previous);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
@@ -46,8 +47,8 @@ export default function ReportsSection({ siteName, siteUrl, userName, current, p
           <FileText className="size-5" />
         </span>
         <div>
-          <h3 className="font-display text-lg font-bold text-ink dark:text-white">Weekly Report</h3>
-          <p className="text-xs text-slate">What changed since the last scan</p>
+          <h3 className="font-display text-lg font-bold text-ink dark:text-white">Latest Report</h3>
+          <p className="text-xs text-slate">{new Date(current.scannedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>
       </div>
 
@@ -60,7 +61,7 @@ export default function ReportsSection({ siteName, siteUrl, userName, current, p
         )}
       </div>
 
-      <div className="mb-5 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <span className="font-display text-3xl font-extrabold text-ink dark:text-white">{digest.currentScore}</span>
         <span
           className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
@@ -76,36 +77,6 @@ export default function ReportsSection({ siteName, siteUrl, userName, current, p
           {digest.scoreDelta === null ? 'First scan' : digest.scoreDelta === 0 ? 'No change' : `${digest.scoreDelta > 0 ? '+' : ''}${digest.scoreDelta} this week`}
         </span>
       </div>
-
-      {digest.resolvedIssues.length > 0 && (
-        <div className="mb-4">
-          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate">Resolved</div>
-          <div className="space-y-1.5">
-            {digest.resolvedIssues.map((r) => (
-              <div key={r.id} className="flex items-center gap-2 text-sm text-ink dark:text-slate-100">
-                <CheckCircle2 className="size-4 shrink-0 text-mint-500" /> {r.title}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {digest.newIssues.length > 0 && (
-        <div className="mb-4">
-          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate">New this scan</div>
-          <div className="space-y-1.5">
-            {digest.newIssues.slice(0, 5).map((r) => (
-              <div key={r.id} className="flex items-center gap-2 text-sm text-ink dark:text-slate-100">
-                <AlertTriangle className="size-4 shrink-0 text-amber-500" /> {r.title}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {digest.resolvedIssues.length === 0 && digest.newIssues.length === 0 && previous && (
-        <p className="text-sm text-slate">No new or resolved issues since the last scan.</p>
-      )}
     </GlassCard>
   );
 }

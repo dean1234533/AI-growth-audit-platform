@@ -4,10 +4,11 @@ import type { AuditResult, ScanFrequency } from '../../lib/types';
 import type { ScanSnapshot } from '../../server/lib/notificationRules';
 import { notifyWebsiteScan } from '../../server/lib/notifyScan';
 import { parseServiceAccount } from '../../server/lib/firestore';
+import type { AdminAlertEnv } from '../../server/lib/adminAlert';
 
 export const prerender = false;
 
-interface Env {
+interface Env extends AdminAlertEnv {
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
   VAPID_PRIVATE_KEY_JWK?: string;
   PUBLIC_VAPID_KEY?: string;

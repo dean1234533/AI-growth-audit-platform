@@ -12,8 +12,9 @@ import { runPerformanceChecks } from '../src/server/lib/checks/performance';
 import { enrichRecommendationsWithAi } from '../src/server/lib/aiNarrative';
 import { addFirestoreDocument, updateFirestoreDocument, getFirestoreDocument, runQuery, parseServiceAccount } from '../src/server/lib/firestore';
 import { notifyWebsiteScan, notifyCompetitorScan } from '../src/server/lib/notifyScan';
+import { notifyAdmin, type AdminAlertEnv } from '../src/server/lib/adminAlert';
 
-interface CronEnv {
+interface CronEnv extends AdminAlertEnv {
   PAGESPEED_API_KEY?: string;
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
   VAPID_PRIVATE_KEY_JWK?: string;
@@ -87,6 +88,7 @@ export async function runDueScans(env: CronEnv): Promise<void> {
   const serviceAccount = parseServiceAccount(env.FIREBASE_SERVICE_ACCOUNT_JSON);
   if (!serviceAccount) {
     console.error('runDueScans: FIREBASE_SERVICE_ACCOUNT_JSON not configured, skipping.');
+    await notifyAdmin(env, 'Firebase failure — cron skipped', ['FIREBASE_SERVICE_ACCOUNT_JSON is not configured; the scheduled scan run was skipped entirely.']);
     return;
   }
 
@@ -126,8 +128,11 @@ export async function runDueScans(env: CronEnv): Promise<void> {
         audit,
         previous,
       }).catch((err) => console.error(`runDueScans: notify failed for website ${website.id}:`, err));
+
+      await notifyAdmin(env, 'Completed monitoring scan', [`${website.name} (${website.url}) scanned — score ${audit.overallScore}/100.`]);
     } catch (err) {
       console.error(`runDueScans: scan failed for website ${website.id} (${website.url}):`, err);
+      await notifyAdmin(env, 'Failed scan', [`Scan failed for ${website.name} (${website.url}): ${err instanceof Error ? err.message : String(err)}`]);
     }
   }
 

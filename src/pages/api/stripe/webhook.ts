@@ -2,10 +2,11 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { verifyStripeSignature } from '../../../server/lib/stripe';
 import { updateFirestoreDocument, runQuery, parseServiceAccount } from '../../../server/lib/firestore';
+import { notifyAdmin, type AdminAlertEnv } from '../../../server/lib/adminAlert';
 
 export const prerender = false;
 
-interface Env {
+interface Env extends AdminAlertEnv {
   STRIPE_WEBHOOK_SECRET?: string;
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
 }
@@ -16,8 +17,11 @@ interface StripeEvent {
     object: {
       client_reference_id?: string | null;
       customer?: string | null;
+      customer_email?: string | null;
       subscription?: string | null;
       status?: string;
+      amount_total?: number | null;
+      currency?: string | null;
     };
   };
 }
@@ -61,6 +65,12 @@ export const POST: APIRoute = async ({ request }) => {
           stripeCustomerId: customerId,
           stripeSubscriptionId: subscriptionId ?? null,
         });
+        const amount = event.data.object.amount_total;
+        const currency = (event.data.object.currency ?? 'gbp').toUpperCase();
+        const amountText = amount != null ? `${(amount / 100).toFixed(2)} ${currency}` : 'unknown amount';
+        await notifyAdmin(cfEnv, 'Payment received', [
+          `${event.data.object.customer_email ?? uid} upgraded to Pro — ${amountText}.`,
+        ]);
       }
     } else if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
       const customerId = event.data.object.customer;
@@ -71,10 +81,16 @@ export const POST: APIRoute = async ({ request }) => {
         for (const match of matches) {
           await updateFirestoreDocument(serviceAccount, 'users', match.id as string, { plan });
         }
+        if (plan === 'free' && matches.length > 0) {
+          await notifyAdmin(cfEnv, 'Subscription cancelled', [`Customer ${customerId} cancelled their Pro subscription.`]);
+        }
       }
     }
   } catch (err) {
     console.error('stripe/webhook processing failed:', err);
+    await notifyAdmin(cfEnv, 'Worker failure — Stripe webhook', [
+      `Processing ${event.type} failed: ${err instanceof Error ? err.message : String(err)}`,
+    ]);
     return new Response('Processing error', { status: 500 });
   }
 

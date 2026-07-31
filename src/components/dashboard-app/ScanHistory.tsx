@@ -56,8 +56,8 @@ export default function ScanHistory({ siteName, siteUrl, scans }: ScanHistoryPro
           <History className="size-5" />
         </span>
         <div>
-          <h3 className="font-display text-lg font-bold text-ink dark:text-white">Website Timeline</h3>
-          <p className="text-xs text-slate">Compare any two scans to see exactly what changed</p>
+          <h3 className="font-display text-lg font-bold text-ink dark:text-white">Compare Reports</h3>
+          <p className="text-xs text-slate">Compare any two reports to see exactly what changed</p>
         </div>
       </div>
 

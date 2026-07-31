@@ -12,22 +12,29 @@ import {
   CalendarClock,
   Clock,
   CalendarCheck,
-  Bell,
+  AlertTriangle,
+  CheckCircle2,
+  ListChecks,
   Lightbulb,
+  ArrowRight,
 } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { runManualScan } from '../../lib/monitoring';
 import { generateAuditPdf } from '../../lib/pdf';
 import { CONSULTATION_URL } from '../../lib/seo/site';
-import { subscribeToNotifications } from '../../lib/notifications';
+import { buildWeeklyDigest } from '../../lib/reports';
+import { buildTimeline } from '../../lib/timeline';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
 import { ScoreTrendChart } from './ScoreTrendChart';
+import ScoreHistoryList from './ScoreHistoryList';
+import ActivityFeed from './ActivityFeed';
 import AiCoach from './AiCoach';
 import CompetitorsSection from './CompetitorsSection';
 import ReportsSection from './ReportsSection';
+import ReportHistoryList from './ReportHistoryList';
 import ScanHistory from './ScanHistory';
 import { Button } from '../ui/Button';
 import { GlassCard } from '../ui/GlassCard';
@@ -57,7 +64,6 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const user = useAuthUser();
   const [website, setWebsite] = useState<WebsiteDoc | null | undefined>(undefined);
   const [scans, setScans] = useState<(AuditResult & { id: string })[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,14 +86,9 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
       setScans(snap.docs.map((d) => ({ id: d.id, ...(d.data() as AuditResult) })));
     });
 
-    const unsubNotifications = subscribeToNotifications(user.uid, (notifications) => {
-      setUnreadCount(notifications.filter((n) => !n.read && n.websiteId === websiteId).length);
-    });
-
     return () => {
       unsubWebsite();
       unsubScans();
-      unsubNotifications();
     };
   }, [user, websiteId]);
 
@@ -154,6 +155,8 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const latest = scans[scans.length - 1];
   const previous = scans.length > 1 ? scans[scans.length - 2] : null;
   const topRecommendation = latest?.recommendations[0] ?? null;
+  const digest = latest ? buildWeeklyDigest(website.name, website.url, latest, previous) : null;
+  const timeline = buildTimeline(scans);
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 px-6 py-16">
@@ -185,15 +188,16 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
         <div className="glass rounded-[24px] p-16 text-center text-sm font-medium text-slate">No scans yet.</div>
       ) : (
         <>
-          {/* ── Dashboard: what's happening today? ── */}
+          {/* ── Dashboard: what needs my attention? ── */}
           <WebsiteHealthHero
             score={latest.overallScore}
             categories={latest.categories}
             recommendationCount={latest.recommendations.length}
             scannedAt={latest.scannedAt}
+            scoreDelta={digest?.scoreDelta ?? null}
           />
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <GlassCard static className="p-5">
               <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
                 <CalendarCheck className="size-3.5" /> Monitoring
@@ -219,32 +223,56 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
               </div>
             </GlassCard>
 
-            <button type="button" onClick={() => (window.location.href = '/dashboard')} className="text-left">
-              <GlassCard className="h-full p-5">
-                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
-                  <Bell className="size-3.5" /> Notifications
+            <GlassCard static className="p-5">
+              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
+                <ListChecks className="size-3.5" /> Issues
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <div className="flex items-center justify-center gap-1 font-display text-xl font-extrabold text-amber-600">
+                    <AlertTriangle className="size-3.5" /> {digest?.newIssues.length ?? 0}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-slate">New</div>
                 </div>
-                <div className="font-display text-2xl font-extrabold text-ink dark:text-white">{unreadCount}</div>
-                <div className="text-xs text-slate">{unreadCount === 0 ? 'All caught up' : 'Unread for this site'}</div>
-              </GlassCard>
-            </button>
-
-            <button type="button" onClick={() => scrollTo('audit')} className="text-left">
-              <GlassCard className="h-full p-5">
-                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
-                  <Lightbulb className="size-3.5" /> Top recommendation
+                <div>
+                  <div className="flex items-center justify-center gap-1 font-display text-xl font-extrabold text-mint-600">
+                    <CheckCircle2 className="size-3.5" /> {digest?.resolvedIssues.length ?? 0}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-slate">Fixed</div>
                 </div>
-                {topRecommendation ? (
-                  <>
-                    <div className="line-clamp-2 text-sm font-semibold text-ink dark:text-white">{topRecommendation.title}</div>
-                    <div className="mt-1 text-xs capitalize text-slate">{topRecommendation.impact} impact · {topRecommendation.estimatedTime}</div>
-                  </>
-                ) : (
-                  <div className="text-sm text-slate">No open recommendations</div>
-                )}
-              </GlassCard>
-            </button>
+                <div>
+                  <div className="font-display text-xl font-extrabold text-ink dark:text-white">{latest.recommendations.length}</div>
+                  <div className="mt-0.5 text-[11px] text-slate">Open</div>
+                </div>
+              </div>
+            </GlassCard>
           </div>
+
+          <button type="button" onClick={() => scrollTo('audit')} className="block w-full text-left">
+            <GlassCard className="p-5">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
+                  <Lightbulb className="size-3.5" /> Top priority
+                </span>
+                <ArrowRight className="size-3.5 text-slate" />
+              </div>
+              {topRecommendation ? (
+                <>
+                  <div className="font-semibold text-ink dark:text-white">{topRecommendation.title}</div>
+                  <div className="mt-1 text-xs capitalize text-slate">
+                    {topRecommendation.impact} impact · {topRecommendation.difficulty} · {topRecommendation.estimatedTime}
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm text-slate">No open recommendations — nice work.</div>
+              )}
+            </GlassCard>
+          </button>
+
+          <GlassCard static className="p-6">
+            <h3 className="mb-4 text-xs font-bold uppercase tracking-wide text-slate">Recent Activity</h3>
+            <ActivityFeed entries={timeline} limit={5} emptyLabel="No activity yet — your first scan will appear here." />
+          </GlassCard>
 
           <GlassCard static className="flex flex-wrap gap-3 p-5">
             <Button variant="secondary" size="md" icon={<MessageCircle className="size-4" />} onClick={() => scrollTo('coach')}>
@@ -287,13 +315,46 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
 
           {/* ── AI Coach: what should I do next? ── */}
           <div className="scroll-mt-24">
-            <AiCoach siteName={website.name} audit={latest} />
+            <AiCoach websiteId={website.id} siteName={website.name} audit={latest} previous={previous} />
           </div>
 
-          {/* ── Monitoring: what has changed over time? ── */}
+          {/* ── Monitoring: what has changed? ── */}
           <div id="monitoring" className="scroll-mt-24 space-y-6">
             <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Monitoring</h2>
-            <ScoreTrendChart scans={scans} />
+
+            <GlassCard static className="flex flex-wrap items-center gap-x-6 gap-y-2 p-5 text-sm">
+              <span className="inline-flex items-center gap-1.5 font-semibold">
+                <span className={`size-1.5 rounded-full ${website.status === 'active' ? 'bg-mint-500' : 'bg-slate'}`} />
+                {website.status === 'active' ? 'Active' : 'Paused'}
+              </span>
+              <span className="capitalize text-slate">{website.frequency} scans</span>
+              <span className="text-slate">Last scan: {formatTimestamp(website.lastScannedAt)}</span>
+              <span className="text-slate">
+                Next scan: {website.frequency === 'manual' ? 'Manual only' : formatTimestamp(website.nextScanDue)}
+              </span>
+            </GlassCard>
+
+            {scans.length < 2 ? (
+              <GlassCard static className="p-8 text-center text-sm text-slate">
+                Your first scan establishes your baseline. Changes will appear here after your next scan.
+              </GlassCard>
+            ) : (
+              <>
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <GlassCard static className="p-6">
+                    <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate">Score History</h3>
+                    <ScoreHistoryList scans={scans} />
+                  </GlassCard>
+                  <ScoreTrendChart scans={scans} />
+                </div>
+
+                <GlassCard static className="p-6">
+                  <h3 className="mb-1 text-xs font-bold uppercase tracking-wide text-slate">Changes Detected</h3>
+                  <ActivityFeed entries={timeline} showFilters emptyLabel="No changes match this filter." />
+                </GlassCard>
+              </>
+            )}
+
             <CompetitorsSection
               websiteId={website.id}
               ourScore={latest.overallScore}
@@ -313,6 +374,19 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
               current={latest}
               previous={previous}
             />
+
+            <GlassCard static className="p-6">
+              <h3 className="mb-4 text-xs font-bold uppercase tracking-wide text-slate">Report History</h3>
+              <ReportHistoryList
+                scans={scans}
+                frequency={website.frequency}
+                websiteName={website.name}
+                websiteUrl={website.url}
+                userName={user.displayName ?? ''}
+                userEmail={user.email ?? ''}
+              />
+            </GlassCard>
+
             <ScanHistory siteName={website.name} siteUrl={website.url} scans={scans} />
           </div>
         </>
