@@ -274,7 +274,7 @@ export default function Settings() {
 
         <div className="mt-5">
           <label className="text-xs font-semibold text-slate">Default scan frequency for new websites</label>
-          <div className="mt-1.5 grid grid-cols-4 gap-2">
+          <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {FREQUENCY_OPTIONS.map((opt) => (
               <button
                 key={opt.id}

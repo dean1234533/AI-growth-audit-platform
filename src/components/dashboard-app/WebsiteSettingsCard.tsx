@@ -162,7 +162,7 @@ export default function WebsiteSettingsCard({ uid }: WebsiteSettingsCardProps) {
             </div>
 
             <label className="text-xs font-semibold text-slate">Scan frequency</label>
-            <div className="mt-1.5 grid grid-cols-4 gap-2">
+            <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {FREQUENCIES.map((f) => (
                 <button
                   key={f.value}
