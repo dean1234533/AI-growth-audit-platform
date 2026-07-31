@@ -24,15 +24,16 @@ import type { CategoryScore, MeasurementType, Recommendation } from '../../lib/t
  * actual HTTP response/HTML) and needs no extra decoration. Never lets an inference read as a
  * measured fact.
  */
-function MeasurementBadge({ type }: { type: MeasurementType }) {
-  if (type === 'detected') return null;
+function MeasurementBadge({ type }: { type: MeasurementType | undefined }) {
+  if (!type || type === 'detected') return null;
   const config: Record<Exclude<MeasurementType, 'detected'>, { label: string; className: string }> = {
     measured: { label: 'Measured', className: 'bg-brand-500/10 text-brand-600 dark:text-brand-300' },
     inferred: { label: 'Estimate', className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
     not_available: { label: 'Not measured', className: 'bg-slate/10 text-slate' },
   };
-  const { label, className } = config[type];
-  return <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${className}`}>{label}</span>;
+  const entry = config[type];
+  if (!entry) return null;
+  return <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${entry.className}`}>{entry.label}</span>;
 }
 
 const CATEGORY_ICONS: Record<CategoryScore['id'], LucideIcon> = {
