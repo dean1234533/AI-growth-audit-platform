@@ -53,7 +53,7 @@ export function HowItWorks() {
                 <span className="font-display absolute -right-2 -top-6 text-[7rem] font-black leading-none text-brand-500/[0.06] dark:text-white/[0.04]">
                   {i + 1}
                 </span>
-                <div className="relative mb-7 inline-flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white shadow-[0_16px_32px_-10px_rgba(108,99,255,0.55)]">
+                <div className="relative mb-7 inline-flex size-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3b82f6,#4b7cff)] text-white shadow-[0_16px_32px_-10px_rgba(59,130,246,0.55)]">
                   <step.icon className="size-6" />
                 </div>
                 <div className="relative mb-2 text-xs font-bold uppercase tracking-[0.18em] text-brand-500">

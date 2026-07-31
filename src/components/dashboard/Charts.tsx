@@ -21,7 +21,7 @@ import { GlassCard } from '../ui/GlassCard';
 const SEVERITY_COLORS: Record<Severity, string> = {
   critical: '#ff5a7a',
   high: '#ffb547',
-  medium: '#6c63ff',
+  medium: '#3b82f6',
   low: '#4b7cff',
   info: '#9aa3b2',
 };
@@ -38,7 +38,7 @@ const RADAR_LABEL_ABBREVIATIONS: Record<string, string> = {
 
 const TOOLTIP_STYLE = {
   borderRadius: 16,
-  border: '1px solid rgba(108,99,255,0.15)',
+  border: '1px solid rgba(59,130,246,0.15)',
   boxShadow: '0 20px 40px -16px rgba(17,24,39,0.25)',
   fontSize: 12,
   fontWeight: 600,
@@ -57,14 +57,14 @@ export function RadarScoreChart({ categories }: { categories: CategoryScore[] })
         <RadarChart data={data} outerRadius="60%" margin={{ top: 16, right: 28, bottom: 16, left: 28 }}>
           <defs>
             <radialGradient id="radarFill" cx="50%" cy="50%" r="65%">
-              <stop offset="0%" stopColor="#6c63ff" stopOpacity={0.55} />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.55} />
               <stop offset="100%" stopColor="#4b7cff" stopOpacity={0.12} />
             </radialGradient>
           </defs>
-          <PolarGrid stroke="#6c63ff" strokeOpacity={0.12} />
+          <PolarGrid stroke="#3b82f6" strokeOpacity={0.12} />
           <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: '#6b7280', fontWeight: 600 }} />
           <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: '#9aa3b2' }} axisLine={false} />
-          <Radar name="Score" dataKey="score" stroke="#6c63ff" strokeWidth={2} fill="url(#radarFill)" isAnimationActive animationDuration={1100} animationEasing="ease-out" />
+          <Radar name="Score" dataKey="score" stroke="#3b82f6" strokeWidth={2} fill="url(#radarFill)" isAnimationActive animationDuration={1100} animationEasing="ease-out" />
           <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => [`${v} / 100`, 'Score']} />
         </RadarChart>
       </ResponsiveContainer>
@@ -82,7 +82,7 @@ export function SeverityBarChart({ recommendations }: { recommendations: Recomme
     <ChartCard title="Issue Severity">
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={counts} layout="vertical" margin={{ left: 8, right: 16 }} barCategoryGap={14}>
-          <CartesianGrid horizontal={false} stroke="#6c63ff" strokeOpacity={0.08} />
+          <CartesianGrid horizontal={false} stroke="#3b82f6" strokeOpacity={0.08} />
           <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fill: '#9aa3b2' }} axisLine={false} tickLine={false} />
           <YAxis
             type="category"
@@ -93,7 +93,7 @@ export function SeverityBarChart({ recommendations }: { recommendations: Recomme
             tickLine={false}
             tickFormatter={(v: string) => v.charAt(0).toUpperCase() + v.slice(1)}
           />
-          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value} issue${value === 1 ? '' : 's'}`, '']} cursor={{ fill: 'rgba(108,99,255,0.06)' }} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value} issue${value === 1 ? '' : 's'}`, '']} cursor={{ fill: 'rgba(59,130,246,0.06)' }} />
           <Bar dataKey="count" radius={[0, 10, 10, 0]} isAnimationActive animationDuration={900} animationEasing="ease-out">
             {counts.map((d) => (
               <Cell key={d.severity} fill={SEVERITY_COLORS[d.severity]} />
@@ -116,10 +116,10 @@ export function PerformanceBreakdownChart({ categories }: { categories: Category
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(260, data.length * 42)}>
           <BarChart data={data} layout="vertical" margin={{ left: 8, right: 24 }} barCategoryGap={12}>
-            <CartesianGrid horizontal={false} stroke="#6c63ff" strokeOpacity={0.08} />
+            <CartesianGrid horizontal={false} stroke="#3b82f6" strokeOpacity={0.08} />
             <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12, fill: '#9aa3b2' }} axisLine={false} tickLine={false} />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#6b7280', fontWeight: 600 }} width={160} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName ?? ''} cursor={{ fill: 'rgba(108,99,255,0.06)' }} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName ?? ''} cursor={{ fill: 'rgba(59,130,246,0.06)' }} />
             <Bar dataKey="score" radius={[0, 10, 10, 0]} isAnimationActive animationDuration={900} animationEasing="ease-out">
               {data.map((d) => (
                 <Cell key={d.fullName} fill={d.score >= 100 ? '#00c48c' : '#ff5a7a'} />

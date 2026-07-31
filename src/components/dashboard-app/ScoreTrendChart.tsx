@@ -22,11 +22,11 @@ export function ScoreTrendChart({ scans }: ScoreTrendChartProps) {
       ) : (
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={data} margin={{ left: -20, right: 8 }}>
-            <CartesianGrid vertical={false} stroke="#6c63ff" strokeOpacity={0.08} />
+            <CartesianGrid vertical={false} stroke="#3b82f6" strokeOpacity={0.08} />
             <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#9aa3b2' }} axisLine={false} tickLine={false} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#9aa3b2' }} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ borderRadius: 16, border: '1px solid rgba(108,99,255,0.15)', fontSize: 12, fontWeight: 600 }} />
-            <Line type="monotone" dataKey="score" stroke="#6c63ff" strokeWidth={3} dot={{ fill: '#6c63ff', r: 4 }} isAnimationActive animationDuration={900} />
+            <Tooltip contentStyle={{ borderRadius: 16, border: '1px solid rgba(59,130,246,0.15)', fontSize: 12, fontWeight: 600 }} />
+            <Line type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', r: 4 }} isAnimationActive animationDuration={900} />
           </LineChart>
         </ResponsiveContainer>
       )}

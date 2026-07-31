@@ -44,7 +44,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
             >
               Free AI Website
               <br />
-              <span className="bg-[linear-gradient(120deg,#6c63ff,#4b7cff_45%,#00c48c)] bg-clip-text text-transparent">
+              <span className="bg-[linear-gradient(120deg,#3b82f6,#4b7cff_45%,#00c48c)] bg-clip-text text-transparent">
                 Growth Audit
               </span>
             </motion.h1>

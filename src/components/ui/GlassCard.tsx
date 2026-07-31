@@ -20,7 +20,7 @@ export function GlassCard({ children, className = '', style, static: isStatic, g
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       className={[
         'glass relative rounded-[28px] transition-shadow duration-300',
-        isStatic ? '' : 'cursor-glow hover:shadow-[0_32px_64px_-24px_rgba(108,99,255,0.35)]',
+        isStatic ? '' : 'cursor-glow hover:shadow-[0_32px_64px_-24px_rgba(59,130,246,0.35)]',
         gradientBorder ? 'gradient-border gradient-border-brand' : '',
         className,
       ].join(' ')}

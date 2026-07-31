@@ -45,7 +45,7 @@ export function GrowthEstimateSection({ estimate }: GrowthEstimateProps) {
           >
             <GlassCard gradientBorder className="flex h-full flex-col gap-4 p-6">
               <div className="flex items-start justify-between">
-                <div className="inline-flex size-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white shadow-[0_12px_24px_-8px_rgba(108,99,255,0.55)]">
+                <div className="inline-flex size-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3b82f6,#4b7cff)] text-white shadow-[0_12px_24px_-8px_rgba(59,130,246,0.55)]">
                   <item.icon className="size-5" />
                 </div>
                 <MiniGauge value={item.gauge} />

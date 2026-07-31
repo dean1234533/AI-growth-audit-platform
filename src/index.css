@@ -7,17 +7,17 @@
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  /* Primary brand ramp — indigo/violet */
-  --color-brand-50: #f2f1ff;
-  --color-brand-100: #e6e4ff;
-  --color-brand-200: #cdc9ff;
-  --color-brand-300: #ada6ff;
-  --color-brand-400: #8a7fff;
-  --color-brand-500: #6c63ff;
-  --color-brand-600: #564dea;
-  --color-brand-700: #443acb;
-  --color-brand-800: #3730a3;
-  --color-brand-900: #2e2b7d;
+  /* Primary brand ramp — blue */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
 
   /* Secondary — sky blue */
   --color-accent-400: #6f9fff;
@@ -118,7 +118,7 @@ body {
   border: 1px solid color-mix(in srgb, white 60%, transparent);
   box-shadow:
     0 1px 1px color-mix(in srgb, white 80%, transparent) inset,
-    0 24px 48px -20px rgba(76, 63, 220, 0.18),
+    0 24px 48px -20px rgba(37, 99, 235, 0.18),
     0 8px 20px -12px rgba(17, 24, 39, 0.08);
 }
 
@@ -151,22 +151,22 @@ body {
 .gradient-border-brand {
   background-image:
     linear-gradient(var(--card-bg, white), var(--card-bg, white)),
-    linear-gradient(135deg, color-mix(in srgb, #6c63ff 55%, transparent), color-mix(in srgb, #4b7cff 15%, transparent), color-mix(in srgb, #00c48c 35%, transparent));
+    linear-gradient(135deg, color-mix(in srgb, #3b82f6 55%, transparent), color-mix(in srgb, #4b7cff 15%, transparent), color-mix(in srgb, #00c48c 35%, transparent));
 }
 .dark .gradient-border-brand {
   background-image:
     linear-gradient(var(--card-bg, #16162a), var(--card-bg, #16162a)),
-    linear-gradient(135deg, color-mix(in srgb, #8a7fff 60%, transparent), color-mix(in srgb, #4b7cff 25%, transparent), color-mix(in srgb, #00c48c 30%, transparent));
+    linear-gradient(135deg, color-mix(in srgb, #60a5fa 60%, transparent), color-mix(in srgb, #4b7cff 25%, transparent), color-mix(in srgb, #00c48c 30%, transparent));
 }
 
 /* ---------- Glow / depth ---------- */
 
 .glow-brand {
-  box-shadow: 0 0 0 1px color-mix(in srgb, #6c63ff 12%, transparent), 0 20px 60px -12px color-mix(in srgb, #6c63ff 45%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #3b82f6 12%, transparent), 0 20px 60px -12px color-mix(in srgb, #3b82f6 45%, transparent);
 }
 
 .text-glow {
-  text-shadow: 0 0 40px color-mix(in srgb, #6c63ff 35%, transparent);
+  text-shadow: 0 0 40px color-mix(in srgb, #3b82f6 35%, transparent);
 }
 
 /* Cursor-tracking highlight, driven by --mx/--my custom props set via JS */
@@ -181,7 +181,7 @@ body {
   border-radius: inherit;
   opacity: 0;
   transition: opacity 0.4s ease;
-  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, #6c63ff 16%, transparent), transparent 70%);
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, #3b82f6 16%, transparent), transparent 70%);
   pointer-events: none;
   z-index: 1;
 }

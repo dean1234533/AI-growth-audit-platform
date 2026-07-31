@@ -77,7 +77,7 @@ export function AddWebsiteModal({ open, onClose, uid, initialUrl, defaultFrequen
                 <X className="size-5" />
               </button>
 
-              <div className="mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white">
+              <div className="mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3b82f6,#4b7cff)] text-white">
                 <Plus className="size-6" />
               </div>
               <h3 className="font-display text-xl font-bold text-ink dark:text-white">Add a website to monitor</h3>

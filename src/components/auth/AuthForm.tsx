@@ -96,7 +96,7 @@ export default function AuthForm() {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-md">
       <GlassCard gradientBorder className="p-8">
-        <img src="/logo.jpg" alt="" width="48" height="48" className="mb-2 size-12 rounded-2xl shadow-[0_16px_32px_-10px_rgba(108,99,255,0.55)]" />
+        <img src="/logo.jpg" alt="" width="48" height="48" className="mb-2 size-12 rounded-2xl shadow-[0_16px_32px_-10px_rgba(59,130,246,0.55)]" />
         <h1 className="font-display text-2xl font-bold text-ink dark:text-white">
           {mode === 'signup' ? 'Create your free account' : 'Welcome back'}
         </h1>

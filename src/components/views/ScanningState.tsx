@@ -33,7 +33,7 @@ export function ScanningState() {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-            className="relative mx-auto mb-8 inline-flex size-20 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white shadow-[0_20px_44px_-12px_rgba(108,99,255,0.6)]"
+            className="relative mx-auto mb-8 inline-flex size-20 items-center justify-center rounded-3xl bg-[linear-gradient(135deg,#3b82f6,#4b7cff)] text-white shadow-[0_20px_44px_-12px_rgba(59,130,246,0.6)]"
           >
             <div className="animate-glow-pulse absolute inset-0 rounded-3xl bg-brand-500/40 blur-xl" />
             <Current.icon className="relative size-9" />
@@ -54,7 +54,7 @@ export function ScanningState() {
               <motion.div
                 key={i}
                 className="h-1.5 w-9 rounded-full"
-                animate={{ backgroundColor: i <= stage ? '#6c63ff' : 'rgba(108,99,255,0.12)' }}
+                animate={{ backgroundColor: i <= stage ? '#3b82f6' : 'rgba(59,130,246,0.12)' }}
                 transition={{ duration: 0.4 }}
               />
             ))}

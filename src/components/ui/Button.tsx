@@ -15,7 +15,7 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'chi
 
 const VARIANTS: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:
-    'bg-[linear-gradient(120deg,#6c63ff,#4b7cff)] text-white shadow-[0_16px_36px_-12px_rgba(108,99,255,0.55)] hover:shadow-[0_20px_44px_-10px_rgba(108,99,255,0.65)]',
+    'bg-[linear-gradient(120deg,#3b82f6,#4b7cff)] text-white shadow-[0_16px_36px_-12px_rgba(59,130,246,0.55)] hover:shadow-[0_20px_44px_-10px_rgba(59,130,246,0.65)]',
   secondary: 'glass text-ink dark:text-white hover:bg-white/60 dark:hover:bg-white/10',
   ghost: 'bg-transparent text-current hover:bg-black/5 dark:hover:bg-white/10',
 };

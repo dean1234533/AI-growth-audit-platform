@@ -26,7 +26,7 @@ export function CtaSection({
   return (
     <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
       <GlassCard gradientBorder className="relative overflow-hidden p-10 sm:p-16">
-        <div className="animate-glow-pulse pointer-events-none absolute -right-32 -top-32 size-96 rounded-full bg-[radial-gradient(circle,#6c63ff44,transparent_70%)] blur-2xl" />
+        <div className="animate-glow-pulse pointer-events-none absolute -right-32 -top-32 size-96 rounded-full bg-[radial-gradient(circle,#3b82f644,transparent_70%)] blur-2xl" />
         <div className="pointer-events-none absolute -left-24 bottom-0 size-72 rounded-full bg-mint-400/15 blur-[90px]" />
 
         <div className="relative">

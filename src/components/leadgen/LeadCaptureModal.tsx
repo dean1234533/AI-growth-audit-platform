@@ -122,7 +122,7 @@ export function LeadCaptureModal({ open, onClose, audit, onSuccess }: LeadCaptur
 
                 {/* Form panel */}
                 <div className="p-8 sm:p-10">
-                  <div className="mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#6c63ff,#4b7cff)] text-white shadow-[0_16px_32px_-10px_rgba(108,99,255,0.55)]">
+                  <div className="mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3b82f6,#4b7cff)] text-white shadow-[0_16px_32px_-10px_rgba(59,130,246,0.55)]">
                     <Lock className="size-5" />
                   </div>
                   <h3 className="font-display text-xl font-bold text-ink dark:text-white">Unlock the full report</h3>
