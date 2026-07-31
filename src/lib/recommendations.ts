@@ -523,6 +523,31 @@ const RULES: Record<string, RecommendationRule> = {
     description: (d) => `${d}. Incomplete structured data means Google can't reliably use it for local search results.`,
     impact: 'medium', difficulty: 'easy', estimatedTime: '20 minutes',
   },
+  'seo.h2Structure': {
+    title: () => 'Add H2 subheadings',
+    description: () => 'No H2 subheadings were found. Structuring content with subheadings helps both readers and search engines understand the page.',
+    impact: 'low', difficulty: 'easy', estimatedTime: '20 minutes',
+  },
+  'mobile.horizontalOverflow': {
+    title: (d) => `Fix fixed-width elements that can overflow on mobile (${d})`,
+    description: (d) => `${d}. Large fixed-pixel widths are a common cause of horizontal scrolling on phones.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '30-60 minutes',
+  },
+  'conv.phoneCta': {
+    title: () => 'Add a click-to-call phone link',
+    description: () => 'No tel: link was found. Mobile visitors currently have to manually dial your number instead of tapping to call.',
+    impact: 'medium', difficulty: 'easy', estimatedTime: '10 minutes',
+  },
+  'conv.pricingInfo': {
+    title: () => 'Add pricing information',
+    description: () => 'No pricing signals were found on the page or a linked pricing page. Hidden pricing is a common reason visitors leave without enquiring.',
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
+  },
+  'local.locationRelevance': {
+    title: (d) => `Mention your location more clearly (${d})`,
+    description: (d) => `${d}. Search engines rely heavily on the title, meta description and H1 to judge local relevance.`,
+    impact: 'high', difficulty: 'easy', estimatedTime: '15 minutes',
+  },
 };
 
 export function buildRecommendations(failedChecks: CheckResult[], pageUrl: string): Recommendation[] {

@@ -45,5 +45,11 @@ export function runConversionChecks(page: PageData): CheckResult[] {
   const hasBookingLink = /(calendly\.com|acuityscheduling\.com|setmore\.com|book\.squareup\.com|square\.site)/i.test(html);
   results.push(check('conv.bookingLink', 'Online booking link present', hasBookingLink, hasBookingLink ? 'Booking/scheduling link found' : 'No booking/scheduling tool link found — informational, not all businesses need one', 'info', 2));
 
+  const hasPhoneCta = /href=["']tel:/i.test(html);
+  results.push(check('conv.phoneCta', 'Click-to-call phone link present', hasPhoneCta, hasPhoneCta ? 'A tel: link was found — visitors can call directly from mobile' : 'No tel: link found — mobile visitors can\'t tap-to-call', 'high', 6));
+
+  const hasPricingInfo = /£\d|\$\d|€\d|\bfrom\s+£|\bpricing\b|\bprice list\b/i.test(text) || /href=["'][^"']*pric(e|ing)[^"']*["']/i.test(html);
+  results.push(check('conv.pricingInfo', 'Pricing information visible or linked', hasPricingInfo, hasPricingInfo ? 'Pricing signals found on the page' : 'No pricing information or pricing page found — this is often a source of friction before enquiry', 'medium', 5));
+
   return results;
 }

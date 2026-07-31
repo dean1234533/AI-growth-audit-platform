@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Sparkles, ArrowRight, ShieldCheck, Zap, Search } from 'lucide-react';
+import { Globe, Sparkles, ArrowRight, ShieldCheck, Zap, Search, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/Button';
+import type { AuditIntakeContext } from '../../lib/api';
 
 interface HeroProps {
-  onAnalyse: (url: string) => void;
+  onAnalyse: (url: string, context?: AuditIntakeContext) => void;
   loading: boolean;
   errorMessage: string | null;
   /** Skip the "Free AI Website Growth Audit" H1/intro — used when the embedding page already
@@ -14,11 +15,15 @@ interface HeroProps {
 
 export function Hero({ onAnalyse, loading, errorMessage, compact = false }: HeroProps) {
   const [url, setUrl] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
+  const [businessName, setBusinessName] = useState('');
+  const [businessType, setBusinessType] = useState('');
+  const [location, setLocation] = useState('');
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!url.trim() || loading) return;
-    onAnalyse(url.trim());
+    onAnalyse(url.trim(), { businessName: businessName.trim(), businessType: businessType.trim(), location: location.trim() });
   }
 
   return (
@@ -84,6 +89,47 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
             {loading ? 'Analysing…' : 'Analyse My Website'}
           </Button>
         </motion.form>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="mx-auto mt-3 max-w-xl"
+        >
+          <button
+            type="button"
+            onClick={() => setShowDetails((s) => !s)}
+            className="mx-auto flex items-center gap-1 text-xs font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white"
+          >
+            Add business details (optional)
+            <ChevronDown className={`size-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+          </button>
+          {showDetails && (
+            <div className="glass mt-3 grid gap-2 rounded-2xl p-3 sm:grid-cols-3">
+              <input
+                type="text"
+                placeholder="Business name"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-slate/70 outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+              />
+              <input
+                type="text"
+                placeholder="Business type (e.g. plumber)"
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
+                className="w-full rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-slate/70 outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+              />
+              <input
+                type="text"
+                placeholder="Location (e.g. Bristol)"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full rounded-xl border border-ink/10 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-slate/70 outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+              />
+            </div>
+          )}
+        </motion.div>
 
         {errorMessage && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-sm font-medium text-rose-500">

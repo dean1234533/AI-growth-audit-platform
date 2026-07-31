@@ -13,7 +13,12 @@ function check(
   return { id, category: 'localSeo', label, passed, detail, severity, weight, measurementType };
 }
 
-export function runLocalSeoChecks(page: PageData): CheckResult[] {
+export interface LocalSeoCheckOptions {
+  /** User-supplied location hint from the audit intake form, e.g. "Bristol". */
+  location?: string;
+}
+
+export function runLocalSeoChecks(page: PageData, opts: LocalSeoCheckOptions = {}): CheckResult[] {
   const results: CheckResult[] = [];
   const html = page.html;
   const text = page.bodyText;
@@ -62,6 +67,23 @@ export function runLocalSeoChecks(page: PageData): CheckResult[] {
         missing.length === 0 ? 'name, address and telephone are all present in the schema' : `LocalBusiness schema is missing: ${missing.join(', ')}`,
         'medium',
         5,
+      ),
+    );
+  }
+
+  const location = opts.location?.trim();
+  if (location) {
+    const needle = location.toLowerCase();
+    const haystack = `${page.title ?? ''} ${page.metaDescription ?? ''} ${page.h1s.join(' ')}`.toLowerCase();
+    const mentionsLocation = haystack.includes(needle);
+    results.push(
+      check(
+        'local.locationRelevance',
+        `Mentions "${location}" in title, meta description or H1`,
+        mentionsLocation,
+        mentionsLocation ? `"${location}" found in the page's title, meta description or H1` : `"${location}" was not found in the title, meta description or H1 — this can weaken relevance for local searches`,
+        'high',
+        7,
       ),
     );
   }

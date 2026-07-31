@@ -45,6 +45,9 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
     results.push(check('seo.multipleH1', 'Single H1 (not multiple)', false, `${page.h1s.length} H1 tags found`, 'low', 3));
   }
 
+  const h2Count = page.headings.filter((h) => h.level === 2).length;
+  results.push(check('seo.h2Structure', 'H2 subheadings used to structure content', h2Count > 0, h2Count > 0 ? `${h2Count} H2 heading(s) found` : 'No H2 subheadings found — content may lack clear structure', 'low', 3));
+
   const ogCount = Object.keys(page.openGraph).length;
   results.push(check('seo.openGraph', 'Open Graph tags present', ogCount >= 3, ogCount === 0 ? 'No Open Graph tags found' : `${ogCount} Open Graph tag(s) found`, 'low', 4));
 

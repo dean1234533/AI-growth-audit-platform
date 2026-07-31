@@ -85,6 +85,10 @@ export interface AuditResult {
     screenshotUrl?: string;
     partial: boolean;
     warnings: string[];
+    /** Optional context supplied on the audit intake form — absent on audits run without it. */
+    businessName?: string;
+    businessType?: string;
+    location?: string;
   };
   /** Additional discovered pages beyond the homepage, each with their own category breakdown. Absent on older stored scans. */
   pages?: PageAuditResult[];
@@ -95,6 +99,26 @@ export interface Lead {
   email: string;
   business: string;
   website: string;
+}
+
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost';
+
+export interface EnquiryLead extends Lead {
+  helpWith: string;
+  preferredContact: 'email' | 'phone' | 'either';
+  message: string;
+}
+
+/** A stored lead record as the admin view reads it back — additive fields on top of the base Firestore doc. */
+export interface StoredLead extends Partial<EnquiryLead> {
+  id: string;
+  source: 'pdf_download' | 'enquiry';
+  status: LeadStatus;
+  auditUrl?: string;
+  auditScore?: number | null;
+  topIssues?: string[];
+  recommendedServices?: string[];
+  createdAt?: string;
 }
 
 export type ScanFrequency = 'daily' | 'weekly' | 'monthly' | 'manual';

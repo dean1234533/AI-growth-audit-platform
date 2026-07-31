@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { FloatingBackground } from '../../components/landing/FloatingBackground';
+import AdminLeadsView from '../../components/admin/AdminLeadsView';
+---
+
+<BaseLayout title="Admin — Leads" description="Admin lead management." path="/admin/leads" noindex bare>
+  <div class="relative min-h-screen">
+    <FloatingBackground />
+    <AdminLeadsView client:only="react" />
+  </div>
+</BaseLayout>

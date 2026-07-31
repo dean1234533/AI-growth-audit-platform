@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { LandingPage } from './views/LandingPage';
 import { ScanningState } from './views/ScanningState';
 import { ReportPage } from './views/ReportPage';
-import { runAudit, ApiError } from '../lib/api';
+import { runAudit, ApiError, type AuditIntakeContext } from '../lib/api';
 import type { AuditResult } from '../lib/types';
 
 type View = 'landing' | 'scanning' | 'report';
@@ -19,11 +19,11 @@ export default function AuditTool({ compact = false }: AuditToolProps) {
   const [audit, setAudit] = useState<AuditResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleAnalyse(url: string) {
+  async function handleAnalyse(url: string, context?: AuditIntakeContext) {
     setError(null);
     setView('scanning');
     try {
-      const result = await runAudit(url);
+      const result = await runAudit(url, context);
       setAudit(result);
       setView('report');
     } catch (err) {

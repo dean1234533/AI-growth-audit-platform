@@ -18,14 +18,20 @@ export interface AuditEnv {
 
 const MAX_PAGES = 5;
 
-function staticChecksFor(page: PageData, robotsTxt: string | null, sitemapXml: string | null, seoOpts: Parameters<typeof runSeoChecks>[3] = {}): CheckResult[] {
+function staticChecksFor(
+  page: PageData,
+  robotsTxt: string | null,
+  sitemapXml: string | null,
+  seoOpts: Parameters<typeof runSeoChecks>[3] = {},
+  location?: string,
+): CheckResult[] {
   return [
     ...runSeoChecks(page, robotsTxt, sitemapXml, seoOpts),
     ...runAccessibilityChecks(page),
     ...runMobileChecks(page),
     ...runTrustChecks(page),
     ...runConversionChecks(page),
-    ...runLocalSeoChecks(page),
+    ...runLocalSeoChecks(page, { location }),
   ];
 }
 
@@ -35,11 +41,19 @@ function scorePage(checks: CheckResult[]) {
   return { categories, overallScore };
 }
 
+export interface AuditBusinessContext {
+  businessName?: string;
+  businessType?: string;
+  location?: string;
+}
+
 export interface RunFullAuditOptions {
   /** Discover and audit additional pages beyond the homepage. Off for lightweight scans (e.g. competitors). */
   crawlPages?: boolean;
   /** Run real PageSpeed Insights measurement. Off for lightweight scans — PSI is slow (~15-25s) and rate-limited. */
   runPerformance?: boolean;
+  /** Optional context supplied on the audit intake form — sharpens local-relevance checks and personalises copy. Never fabricated if absent. */
+  businessContext?: AuditBusinessContext;
 }
 
 /**
@@ -57,6 +71,7 @@ export async function runFullAudit(
 ): Promise<{ result: AuditResult | null; error?: string }> {
   const crawlPages = options.crawlPages ?? true;
   const runPerformance = options.runPerformance ?? true;
+  const businessContext = options.businessContext ?? {};
 
   const { page: homepage, robotsTxt, sitemapXml, error } = await fetchAndParse(targetUrl);
   if (!homepage) {
@@ -96,7 +111,7 @@ export async function runFullAudit(
     ...perf.lighthouseMobileChecks,
     ...runTrustChecks(homepage),
     ...runConversionChecks(homepage),
-    ...runLocalSeoChecks(homepage),
+    ...runLocalSeoChecks(homepage, { location: businessContext.location }),
   ];
 
   const { categories, overallScore } = scorePage(homepageChecks);
@@ -107,7 +122,7 @@ export async function runFullAudit(
   const recommendations = await enrichRecommendationsWithAi(env.AI, baseRecommendations);
 
   const pages: PageAuditResult[] = otherPages.map((p) => {
-    const checks = staticChecksFor(p, robotsTxt, sitemapXml);
+    const checks = staticChecksFor(p, robotsTxt, sitemapXml, {}, businessContext.location);
     const { categories: pageCategories, overallScore: pageScore } = scorePage(checks);
     return { url: p.finalUrl, overallScore: pageScore, categories: pageCategories };
   });
@@ -123,6 +138,9 @@ export async function runFullAudit(
       pageTitle: homepage.title,
       partial: warnings.length > 0,
       warnings,
+      ...(businessContext.businessName ? { businessName: businessContext.businessName } : {}),
+      ...(businessContext.businessType ? { businessType: businessContext.businessType } : {}),
+      ...(businessContext.location ? { location: businessContext.location } : {}),
     },
     ...(pages.length > 0 ? { pages } : {}),
   };

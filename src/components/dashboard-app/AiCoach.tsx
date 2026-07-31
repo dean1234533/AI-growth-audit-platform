@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, getDocs } from 'firebase/firestore';
-import { Sparkles, Send, Bot, User, ChevronDown } from 'lucide-react';
+import { Sparkles, Send, Bot, User, ChevronDown, Zap, CalendarDays, CalendarRange } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
@@ -27,12 +27,34 @@ interface CompetitorSummary {
 
 const SUGGESTIONS = [
   "What's the most important thing I should fix?",
-  'How can I improve my SEO?',
-  'Why is my performance score low?',
-  'What should I do this week?',
+  'How do I fix this?',
+  'Which issue could affect enquiries the most?',
+  'Give me a step-by-step plan.',
 ];
 
-const PLAN_SIZE = 3;
+const BUCKET_SIZE = 2;
+
+interface ActionPlan {
+  today: Recommendation[];
+  thisWeek: Recommendation[];
+  thisMonth: Recommendation[];
+}
+
+/** Deterministic bucketing from fields already on each recommendation — no extra AI call, no hallucination risk. Today = quick, high-severity wins; This Week = high-severity items needing more effort; This Month = everything else. */
+function buildActionPlan(recommendations: Recommendation[]): ActionPlan {
+  const today: Recommendation[] = [];
+  const thisWeek: Recommendation[] = [];
+  const thisMonth: Recommendation[] = [];
+
+  for (const rec of recommendations) {
+    const urgent = rec.severity === 'critical' || rec.severity === 'high';
+    if (urgent && rec.difficulty === 'easy') today.push(rec);
+    else if (urgent) thisWeek.push(rec);
+    else thisMonth.push(rec);
+  }
+
+  return { today: today.slice(0, BUCKET_SIZE), thisWeek: thisWeek.slice(0, BUCKET_SIZE), thisMonth: thisMonth.slice(0, BUCKET_SIZE) };
+}
 
 function PriorityPlanItem({
   index,
@@ -175,7 +197,14 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
     ask(input);
   }
 
-  const plan = audit.recommendations.slice(0, PLAN_SIZE);
+  const plan = buildActionPlan(audit.recommendations);
+  const hasAnyPlanItems = plan.today.length + plan.thisWeek.length + plan.thisMonth.length > 0;
+
+  const BUCKETS: { key: keyof ActionPlan; label: string; icon: typeof Zap }[] = [
+    { key: 'today', label: 'Today', icon: Zap },
+    { key: 'thisWeek', label: 'This Week', icon: CalendarDays },
+    { key: 'thisMonth', label: 'This Month', icon: CalendarRange },
+  ];
 
   return (
     <div className="space-y-6">
@@ -185,25 +214,38 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
             <Sparkles className="size-5" />
           </span>
           <div>
-            <h3 className="font-display text-lg font-bold text-ink dark:text-white">Your Priority Plan</h3>
-            <p className="text-xs text-slate">The highest-impact things to fix, in order</p>
+            <h3 className="font-display text-lg font-bold text-ink dark:text-white">Your Action Plan</h3>
+            <p className="text-xs text-slate">What to fix, and when — in order of impact</p>
           </div>
         </div>
 
-        {plan.length === 0 ? (
+        {!hasAnyPlanItems ? (
           <p className="text-sm text-slate">No open recommendations right now — nice work.</p>
         ) : (
-          <div className="space-y-3">
-            {plan.map((rec, i) => (
-              <PriorityPlanItem
-                key={rec.id}
-                index={i + 1}
-                recommendation={rec}
-                onShowMe={() => explainRecommendation(rec)}
-                explanation={explanations[rec.id]}
-                loading={explaining === rec.id}
-              />
-            ))}
+          <div className="space-y-6">
+            {BUCKETS.map(({ key, label, icon: Icon }) => {
+              const items = plan[key];
+              if (items.length === 0) return null;
+              return (
+                <div key={key}>
+                  <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
+                    <Icon className="size-3.5" /> {label}
+                  </div>
+                  <div className="space-y-3">
+                    {items.map((rec, i) => (
+                      <PriorityPlanItem
+                        key={rec.id}
+                        index={i + 1}
+                        recommendation={rec}
+                        onShowMe={() => explainRecommendation(rec)}
+                        explanation={explanations[rec.id]}
+                        loading={explaining === rec.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </GlassCard>

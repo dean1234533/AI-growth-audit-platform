@@ -5,12 +5,15 @@ import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
 import { GrowthEstimateSection } from '../dashboard/GrowthEstimate';
-import { CtaSection } from '../dashboard/CtaSection';
+import { GrowthOpportunities } from '../dashboard/GrowthOpportunities';
+import { HowICanHelp } from '../dashboard/HowICanHelp';
 import { LeadCaptureModal } from '../leadgen/LeadCaptureModal';
+import { EnquiryModal } from '../leadgen/EnquiryModal';
 import { Button } from '../ui/Button';
 import { FloatingBackground } from '../landing/FloatingBackground';
 import { generateAuditPdf } from '../../lib/pdf';
 import { markPwaInstallEligible } from '../pwa/InstallBanner';
+import { buildServiceRecommendations } from '../../lib/serviceRecommendations';
 import type { AuditResult, Lead } from '../../lib/types';
 
 interface ReportPageProps {
@@ -21,6 +24,13 @@ interface ReportPageProps {
 export function ReportPage({ audit, onBack }: ReportPageProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const [enquiryPrefill, setEnquiryPrefill] = useState<string | undefined>(undefined);
+
+  function handleGetFixed(serviceTitle?: string) {
+    setEnquiryPrefill(serviceTitle);
+    setEnquiryOpen(true);
+  }
 
   useEffect(() => {
     markPwaInstallEligible();
@@ -119,10 +129,19 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
 
         <GrowthEstimateSection estimate={audit.growthEstimate} />
 
-        <CtaSection recommendations={audit.recommendations} />
+        <GrowthOpportunities recommendations={audit.recommendations} />
+
+        <HowICanHelp audit={audit} onGetFixed={handleGetFixed} />
       </div>
 
       <LeadCaptureModal open={modalOpen} onClose={() => setModalOpen(false)} audit={audit} onSuccess={handleLeadSuccess} />
+      <EnquiryModal
+        open={enquiryOpen}
+        onClose={() => setEnquiryOpen(false)}
+        audit={audit}
+        initialHelpWith={enquiryPrefill}
+        recommendedServices={buildServiceRecommendations(audit).map((s) => s.title)}
+      />
     </div>
   );
 }

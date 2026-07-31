@@ -49,5 +49,18 @@ export function runMobileChecks(page: PageData): CheckResult[] {
     ),
   );
 
+  const fixedWidthHints = (page.html.match(/width:\s*(?:[89]\d{2}|[1-9]\d{3,})px/gi) || []).length;
+  results.push(
+    check(
+      'mobile.horizontalOverflow',
+      'No obvious fixed-width overflow risk',
+      fixedWidthHints === 0,
+      fixedWidthHints === 0 ? 'No large fixed-pixel widths detected in page source' : `${fixedWidthHints} element(s) with large fixed-pixel widths detected, which can cause horizontal scrolling on mobile`,
+      'medium',
+      5,
+      'inferred',
+    ),
+  );
+
   return results;
 }

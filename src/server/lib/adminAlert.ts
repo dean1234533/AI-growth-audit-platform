@@ -2,7 +2,7 @@
 // import.meta.env, which Vite only replaces inside the Astro build. cron/entry.ts (which also
 // imports this file) is bundled separately by wrangler's own esbuild, where that replacement
 // never happens and the import blows up at runtime with "Cannot read properties of undefined".
-const ADMIN_EMAIL = 'dean@dean-da-dev.co.uk';
+export const ADMIN_EMAIL = 'dean@dean-da-dev.co.uk';
 
 export interface AdminAlertEnv {
   RESEND_API_KEY?: string;

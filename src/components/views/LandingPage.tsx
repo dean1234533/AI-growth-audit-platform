@@ -1,9 +1,10 @@
 import { FloatingBackground } from '../landing/FloatingBackground';
 import { Hero } from '../landing/Hero';
 import { HowItWorks } from '../landing/HowItWorks';
+import type { AuditIntakeContext } from '../../lib/api';
 
 interface LandingPageProps {
-  onAnalyse: (url: string) => void;
+  onAnalyse: (url: string, context?: AuditIntakeContext) => void;
   loading: boolean;
   errorMessage: string | null;
   /** Used when embedded on a page that already has its own hero/H1 and marketing copy

@@ -30,7 +30,7 @@ function jsonError(message: string, status: number): Response {
 export const POST: APIRoute = async ({ request }) => {
   const cfEnv = env as unknown as Env;
 
-  let body: { url?: string };
+  let body: { url?: string; businessName?: string; businessType?: string; location?: string };
   try {
     body = await request.json();
   } catch {
@@ -42,7 +42,13 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonError('Please enter a valid website URL', 400);
   }
 
-  const { result, error } = await runFullAudit(targetUrl, cfEnv);
+  const businessContext = {
+    businessName: body.businessName?.trim() || undefined,
+    businessType: body.businessType?.trim() || undefined,
+    location: body.location?.trim() || undefined,
+  };
+
+  const { result, error } = await runFullAudit(targetUrl, cfEnv, { businessContext });
   if (!result) {
     return jsonError(error ?? 'Unable to analyse this website', 422);
   }

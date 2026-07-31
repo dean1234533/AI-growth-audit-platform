@@ -25,6 +25,7 @@ import { generateAuditPdf } from '../../lib/pdf';
 import { CONSULTATION_URL } from '../../lib/seo/site';
 import { buildWeeklyDigest } from '../../lib/reports';
 import { buildTimeline } from '../../lib/timeline';
+import { buildServiceRecommendations } from '../../lib/serviceRecommendations';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -37,6 +38,9 @@ import ReportsSection from './ReportsSection';
 import ReportHistoryList from './ReportHistoryList';
 import ScanHistory from './ScanHistory';
 import PageResultsList from './PageResultsList';
+import { GrowthOpportunities } from '../dashboard/GrowthOpportunities';
+import { HowICanHelp } from '../dashboard/HowICanHelp';
+import { EnquiryModal } from '../leadgen/EnquiryModal';
 import { Button } from '../ui/Button';
 import { GlassCard } from '../ui/GlassCard';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
@@ -75,6 +79,8 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [section, setSection] = useState<Section>(sectionFromHash);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const [enquiryPrefill, setEnquiryPrefill] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const onHashChange = () => setSection(sectionFromHash());
@@ -142,6 +148,11 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
       business: website.name,
       website: website.url,
     });
+  }
+
+  function handleGetFixed(serviceTitle?: string) {
+    setEnquiryPrefill(serviceTitle);
+    setEnquiryOpen(true);
   }
 
   function goTo(next: Section) {
@@ -330,6 +341,10 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             <SeverityBarChart recommendations={latest.recommendations} />
             <PerformanceBreakdownChart categories={latest.categories} />
           </div>
+
+          <GrowthOpportunities recommendations={latest.recommendations} />
+
+          <HowICanHelp audit={latest} onGetFixed={handleGetFixed} onAskAi={() => goTo('coach')} />
         </div>
       ) : section === 'coach' ? (
         /* ── AI Coach: what should I do next? ── */
@@ -406,6 +421,16 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
 
           <ScanHistory siteName={website.name} siteUrl={website.url} scans={scans} />
         </div>
+      )}
+
+      {latest && (
+        <EnquiryModal
+          open={enquiryOpen}
+          onClose={() => setEnquiryOpen(false)}
+          audit={latest}
+          initialHelpWith={enquiryPrefill}
+          recommendedServices={buildServiceRecommendations(latest).map((s) => s.title)}
+        />
       )}
     </div>
   );
