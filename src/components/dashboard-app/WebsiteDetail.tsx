@@ -61,12 +61,26 @@ function formatTimestamp(ts: Timestamp | null): string {
   return new Date(ts.seconds * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+type Section = 'top' | 'audit' | 'coach' | 'monitoring' | 'reports';
+
+function sectionFromHash(): Section {
+  const hash = typeof window === 'undefined' ? '' : window.location.hash.replace('#', '');
+  return hash === 'audit' || hash === 'coach' || hash === 'monitoring' || hash === 'reports' ? hash : 'top';
+}
+
 export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const user = useAuthUser();
   const [website, setWebsite] = useState<WebsiteDoc | null | undefined>(undefined);
   const [scans, setScans] = useState<(AuditResult & { id: string })[]>([]);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [section, setSection] = useState<Section>(sectionFromHash);
+
+  useEffect(() => {
+    const onHashChange = () => setSection(sectionFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -130,8 +144,10 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
     });
   }
 
-  function scrollTo(anchor: string) {
-    document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  function goTo(next: Section) {
+    window.location.hash = next;
+    setSection(next);
+    window.scrollTo({ top: 0 });
   }
 
   if (!user || website === undefined) {
@@ -187,7 +203,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
 
       {!latest ? (
         <div className="glass rounded-[24px] p-16 text-center text-sm font-medium text-slate">No scans yet.</div>
-      ) : (
+      ) : section === 'top' ? (
         <>
           {/* ── Dashboard: what needs my attention? ── */}
           <WebsiteHealthHero
@@ -249,7 +265,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             </GlassCard>
           </div>
 
-          <button type="button" onClick={() => scrollTo('audit')} className="block w-full text-left">
+          <button type="button" onClick={() => goTo('audit')} className="block w-full text-left">
             <GlassCard className="p-5">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate">
@@ -276,10 +292,10 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
           </GlassCard>
 
           <GlassCard static className="flex flex-wrap gap-3 p-5">
-            <Button variant="secondary" size="md" icon={<MessageCircle className="size-4" />} onClick={() => scrollTo('coach')}>
+            <Button variant="secondary" size="md" icon={<MessageCircle className="size-4" />} onClick={() => goTo('coach')}>
               Ask AI
             </Button>
-            <Button variant="secondary" size="md" icon={<LineChart className="size-4" />} onClick={() => scrollTo('monitoring')}>
+            <Button variant="secondary" size="md" icon={<LineChart className="size-4" />} onClick={() => goTo('monitoring')}>
               View Monitoring
             </Button>
             <Button variant="secondary" size="md" icon={<Download className="size-4" />} onClick={handleExportPdf}>
@@ -294,104 +310,102 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
               Book Consultation
             </Button>
           </GlassCard>
-
-          {/* ── Audit: what problems exist? ── */}
-          <div id="audit" className="scroll-mt-24 space-y-6">
-            <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Category Breakdown</h2>
-            <PageResultsList audit={latest} />
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {latest.categories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  recommendations={latest.recommendations.filter((r) => r.category === category.id)}
-                />
-              ))}
-            </div>
-            <div className="grid gap-6 lg:grid-cols-3">
-              <RadarScoreChart categories={latest.categories} />
-              <SeverityBarChart recommendations={latest.recommendations} />
-              <PerformanceBreakdownChart categories={latest.categories} />
-            </div>
-          </div>
-
-          {/* ── AI Coach: what should I do next? ── */}
-          <div id="coach" className="scroll-mt-24">
-            <AiCoach websiteId={website.id} siteName={website.name} audit={latest} previous={previous} />
-          </div>
-
-          {/* ── Monitoring: what has changed? ── */}
-          <div id="monitoring" className="scroll-mt-24 space-y-6">
-            <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Monitoring</h2>
-
-            <GlassCard static className="flex flex-wrap items-center gap-x-6 gap-y-2 p-5 text-sm">
-              <span className="inline-flex items-center gap-1.5 font-semibold">
-                <span className={`size-1.5 rounded-full ${website.status === 'active' ? 'bg-mint-500' : 'bg-slate'}`} />
-                {website.status === 'active' ? 'Active' : 'Paused'}
-              </span>
-              <span className="capitalize text-slate">{website.frequency} scans</span>
-              <span className="text-slate">Last scan: {formatTimestamp(website.lastScannedAt)}</span>
-              <span className="text-slate">
-                Next scan: {website.frequency === 'manual' ? 'Manual only' : formatTimestamp(website.nextScanDue)}
-              </span>
-            </GlassCard>
-
-            {scans.length < 2 ? (
-              <GlassCard static className="p-8 text-center text-sm text-slate">
-                Your first scan establishes your baseline. Changes will appear here after your next scan.
-              </GlassCard>
-            ) : (
-              <>
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <GlassCard static className="p-6">
-                    <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate">Score History</h3>
-                    <ScoreHistoryList scans={scans} />
-                  </GlassCard>
-                  <ScoreTrendChart scans={scans} />
-                </div>
-
-                <GlassCard static className="p-6">
-                  <h3 className="mb-1 text-xs font-bold uppercase tracking-wide text-slate">Changes Detected</h3>
-                  <ActivityFeed entries={timeline} showFilters emptyLabel="No changes match this filter." />
-                </GlassCard>
-              </>
-            )}
-
-            <CompetitorsSection
-              websiteId={website.id}
-              ourScore={latest.overallScore}
-              ourCategories={latest.categories}
-              siteUrl={website.url}
-              pageTitle={latest.meta.pageTitle}
-            />
-          </div>
-
-          {/* ── Reports: what happened previously? ── */}
-          <div id="reports" className="scroll-mt-24 space-y-6">
-            <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Reports</h2>
-            <ReportsSection
-              siteName={website.name}
-              siteUrl={website.url}
-              userName={user.displayName ?? undefined}
-              current={latest}
-              previous={previous}
-            />
-
-            <GlassCard static className="p-6">
-              <h3 className="mb-4 text-xs font-bold uppercase tracking-wide text-slate">Report History</h3>
-              <ReportHistoryList
-                scans={scans}
-                frequency={website.frequency}
-                websiteName={website.name}
-                websiteUrl={website.url}
-                userName={user.displayName ?? ''}
-                userEmail={user.email ?? ''}
-              />
-            </GlassCard>
-
-            <ScanHistory siteName={website.name} siteUrl={website.url} scans={scans} />
-          </div>
         </>
+      ) : section === 'audit' ? (
+        /* ── Audit: what problems exist? ── */
+        <div className="space-y-6">
+          <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Category Breakdown</h2>
+          <PageResultsList audit={latest} />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {latest.categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                recommendations={latest.recommendations.filter((r) => r.category === category.id)}
+              />
+            ))}
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <RadarScoreChart categories={latest.categories} />
+            <SeverityBarChart recommendations={latest.recommendations} />
+            <PerformanceBreakdownChart categories={latest.categories} />
+          </div>
+        </div>
+      ) : section === 'coach' ? (
+        /* ── AI Coach: what should I do next? ── */
+        <AiCoach websiteId={website.id} siteName={website.name} audit={latest} previous={previous} />
+      ) : section === 'monitoring' ? (
+        /* ── Monitoring: what has changed? ── */
+        <div className="space-y-6">
+          <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Monitoring</h2>
+
+          <GlassCard static className="flex flex-wrap items-center gap-x-6 gap-y-2 p-5 text-sm">
+            <span className="inline-flex items-center gap-1.5 font-semibold">
+              <span className={`size-1.5 rounded-full ${website.status === 'active' ? 'bg-mint-500' : 'bg-slate'}`} />
+              {website.status === 'active' ? 'Active' : 'Paused'}
+            </span>
+            <span className="capitalize text-slate">{website.frequency} scans</span>
+            <span className="text-slate">Last scan: {formatTimestamp(website.lastScannedAt)}</span>
+            <span className="text-slate">
+              Next scan: {website.frequency === 'manual' ? 'Manual only' : formatTimestamp(website.nextScanDue)}
+            </span>
+          </GlassCard>
+
+          {scans.length < 2 ? (
+            <GlassCard static className="p-8 text-center text-sm text-slate">
+              Your first scan establishes your baseline. Changes will appear here after your next scan.
+            </GlassCard>
+          ) : (
+            <>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <GlassCard static className="p-6">
+                  <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate">Score History</h3>
+                  <ScoreHistoryList scans={scans} />
+                </GlassCard>
+                <ScoreTrendChart scans={scans} />
+              </div>
+
+              <GlassCard static className="p-6">
+                <h3 className="mb-1 text-xs font-bold uppercase tracking-wide text-slate">Changes Detected</h3>
+                <ActivityFeed entries={timeline} showFilters emptyLabel="No changes match this filter." />
+              </GlassCard>
+            </>
+          )}
+
+          <CompetitorsSection
+            websiteId={website.id}
+            ourScore={latest.overallScore}
+            ourCategories={latest.categories}
+            siteUrl={website.url}
+            pageTitle={latest.meta.pageTitle}
+          />
+        </div>
+      ) : (
+        /* ── Reports: what happened previously? ── */
+        <div className="space-y-6">
+          <h2 className="font-display text-2xl font-bold text-ink dark:text-white">Reports</h2>
+          <ReportsSection
+            siteName={website.name}
+            siteUrl={website.url}
+            userName={user.displayName ?? undefined}
+            current={latest}
+            previous={previous}
+          />
+
+          <GlassCard static className="p-6">
+            <h3 className="mb-4 text-xs font-bold uppercase tracking-wide text-slate">Report History</h3>
+            <ReportHistoryList
+              scans={scans}
+              frequency={website.frequency}
+              websiteName={website.name}
+              websiteUrl={website.url}
+              userName={user.displayName ?? ''}
+              userEmail={user.email ?? ''}
+            />
+          </GlassCard>
+
+          <ScanHistory siteName={website.name} siteUrl={website.url} scans={scans} />
+        </div>
       )}
     </div>
   );
