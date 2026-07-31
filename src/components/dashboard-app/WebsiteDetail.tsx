@@ -223,6 +223,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             recommendationCount={latest.recommendations.length}
             scannedAt={latest.scannedAt}
             scoreDelta={digest?.scoreDelta ?? null}
+            scanQuality={latest.meta.scanQuality}
           />
 
           <div className="grid gap-4 sm:grid-cols-2">

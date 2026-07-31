@@ -20,6 +20,19 @@ export type CategoryId =
  */
 export type MeasurementType = 'measured' | 'detected' | 'inferred' | 'not_available';
 
+/**
+ * Additive status alongside `passed`, for the two cases a plain boolean can't express honestly:
+ * - not_applicable: this check doesn't make sense on this page (e.g. breadcrumb schema on a
+ *   homepage) — it isn't a defect, so it must never read as "missing" in the UI or count
+ *   against the score.
+ * - not_verified: the infrastructure that would confirm this one way or the other wasn't
+ *   available for this scan (no browser rendering budget left, a link target blocked
+ *   automated requests) — genuinely unknown, not a failure.
+ * Absent for ordinary pass/fail checks. Always paired with `weight: 0` so scoring.ts needs
+ * no special-casing — it already excludes weight-0 checks from both sides of the ratio.
+ */
+export type CheckStatus = 'not_applicable' | 'not_verified';
+
 export interface CheckResult {
   id: string;
   category: CategoryId;
@@ -28,9 +41,11 @@ export interface CheckResult {
   /** Raw detail describing what was actually found, e.g. "Title is 12 characters" */
   detail: string;
   severity: Severity;
-  /** Points this check contributes to the category score (0 if failed) */
+  /** Points this check contributes to the category score (0 if failed, or if not_applicable/not_verified) */
   weight: number;
   measurementType: MeasurementType;
+  /** Set only for not_applicable/not_verified results — see CheckStatus. */
+  status?: CheckStatus;
 }
 
 export interface Recommendation {
@@ -73,6 +88,14 @@ export interface GrowthEstimate {
   accessibilityImprovementPct: number;
 }
 
+export interface ScanQuality {
+  scannedAt: string;
+  jsRenderingUsed: boolean;
+  /** Why rendering was skipped, when it was — e.g. "daily browser-rendering budget exhausted". Absent when rendering ran. */
+  jsRenderingReason?: string;
+  performanceMeasured: boolean;
+}
+
 export interface AuditResult {
   url: string;
   scannedAt: string;
@@ -89,6 +112,13 @@ export interface AuditResult {
     businessName?: string;
     businessType?: string;
     location?: string;
+    /** How thoroughly this scan actually checked the site — shown in the UI so a scan run
+     * without rendering/PSI budget never silently looks as authoritative as a full one. */
+    scanQuality?: ScanQuality;
+    pagesDiscovered?: number;
+    pagesScanned?: number;
+    pagesSkipped?: number;
+    crawlLimit?: number;
   };
   /** Additional discovered pages beyond the homepage, each with their own category breakdown. Absent on older stored scans. */
   pages?: PageAuditResult[];

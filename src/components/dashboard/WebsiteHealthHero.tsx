@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { Sparkles, Clock, ListChecks, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Sparkles, Clock, ListChecks, TrendingUp, TrendingDown, Minus, Eye } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { ScoreCircle } from './ScoreCircle';
 import { scoreBand } from '../../lib/scoreBand';
-import type { CategoryScore } from '../../lib/types';
+import type { CategoryScore, ScanQuality } from '../../lib/types';
 
 interface WebsiteHealthHeroProps {
   score: number;
@@ -12,9 +12,11 @@ interface WebsiteHealthHeroProps {
   scannedAt: string;
   /** Score change vs the previous scan — omit when there's no previous scan yet (first scan). */
   scoreDelta?: number | null;
+  /** How thoroughly this specific scan actually checked the site — absent on older stored scans. */
+  scanQuality?: ScanQuality;
 }
 
-export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta }: WebsiteHealthHeroProps) {
+export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta, scanQuality }: WebsiteHealthHeroProps) {
   const { label, color } = scoreBand(score);
   const sorted = [...categories].filter((c) => c.checks.length > 0).sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
@@ -78,8 +80,17 @@ export function WebsiteHealthHero({ score, categories, recommendationCount, scan
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Clock className="size-4 text-brand-500" />
-                Scanned {new Date(scannedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                Scanned {new Date(scannedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
               </span>
+              {scanQuality && (
+                <span
+                  className="inline-flex items-center gap-1.5"
+                  title={scanQuality.jsRenderingUsed ? 'This scan rendered the page in a real browser, not just its raw HTML.' : (scanQuality.jsRenderingReason ?? 'Real browser rendering was not used for this scan.')}
+                >
+                  <Eye className="size-4 text-brand-500" />
+                  {scanQuality.jsRenderingUsed ? 'Real browser rendering used' : 'Static HTML analysis only'}
+                </span>
+              )}
             </div>
           </div>
         </div>

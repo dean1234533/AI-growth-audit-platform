@@ -40,6 +40,28 @@ export function generateAuditPdf(audit: AuditResult, lead: Lead): void {
   doc.text('Website Growth Audit Report', PAGE_MARGIN, 80);
   y = 120;
 
+  // Prominent, honest "how was this actually checked" line — never let the report imply a
+  // deeper scan than what actually ran (see ScanQuality in types.ts).
+  const scanQuality = audit.meta.scanQuality;
+  doc.setTextColor(120, 120, 130);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  const scanTimestamp = new Date(scanQuality?.scannedAt ?? audit.scannedAt).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  });
+  const scanMethod = scanQuality
+    ? scanQuality.jsRenderingUsed
+      ? 'Real browser rendering + PageSpeed Insights'
+      : `Static HTML analysis${scanQuality.performanceMeasured ? ' + PageSpeed Insights' : ''}`
+    : null;
+  doc.text(`SCANNED ${scanTimestamp}${scanMethod ? `  ·  ${scanMethod}` : ''}`, PAGE_MARGIN, y);
+  y += 22;
+
   doc.setTextColor(30, 30, 40);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);

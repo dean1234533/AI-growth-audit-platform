@@ -13,9 +13,14 @@ export function buildCategoryScores(checks: CheckResult[]): CategoryScore[] {
   });
 }
 
-/** Overall score is the mean of category scores, only counting categories that actually had checks run. */
+/**
+ * Overall score is the mean of category scores, only counting categories that actually had
+ * scoring-relevant checks run. A category can have checks (`.checks.length > 0`) while every
+ * one of them is weight-0 (not_applicable/not_verified/not_available) — that's not the same
+ * as a genuine 0/100, so it's excluded from the average rather than dragging it down.
+ */
 export function buildOverallScore(categories: CategoryScore[]): number {
-  const scored = categories.filter((c) => c.checks.length > 0);
+  const scored = categories.filter((c) => c.checks.some((chk) => chk.weight > 0));
   if (scored.length === 0) return 0;
   return Math.round(scored.reduce((sum, c) => sum + c.score, 0) / scored.length);
 }

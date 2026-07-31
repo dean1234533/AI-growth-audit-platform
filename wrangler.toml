@@ -19,6 +19,24 @@ html_handling = "drop-trailing-slash"
 [ai]
 binding = "AI"
 
+# Astro's built-in session support (used by the adapter regardless of whether this project's own
+# code calls the session API directly) needs a KV namespace bound as "SESSION". Without an
+# explicit id here, `wrangler dev --remote` fails outright ("SESSION bindings must have an 'id'
+# field") on any environment that doesn't already have a stale auto-provisioned id cached in
+# .wrangler — confirmed by reproducing the failure from a clean container. This is the real
+# namespace created via `wrangler kv namespace create` during that verification, not a
+# placeholder.
+[[kv_namespaces]]
+binding = "SESSION"
+id = "9330e71cdca4451c81f1fddadced8db2"
+
+# Real headless-browser rendering for the audit engine (src/server/lib/renderPage.ts) — Workers
+# can't spawn a local Chromium, so this proxies to Cloudflare's managed Browser Rendering
+# service. Available on Workers Free (10 min/day browser time, 3 concurrent, 60s timeout) —
+# see src/server/lib/scanBudget.ts for the daily-budget guard that keeps usage under that cap.
+[browser]
+binding = "BROWSER"
+
 # Daily sweep for automated website monitoring — the handler itself decides which sites are
 # actually due a scan (daily/weekly/monthly) based on each website's nextScanDue field.
 [triggers]

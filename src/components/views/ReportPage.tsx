@@ -76,6 +76,7 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
             categories={audit.categories}
             recommendationCount={audit.recommendations.length}
             scannedAt={audit.scannedAt}
+            scanQuality={audit.meta.scanQuality}
           />
 
           <div className="mt-8 flex flex-wrap justify-center gap-3 sm:justify-start">

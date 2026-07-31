@@ -267,15 +267,41 @@ function stripTags(html: string): string {
   return html.replace(/<[^>]*>/g, ' ');
 }
 
-const IMPORTANT_PATH_HINTS = ['about', 'contact', 'services', 'service', 'pricing', 'products', 'shop'];
+const IMPORTANT_PATH_HINTS = [
+  'about',
+  'contact',
+  'contact-us',
+  'services',
+  'service',
+  'pricing',
+  'products',
+  'shop',
+  'book',
+  'booking',
+  'appointment',
+  'appointments',
+  'location',
+  'locations',
+  'area',
+  'areas',
+  'faq',
+  'review',
+  'reviews',
+  'testimonial',
+  'testimonials',
+  'privacy',
+  'terms',
+];
 
 /**
  * Picks up to `maxPages - 1` additional important URLs to audit alongside the homepage —
- * from the sitemap first (if present), then from same-host links found on the homepage,
- * prioritising common important paths (about/contact/services/etc). Bounded and deduped;
- * never crawls beyond the site's own declared/linked pages.
+ * from the sitemap first (if present), then from same-host links found on the homepage
+ * (both the static HTML links and, when the homepage was rendered, the rendered DOM's links —
+ * a JS-driven nav/footer, the norm for any unrendered React/Vue SPA, can add links a static
+ * fetch never sees at all), prioritising common important paths (about/contact/services/etc).
+ * Bounded and deduped; never crawls beyond the site's own declared/linked pages.
  */
-export function discoverPages(homepageUrl: string, sitemapXml: string | null, homepageLinks: { href: string }[], maxPages = 5): string[] {
+export function discoverPages(homepageUrl: string, sitemapXml: string | null, homepageLinks: { href: string }[], maxPages = 8, renderedLinks: { href: string }[] = []): string[] {
   const base = new URL(homepageUrl);
   const seen = new Set<string>([normalizeForDedupe(homepageUrl)]);
   const picked: string[] = [];
@@ -310,7 +336,10 @@ export function discoverPages(homepageUrl: string, sitemapXml: string | null, ho
   }
 
   if (picked.length < limit) {
-    const linkHrefs = homepageLinks.map((l) => l.href);
+    // Static + rendered links combined and deduped by tryAdd()'s own `seen` set — a JS-driven
+    // nav/footer common on unrendered SPAs contributes links here that homepageLinks alone
+    // (parsed from the raw HTML response) would never contain.
+    const linkHrefs = [...homepageLinks, ...renderedLinks].map((l) => l.href);
     const prioritized = [
       ...linkHrefs.filter((l) => IMPORTANT_PATH_HINTS.some((hint) => l.toLowerCase().includes(hint))),
       ...linkHrefs,
@@ -333,11 +362,30 @@ function normalizeForDedupe(url: string): string {
   }
 }
 
+/**
+ * A failed/blocked fetch isn't the same as a confirmed-broken link — a 403 from Instagram
+ * (routine bot-blocking) is very different evidence from a genuine 404. Only `broken` should
+ * ever fail a check; `blocked`/`not_verified` are a real, honest "couldn't confirm."
+ */
+export type LinkConfidence = 'verified' | 'redirects' | 'blocked' | 'not_verified' | 'broken';
+
 export interface LinkCheckResult {
   href: string;
   status: number | null;
   ok: boolean;
   isInternal: boolean;
+  confidence: LinkConfidence;
+}
+
+const BOT_BLOCK_STATUSES = new Set([401, 403, 429, 999]);
+
+export function classifyLinkStatus(status: number | null, redirected: boolean): LinkConfidence {
+  if (status === null) return 'not_verified';
+  if (status >= 200 && status < 300) return redirected ? 'redirects' : 'verified';
+  if (status >= 300 && status < 400) return 'redirects';
+  if (BOT_BLOCK_STATUSES.has(status)) return 'blocked';
+  if (status >= 400) return 'broken';
+  return 'not_verified';
 }
 
 /**
@@ -351,8 +399,13 @@ export async function checkLinkStatuses(
   baseUrl: string,
   opts: { internalLimit?: number; externalLimit?: number } = {},
 ): Promise<LinkCheckResult[]> {
-  const internalLimit = opts.internalLimit ?? 15;
-  const externalLimit = opts.externalLimit ?? 5;
+  // Each checked link can cost up to 2 subrequests (HEAD, then a GET retry on 405/501/bot-block)
+  // — confirmed live in remote testing that the original 15/5 defaults, combined with real
+  // browser rendering's own per-asset subrequests, reproducibly hit the Workers subrequest
+  // ceiling. Pulled back to leave headroom for the rest of the audit (rendering, PSI, AI
+  // enrichment, admin notification) to complete without silently losing any of them.
+  const internalLimit = opts.internalLimit ?? 10;
+  const externalLimit = opts.externalLimit ?? 3;
   const base = new URL(baseUrl);
 
   const seen = new Set<string>();
@@ -387,14 +440,21 @@ export async function checkLinkStatuses(
   const results = await Promise.allSettled(
     targets.map(async ({ href, isInternal }): Promise<LinkCheckResult> => {
       let res = await timedFetch(href, { method: 'HEAD', timeoutMs: LINK_CHECK_TIMEOUT_MS });
-      if (!res || res.status === 405 || res.status === 501) {
-        res = await timedFetch(href, { method: 'GET', timeoutMs: LINK_CHECK_TIMEOUT_MS });
+      if (!res || res.status === 405 || res.status === 501 || BOT_BLOCK_STATUSES.has(res.status)) {
+        // A HEAD-specific 403/429 sometimes clears on GET (some bot-protection only inspects
+        // HEAD requests) — worth a second try with the exact method a real visitor would use
+        // before concluding it's blocked, since that changes broken vs. blocked classification.
+        const getRes = await timedFetch(href, { method: 'GET', timeoutMs: LINK_CHECK_TIMEOUT_MS });
+        if (getRes) res = getRes;
       }
-      return { href, status: res?.status ?? null, ok: !!res && res.status < 400, isInternal };
+      const status = res?.status ?? null;
+      const redirected = !!res && res.url !== href;
+      const confidence = classifyLinkStatus(status, redirected);
+      return { href, status, ok: confidence !== 'broken', isInternal, confidence };
     }),
   );
 
   return results.map((r, i) =>
-    r.status === 'fulfilled' ? r.value : { href: targets[i].href, status: null, ok: false, isInternal: targets[i].isInternal },
+    r.status === 'fulfilled' ? r.value : { href: targets[i].href, status: null, ok: false, isInternal: targets[i].isInternal, confidence: 'not_verified' },
   );
 }

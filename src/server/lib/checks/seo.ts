@@ -1,5 +1,6 @@
 import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData, LinkCheckResult } from '../fetchSite';
+import type { RenderedPageData } from '../renderPage';
 
 function check(
   id: string,
@@ -22,8 +23,20 @@ export interface SeoCheckOptions {
   otherPages?: { url: string; title: string | null; metaDescription: string | null }[];
 }
 
-export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXml: string | null, opts: SeoCheckOptions = {}): CheckResult[] {
+export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXml: string | null, opts: SeoCheckOptions = {}, rendered?: RenderedPageData | null): CheckResult[] {
   const results: CheckResult[] = [];
+
+  // Prefer the rendered DOM's JSON-LD/headings/images when available — GTM/tag-manager and
+  // JS-framework sites commonly inject structured data and even headings client-side, which a
+  // static HTML fetch never sees at all (a false "missing schema", not just low confidence).
+  // The rendered snapshot already includes everything server-rendered too, so it's used as the
+  // sole source rather than merged with the static one, to avoid double-counting the same
+  // blocks as "duplicates".
+  const jsonLd = rendered ? rendered.jsonLd : page.jsonLd;
+  const h1s = rendered ? rendered.h1s : page.h1s;
+  const headings = rendered ? rendered.headings : page.headings;
+  const images = rendered ? rendered.images : page.images;
+  const structuredDataSource: MeasurementType = rendered ? 'measured' : 'detected';
 
   const title = page.title?.trim() ?? '';
   results.push(check('seo.missingTitle', 'Page title present', title.length > 0, title.length > 0 ? `Title: "${title}"` : 'No <title> tag found', 'critical', 10));
@@ -40,12 +53,12 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
     results.push(check('seo.metaDescriptionLength', 'Meta description length optimal (50-160 chars)', optimalLength, `Meta description is ${desc.length} characters`, 'low', 4));
   }
 
-  results.push(check('seo.missingH1', 'Exactly one H1 present', page.h1s.length === 1, page.h1s.length === 0 ? 'No H1 tag found' : `${page.h1s.length} H1 tag(s) found`, 'high', 8));
-  if (page.h1s.length > 1) {
-    results.push(check('seo.multipleH1', 'Single H1 (not multiple)', false, `${page.h1s.length} H1 tags found`, 'low', 3));
+  results.push(check('seo.missingH1', 'Exactly one H1 present', h1s.length === 1, h1s.length === 0 ? 'No H1 tag found' : `${h1s.length} H1 tag(s) found`, 'high', 8, structuredDataSource));
+  if (h1s.length > 1) {
+    results.push(check('seo.multipleH1', 'Single H1 (not multiple)', false, `${h1s.length} H1 tags found`, 'low', 3, structuredDataSource));
   }
 
-  const h2Count = page.headings.filter((h) => h.level === 2).length;
+  const h2Count = headings.filter((h) => h.level === 2).length;
   results.push(check('seo.h2Structure', 'H2 subheadings used to structure content', h2Count > 0, h2Count > 0 ? `${h2Count} H2 heading(s) found` : 'No H2 subheadings found — content may lack clear structure', 'low', 3));
 
   const ogCount = Object.keys(page.openGraph).length;
@@ -91,32 +104,49 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
     results.push(check('seo.sitemapUrls', 'Sitemap lists at least one URL', urlCount > 0, urlCount > 0 ? `${urlCount} URL(s) listed in sitemap.xml` : 'sitemap.xml exists but lists no URLs', 'medium', 4));
   }
 
-  const imagesMissingAlt = page.images.filter((img) => !img.alt || img.alt.trim() === '');
-  results.push(check('seo.imageAlt', 'Images have alt text', page.images.length === 0 || imagesMissingAlt.length === 0, page.images.length === 0 ? 'No images found' : `${imagesMissingAlt.length} of ${page.images.length} images missing alt text`, 'medium', 7));
+  const imagesMissingAlt = images.filter((img) => !img.alt || img.alt.trim() === '');
+  results.push(check('seo.imageAlt', 'Images have alt text', images.length === 0 || imagesMissingAlt.length === 0, images.length === 0 ? 'No images found' : `${imagesMissingAlt.length} of ${images.length} images missing alt text`, 'medium', 7, structuredDataSource));
 
-  results.push(check('seo.structuredData', 'Structured data (schema.org) present', page.jsonLd.length > 0, page.jsonLd.length > 0 ? `${page.jsonLd.length} structured data block(s) found` : 'No structured data found', 'high', 9));
+  results.push(check('seo.structuredData', 'Structured data (schema.org) present', jsonLd.length > 0, jsonLd.length > 0 ? `${jsonLd.length} structured data block(s) found` : 'No structured data found', 'high', 9, structuredDataSource));
 
   if (page.jsonLdParseErrors > 0) {
     results.push(check('seo.structuredDataValid', 'Structured data is valid JSON', false, `${page.jsonLdParseErrors} JSON-LD block(s) failed to parse — invalid JSON syntax`, 'high', 6));
   }
 
-  const schemaTypes = collectJsonLdTypes(page.jsonLd);
+  const schemaTypes = collectJsonLdTypes(jsonLd);
   const duplicateTypes = [...schemaTypes.entries()].filter(([, count]) => count > 1).map(([t]) => t);
   if (duplicateTypes.length > 0) {
-    results.push(check('seo.duplicateSchema', 'No duplicate structured data types', false, `Duplicate schema type(s) found: ${duplicateTypes.join(', ')}`, 'low', 3));
+    results.push(check('seo.duplicateSchema', 'No duplicate structured data types', false, `Duplicate schema type(s) found: ${duplicateTypes.join(', ')}`, 'low', 3, structuredDataSource));
   }
 
-  const hasLocalBusiness = jsonLdHasType(page.jsonLd, ['LocalBusiness', 'Organization', 'HomeAndConstructionBusiness']);
-  results.push(check('seo.localBusinessSchema', 'LocalBusiness schema present', hasLocalBusiness, hasLocalBusiness ? 'LocalBusiness/Organization schema found' : 'No LocalBusiness schema found', 'high', 8));
+  const hasLocalBusiness = jsonLdHasType(jsonLd, ['LocalBusiness', 'Organization', 'HomeAndConstructionBusiness']);
+  results.push(check('seo.localBusinessSchema', 'LocalBusiness schema present', hasLocalBusiness, hasLocalBusiness ? 'LocalBusiness/Organization schema found' : 'No LocalBusiness schema found', 'high', 8, structuredDataSource));
 
-  const hasFaqSchema = jsonLdHasType(page.jsonLd, ['FAQPage']);
-  results.push(check('seo.faqSchema', 'FAQ schema present', hasFaqSchema, hasFaqSchema ? 'FAQPage schema found' : 'No FAQPage schema found', 'low', 3));
+  const hasFaqSchema = jsonLdHasType(jsonLd, ['FAQPage']);
+  results.push(check('seo.faqSchema', 'FAQ schema present', hasFaqSchema, hasFaqSchema ? 'FAQPage schema found' : 'No FAQPage schema found', 'low', 3, structuredDataSource));
 
-  const hasBreadcrumb = jsonLdHasType(page.jsonLd, ['BreadcrumbList']);
-  results.push(check('seo.breadcrumbSchema', 'Breadcrumb schema present', hasBreadcrumb, hasBreadcrumb ? 'BreadcrumbList schema found' : 'No BreadcrumbList schema found', 'low', 3));
+  const hasBreadcrumb = jsonLdHasType(jsonLd, ['BreadcrumbList']);
+  const isHomepage = (() => {
+    try {
+      return new URL(page.finalUrl).pathname.replace(/\/+$/, '') === '';
+    } catch {
+      return false;
+    }
+  })();
+  if (isHomepage) {
+    // A breadcrumb trail is contextually meaningless on the root page — this must never read
+    // as "missing," which would incorrectly suggest the site's breadcrumb implementation
+    // (verified correct on every other page type, e.g. tool/blog pages) has a gap.
+    results.push({ id: 'seo.breadcrumbSchema', category: 'seo', label: 'Breadcrumb schema present', passed: true, detail: 'Not applicable — breadcrumbs are not meaningful on a homepage', severity: 'info', weight: 0, measurementType: 'detected', status: 'not_applicable' });
+  } else {
+    results.push(check('seo.breadcrumbSchema', 'Breadcrumb schema present', hasBreadcrumb, hasBreadcrumb ? 'BreadcrumbList schema found' : 'No BreadcrumbList schema found', 'low', 3, structuredDataSource));
+  }
 
   if (opts.linkCheckResults && opts.linkCheckResults.length > 0) {
-    const brokenInternal = opts.linkCheckResults.filter((l) => l.isInternal && !l.ok);
+    // l.ok is already confidence-aware (fetchSite.ts's classifyLinkStatus) — only a genuine
+    // 'broken' (404/410/5xx) counts against `!l.ok`. A 'blocked' link (bot-protected, e.g. a
+    // 403 from Instagram) is real, working evidence of nothing being wrong, not a failure.
+    const brokenInternal = opts.linkCheckResults.filter((l) => l.isInternal && l.confidence === 'broken');
     results.push(
       check(
         'seo.brokenLinks',
@@ -131,7 +161,7 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
       ),
     );
 
-    const brokenExternal = opts.linkCheckResults.filter((l) => !l.isInternal && !l.ok);
+    const brokenExternal = opts.linkCheckResults.filter((l) => !l.isInternal && l.confidence === 'broken');
     if (opts.linkCheckResults.some((l) => !l.isInternal)) {
       results.push(
         check(
@@ -146,6 +176,21 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
           'measured',
         ),
       );
+    }
+
+    const blocked = opts.linkCheckResults.filter((l) => l.confidence === 'blocked');
+    if (blocked.length > 0) {
+      results.push({
+        id: 'seo.blockedLinks',
+        category: 'seo',
+        label: 'Links that could not be independently verified',
+        passed: true,
+        detail: `${blocked.length} link(s) could not be independently verified because the destination restricted automated access (e.g. ${blocked.slice(0, 3).map((l) => `${l.href} — HTTP ${l.status}`).join(', ')}) — this is routine bot-protection, not evidence the link is broken`,
+        severity: 'info',
+        weight: 0,
+        measurementType: 'measured',
+        status: 'not_verified',
+      });
     }
   } else {
     const internalLinks = page.links.filter((l) => isInternalLink(l.href, page.finalUrl));
@@ -183,31 +228,44 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
   return results;
 }
 
+/**
+ * Flattens every JSON-LD block into a list of individual typed items — unwrapping both plain
+ * arrays and, critically, the schema.org `@graph` convention (`{"@context":..., "@graph": [...]}`
+ * used to bundle several distinct entities — e.g. BreadcrumbList, SoftwareApplication, and
+ * FAQPage — into a single <script> tag. Caught live in remote testing: the previous version only
+ * ever checked a block's own top-level `@type`, so anything nested inside `@graph` was invisible
+ * to every type-presence check below, even though it was genuinely present on the page.
+ */
+function flattenJsonLdItems(blocks: unknown[]): Record<string, unknown>[] {
+  const items: Record<string, unknown>[] = [];
+  for (const block of blocks) {
+    if (!block || typeof block !== 'object') continue;
+    const graph = (block as Record<string, unknown>)['@graph'];
+    const candidates = Array.isArray(block) ? block : Array.isArray(graph) ? graph : [block];
+    for (const item of candidates) {
+      if (item && typeof item === 'object') items.push(item as Record<string, unknown>);
+    }
+  }
+  return items;
+}
+
 function collectJsonLdTypes(blocks: unknown[]): Map<string, number> {
   const counts = new Map<string, number>();
-  for (const block of blocks) {
-    const items = Array.isArray(block) ? block : [block];
-    for (const item of items) {
-      if (!item || typeof item !== 'object') continue;
-      const t = (item as Record<string, unknown>)['@type'];
-      const typeList = Array.isArray(t) ? t : [t];
-      for (const tt of typeList) {
-        if (typeof tt === 'string') counts.set(tt, (counts.get(tt) ?? 0) + 1);
-      }
+  for (const item of flattenJsonLdItems(blocks)) {
+    const t = item['@type'];
+    const typeList = Array.isArray(t) ? t : [t];
+    for (const tt of typeList) {
+      if (typeof tt === 'string') counts.set(tt, (counts.get(tt) ?? 0) + 1);
     }
   }
   return counts;
 }
 
 function jsonLdHasType(blocks: unknown[], types: string[]): boolean {
-  return blocks.some((block) => {
-    const items = Array.isArray(block) ? block : [block];
-    return items.some((item) => {
-      if (!item || typeof item !== 'object') return false;
-      const t = (item as Record<string, unknown>)['@type'];
-      const typeList = Array.isArray(t) ? t : [t];
-      return typeList.some((tt) => typeof tt === 'string' && types.includes(tt));
-    });
+  return flattenJsonLdItems(blocks).some((item) => {
+    const t = item['@type'];
+    const typeList = Array.isArray(t) ? t : [t];
+    return typeList.some((tt) => typeof tt === 'string' && types.includes(tt));
   });
 }
 

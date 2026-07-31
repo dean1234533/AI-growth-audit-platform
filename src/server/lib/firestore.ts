@@ -3,7 +3,7 @@
  * Cloudflare Workers (no Node.js firebase-admin SDK available in the Workers runtime).
  */
 
-interface ServiceAccount {
+export interface ServiceAccount {
   client_email: string;
   private_key: string;
   project_id: string;

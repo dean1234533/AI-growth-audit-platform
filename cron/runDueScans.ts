@@ -35,6 +35,26 @@ const FREQUENCY_MS: Record<Exclude<ScanFrequency, 'manual'>, number> = {
   monthly: 30 * 24 * 60 * 60 * 1000,
 };
 
+// Browser Rendering's free-tier limits (3 concurrent browsers, 1 new instance/20s — see
+// wrangler.toml's [browser] binding comment) mean scanning every due site in one unbounded
+// sequential loop, now that each scan can launch a real browser, risks either blowing past
+// the concurrency cap or exhausting the daily render budget in one cron run. Process in small
+// bounded batches with pacing between them instead.
+const BATCH_SIZE = 3;
+const BATCH_PACING_MS = 20_000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function processInBatches<T>(items: T[], handler: (item: T) => Promise<void>): Promise<void> {
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE);
+    await Promise.all(batch.map((item) => handler(item)));
+    if (i + BATCH_SIZE < items.length) await sleep(BATCH_PACING_MS);
+  }
+}
+
 async function runAudit(targetUrl: string, env: CronEnv, options?: { crawlPages?: boolean; runPerformance?: boolean }) {
   const { result } = await runFullAudit(targetUrl, env, options);
   return result;
@@ -54,10 +74,10 @@ export async function runDueScans(env: CronEnv): Promise<void> {
     { field: 'nextScanDue', op: 'LESS_THAN_OR_EQUAL', value: new Date() },
   ])) as unknown as WebsiteDoc[];
 
-  for (const website of dueWebsites) {
+  await processInBatches(dueWebsites, async (website) => {
     try {
       const audit = await runAudit(website.url, env);
-      if (!audit) continue;
+      if (!audit) return;
 
       await addFirestoreDocument(serviceAccount, `websites/${website.id}/scans`, { ...audit });
 
@@ -91,7 +111,7 @@ export async function runDueScans(env: CronEnv): Promise<void> {
       console.error(`runDueScans: scan failed for website ${website.id} (${website.url}):`, err);
       await notifyAdmin(env, 'Failed scan', [`Scan failed for ${website.name} (${website.url}): ${err instanceof Error ? err.message : String(err)}`]);
     }
-  }
+  });
 
   // Competitors default to a fixed weekly cadence (see COMPETITOR_FREQUENCY in src/lib/monitoring.ts,
   // which this mirrors) — there's no per-competitor frequency picker, so every due one gets scanned

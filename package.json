@@ -9,13 +9,15 @@
     "preview": "astro preview",
     "deploy": "npm run build && wrangler deploy cron/entry.ts --assets dist/client --config wrangler.toml",
     "generate-content": "node scripts/generate-content.mjs",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",
     "@astrojs/mdx": "^7.0.5",
     "@astrojs/react": "^6.0.2",
     "@astrojs/sitemap": "^3.7.3",
+    "@cloudflare/puppeteer": "^1.0.5",
     "astro": "^7.1.6",
     "firebase": "^12.16.0",
     "framer-motion": "^12.43.0",
@@ -36,6 +38,7 @@
     "oxlint": "^1.71.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
+    "vitest": "^3.2.4",
     "wrangler": "^4.115.0"
   }
 }
