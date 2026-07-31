@@ -20,7 +20,8 @@ export function buildSoftwareApplicationSchema(): SchemaObject {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP' },
-    description: 'Free AI-powered website audit covering SEO, performance, accessibility, trust, mobile, conversion and local SEO.',
+    description:
+      'Free AI-powered website audit covering SEO, performance, accessibility, trust, mobile, conversion and local SEO — plus growth opportunities and recommended web development services to fix them.',
   };
 }
 
