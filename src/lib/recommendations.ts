@@ -113,6 +113,61 @@ const RULES: Record<string, RecommendationRule> = {
     description: () => 'Multiple pages appear to share the same title tag, which makes it harder for search engines to differentiate them in results.',
     impact: 'medium', difficulty: 'medium', estimatedTime: '30 minutes',
   },
+  'seo.canonicalConsistency': {
+    title: () => 'Fix your canonical URL',
+    description: (d) => `${d}. A canonical pointing at the wrong page can tell Google to index a different URL than the one visitors actually land on.`,
+    impact: 'medium', difficulty: 'easy', estimatedTime: '10 minutes',
+  },
+  'seo.indexable': {
+    title: () => 'Remove the noindex directive',
+    description: (d) => `${d}. This page is being told not to appear in search results at all.`,
+    impact: 'high', difficulty: 'easy', estimatedTime: '5 minutes',
+  },
+  'seo.nofollow': {
+    title: () => 'Remove the nofollow directive',
+    description: (d) => `${d}. This tells search engines not to follow any links from this page, which can prevent other pages on your site from being discovered.`,
+    impact: 'medium', difficulty: 'easy', estimatedTime: '5 minutes',
+  },
+  'seo.httpStatus': {
+    title: (d) => `Fix the page's HTTP status (${d})`,
+    description: (d) => `The page returned ${d} instead of a successful response. Search engines and visitors alike may treat this as broken.`,
+    impact: 'high', difficulty: 'medium', estimatedTime: '30-60 minutes',
+  },
+  'seo.httpsRedirect': {
+    title: () => 'Redirect HTTP to HTTPS',
+    description: () => 'Visiting the plain http:// version of your site does not redirect to https://, leaving visitors who type the address without "https" on an unencrypted connection.',
+    impact: 'high', difficulty: 'easy', estimatedTime: '15 minutes',
+  },
+  'seo.robotsReferencesSitemap': {
+    title: () => 'Reference your sitemap in robots.txt',
+    description: () => 'robots.txt does not point to your sitemap.xml, making it slightly harder for search engines to discover it.',
+    impact: 'low', difficulty: 'easy', estimatedTime: '5 minutes',
+  },
+  'seo.sitemapUrls': {
+    title: () => 'Add URLs to your sitemap',
+    description: () => 'Your sitemap.xml exists but lists no page URLs, so it provides no real benefit to search engines.',
+    impact: 'medium', difficulty: 'medium', estimatedTime: '30 minutes',
+  },
+  'seo.structuredDataValid': {
+    title: (d) => `Fix invalid structured data (${d})`,
+    description: (d) => `${d}. Invalid JSON-LD is silently ignored by search engines, so you get none of the benefit structured data is meant to provide.`,
+    impact: 'high', difficulty: 'medium', estimatedTime: '30-60 minutes',
+  },
+  'seo.duplicateSchema': {
+    title: (d) => `Remove duplicate structured data (${d})`,
+    description: (d) => `${d}. Multiple blocks of the same schema type can confuse how search engines interpret your structured data.`,
+    impact: 'low', difficulty: 'easy', estimatedTime: '20 minutes',
+  },
+  'seo.brokenExternalLinks': {
+    title: (d) => `Fix broken external links (${d})`,
+    description: (d) => `${d}. Links to pages that no longer exist reflect poorly on site upkeep and frustrate visitors trying to follow them.`,
+    impact: 'medium', difficulty: 'easy', estimatedTime: '20-40 minutes',
+  },
+  'seo.duplicateMetaDescription': {
+    title: () => 'Fix duplicate meta descriptions',
+    description: () => 'Multiple pages share the same meta description, giving search engines and visitors no way to tell what makes each page different before clicking.',
+    impact: 'medium', difficulty: 'medium', estimatedTime: '30 minutes',
+  },
   'perf.largeImages': {
     title: (d) => `Compress large images (${d})`,
     description: (d) => `${d}. Large, unoptimised images are one of the most common causes of slow page loads.`,
@@ -163,10 +218,105 @@ const RULES: Record<string, RecommendationRule> = {
     description: (d) => `Interaction to Next Paint is ${d}. Slow response to clicks/taps makes the site feel sluggish.`,
     impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
   },
+  'perf.fcp': {
+    title: (d) => `Improve First Contentful Paint (${d})`,
+    description: (d) => `FCP is ${d}. This measures how fast the first content appears — a slow FCP makes the site feel unresponsive from the moment it loads.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
+  },
+  'perf.tbt': {
+    title: (d) => `Reduce Total Blocking Time (${d})`,
+    description: (d) => `TBT is ${d}. The main thread is too busy to respond to clicks/taps promptly during load.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
+  },
+  'perf.speedIndex': {
+    title: (d) => `Improve Speed Index (${d})`,
+    description: (d) => `Speed Index is ${d}. This measures how quickly the page's content is visually populated as it loads.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
+  },
+  'perf.serverResponseTime': {
+    title: (d) => `Speed up server response time (${d})`,
+    description: (d) => `${d}. A slow server response delays everything else on the page from starting.`,
+    impact: 'high', difficulty: 'medium', estimatedTime: '1-3 hours',
+  },
+  'perf.pageWeight': {
+    title: (d) => `Reduce total page size (${d})`,
+    description: (d) => `${d}. Large pages take longer to download, especially on mobile connections.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
+  },
+  'perf.modernImageFormats': {
+    title: () => 'Serve images in WebP/AVIF format',
+    description: () => 'Images are being served in older formats (JPEG/PNG) instead of modern formats like WebP or AVIF, which are typically 25-50% smaller at the same quality.',
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1 hour',
+  },
+  'perf.fontDisplay': {
+    title: () => 'Fix invisible text during font load',
+    description: () => 'Web fonts are not using font-display, which can cause text to be invisible while the font loads.',
+    impact: 'low', difficulty: 'easy', estimatedTime: '15 minutes',
+  },
+  'perf.thirdParty': {
+    title: (d) => `Reduce third-party script impact (${d})`,
+    description: (d) => `${d}. Third-party scripts (analytics, chat widgets, ads) are adding significant load time.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
+  },
   'a11y.contrast': {
     title: (d) => `Fix low colour contrast (${d})`,
     description: (d) => `${d}. Low contrast text is hard to read for many visitors, particularly on mobile in bright light.`,
     impact: 'medium', difficulty: 'easy', estimatedTime: '30 minutes',
+  },
+  'a11y.colorContrastMeasured': {
+    title: () => 'Fix low colour contrast (measured in Chrome)',
+    description: (d) => `${d}. This was measured by actually rendering the page, not guessed from source code — it's a real, confirmed contrast issue.`,
+    impact: 'high', difficulty: 'easy', estimatedTime: '30-60 minutes',
+  },
+  'a11y.duplicateIdsMeasured': {
+    title: () => 'Fix duplicate element IDs (measured)',
+    description: () => 'Duplicate id attributes were found on interactive elements when the page was actually rendered — this can break assistive technology and form labels relying on those IDs.',
+    impact: 'medium', difficulty: 'easy', estimatedTime: '20-40 minutes',
+  },
+  'a11y.ariaValidMeasured': {
+    title: () => 'Fix invalid ARIA attributes (measured)',
+    description: () => 'Some ARIA attributes have invalid values, confirmed by rendering the page — this can cause screen readers to announce incorrect or confusing information.',
+    impact: 'medium', difficulty: 'medium', estimatedTime: '30-60 minutes',
+  },
+  'a11y.htmlLang': {
+    title: () => 'Add a language attribute to the page',
+    description: () => 'The <html> tag has no lang attribute, so screen readers cannot reliably choose the correct pronunciation/voice, and search engines cannot confirm the page\'s language.',
+    impact: 'medium', difficulty: 'easy', estimatedTime: '5 minutes',
+  },
+  'a11y.emptyLinks': {
+    title: (d) => `Fix links with no text (${d})`,
+    description: (d) => `${d}. Screen reader users hear "link" with no indication of where it goes.`,
+    impact: 'medium', difficulty: 'easy', estimatedTime: '20 minutes',
+  },
+  'a11y.emptyButtons': {
+    title: (d) => `Fix buttons with no accessible text (${d})`,
+    description: (d) => `${d}. Screen reader users cannot tell what these buttons do.`,
+    impact: 'high', difficulty: 'easy', estimatedTime: '20 minutes',
+  },
+  'a11y.iframeTitles': {
+    title: (d) => `Add titles to embedded content (${d})`,
+    description: (d) => `${d}. Iframes (embedded maps, videos, widgets) need a title so screen reader users know what they contain before entering them.`,
+    impact: 'low', difficulty: 'easy', estimatedTime: '15 minutes',
+  },
+  'a11y.duplicateIds': {
+    title: (d) => `Fix duplicate id attributes (${d})`,
+    description: (d) => `${d}. Duplicate IDs can break form labels, anchor links and assistive technology relying on unique element identification.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '30-60 minutes',
+  },
+  'mobile.tapTargetsMeasured': {
+    title: () => 'Enlarge tap targets (measured)',
+    description: (d) => `${d}. Confirmed by rendering the page on a mobile viewport — some interactive elements are too small or too close together.`,
+    impact: 'medium', difficulty: 'medium', estimatedTime: '30-60 minutes',
+  },
+  'mobile.fontSizeMeasured': {
+    title: () => 'Increase mobile text size (measured)',
+    description: (d) => `${d}. Confirmed by rendering the page on a mobile viewport — some text is too small to read without zooming.`,
+    impact: 'medium', difficulty: 'easy', estimatedTime: '20 minutes',
+  },
+  'mobile.contentWidthMeasured': {
+    title: () => 'Fix content width for mobile (measured)',
+    description: (d) => `${d}. The rendered page content doesn't fit the mobile viewport correctly, likely causing horizontal scrolling.`,
+    impact: 'high', difficulty: 'medium', estimatedTime: '1-2 hours',
   },
   'a11y.ariaLabels': {
     title: (d) => `Add missing ARIA labels (${d})`,
@@ -273,6 +423,41 @@ const RULES: Record<string, RecommendationRule> = {
     description: () => 'No cookie consent mechanism was detected. This may be a compliance risk depending on your analytics/tracking usage and target regions.',
     impact: 'low', difficulty: 'easy', estimatedTime: '30 minutes',
   },
+  'trust.hsts': {
+    title: () => 'Add a Strict-Transport-Security header',
+    description: () => 'No HSTS header was found. Without it, a visitor\'s first request to your site can still be intercepted over plain HTTP before any redirect happens.',
+    impact: 'medium', difficulty: 'easy', estimatedTime: '15 minutes',
+  },
+  'trust.csp': {
+    title: () => 'Add a Content-Security-Policy header',
+    description: () => 'No Content-Security-Policy header was found. CSP is one of the strongest defences against cross-site scripting (XSS) attacks.',
+    impact: 'medium', difficulty: 'medium', estimatedTime: '1-2 hours',
+  },
+  'trust.frameProtection': {
+    title: () => 'Add clickjacking protection',
+    description: () => 'No X-Frame-Options header or CSP frame-ancestors directive was found, meaning the site could be embedded in a malicious iframe on another site (clickjacking).',
+    impact: 'medium', difficulty: 'easy', estimatedTime: '15 minutes',
+  },
+  'trust.contentTypeOptions': {
+    title: () => 'Add an X-Content-Type-Options header',
+    description: () => 'No X-Content-Type-Options: nosniff header was found, which helps prevent browsers from misinterpreting file types in a way attackers can exploit.',
+    impact: 'low', difficulty: 'easy', estimatedTime: '10 minutes',
+  },
+  'trust.referrerPolicy': {
+    title: () => 'Add a Referrer-Policy header',
+    description: () => 'No Referrer-Policy header was found, so the browser uses its (often overly permissive) default for what URL data leaks to other sites via the Referer header.',
+    impact: 'low', difficulty: 'easy', estimatedTime: '10 minutes',
+  },
+  'trust.permissionsPolicy': {
+    title: () => 'Add a Permissions-Policy header',
+    description: () => 'No Permissions-Policy header was found. This lets you explicitly disable browser features (camera, microphone, geolocation) your site never uses, reducing attack surface.',
+    impact: 'low', difficulty: 'easy', estimatedTime: '15 minutes',
+  },
+  'trust.mixedContent': {
+    title: (d) => `Fix mixed content (${d})`,
+    description: (d) => `${d}. Loading resources over plain http:// on an https page triggers browser security warnings and can be blocked outright.`,
+    impact: 'high', difficulty: 'medium', estimatedTime: '30-60 minutes',
+  },
   'conv.primaryCta': {
     title: () => 'Add a clear primary call-to-action',
     description: () => 'No obvious primary call-to-action (e.g. "Get a Quote", "Call Now") was found above the fold. Visitors should never have to hunt for what to do next.',
@@ -333,9 +518,14 @@ const RULES: Record<string, RecommendationRule> = {
     description: () => 'No Google review count or rating was found displayed on the site, missing a strong local trust signal.',
     impact: 'high', difficulty: 'medium', estimatedTime: '1 hour',
   },
+  'local.schemaCompleteness': {
+    title: (d) => `Complete your LocalBusiness schema (${d})`,
+    description: (d) => `${d}. Incomplete structured data means Google can't reliably use it for local search results.`,
+    impact: 'medium', difficulty: 'easy', estimatedTime: '20 minutes',
+  },
 };
 
-export function buildRecommendations(failedChecks: CheckResult[]): Recommendation[] {
+export function buildRecommendations(failedChecks: CheckResult[], pageUrl: string): Recommendation[] {
   const recs = failedChecks.map((check) => {
     const rule = RULES[check.id];
     const title = rule ? rule.title(check.detail) : check.label;
@@ -356,6 +546,9 @@ export function buildRecommendations(failedChecks: CheckResult[]): Recommendatio
       estimatedTime,
       priority,
       aiGenerated: false,
+      evidence: check.detail,
+      affectedUrl: pageUrl,
+      detectionMethod: check.measurementType,
     };
     return rec;
   });

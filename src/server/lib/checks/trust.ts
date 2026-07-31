@@ -1,8 +1,16 @@
-import type { CheckResult } from '../../../lib/types';
+import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData } from '../fetchSite';
 
-function check(id: string, label: string, passed: boolean, detail: string, severity: CheckResult['severity'], weight: number): CheckResult {
-  return { id, category: 'trust', label, passed, detail, severity, weight };
+function check(
+  id: string,
+  label: string,
+  passed: boolean,
+  detail: string,
+  severity: CheckResult['severity'],
+  weight: number,
+  measurementType: MeasurementType = 'detected',
+): CheckResult {
+  return { id, category: 'trust', label, passed, detail, severity, weight, measurementType };
 }
 
 const PHONE_REGEX = /(\+?\d[\d\s().-]{7,}\d)/;
@@ -57,6 +65,28 @@ export function runTrustChecks(page: PageData): CheckResult[] {
 
   const hasCookieBanner = /cookie/i.test(html) && /(consent|accept|banner)/i.test(html);
   results.push(check('trust.cookieBanner', 'Cookie consent present', hasCookieBanner, hasCookieBanner ? 'Cookie consent references found' : 'No cookie consent banner detected', 'low', 2));
+
+  const headers = page.headers;
+  const hasHeader = (name: string) => !!headers[name];
+
+  results.push(check('trust.hsts', 'Strict-Transport-Security header set', hasHeader('strict-transport-security'), hasHeader('strict-transport-security') ? `Set: ${headers['strict-transport-security']}` : 'No Strict-Transport-Security header found', 'high', 6));
+
+  results.push(check('trust.csp', 'Content-Security-Policy header set', hasHeader('content-security-policy'), hasHeader('content-security-policy') ? 'Content-Security-Policy header present' : 'No Content-Security-Policy header found', 'medium', 5));
+
+  const hasFrameProtection = hasHeader('x-frame-options') || /frame-ancestors/i.test(headers['content-security-policy'] ?? '');
+  results.push(check('trust.frameProtection', 'Clickjacking protection (X-Frame-Options/CSP frame-ancestors)', hasFrameProtection, hasFrameProtection ? 'Frame protection header found' : 'No X-Frame-Options or CSP frame-ancestors directive found', 'medium', 5));
+
+  results.push(check('trust.contentTypeOptions', 'X-Content-Type-Options header set', hasHeader('x-content-type-options'), hasHeader('x-content-type-options') ? `Set: ${headers['x-content-type-options']}` : 'No X-Content-Type-Options header found', 'low', 3));
+
+  results.push(check('trust.referrerPolicy', 'Referrer-Policy header set', hasHeader('referrer-policy'), hasHeader('referrer-policy') ? `Set: ${headers['referrer-policy']}` : 'No Referrer-Policy header found', 'low', 3));
+
+  results.push(check('trust.permissionsPolicy', 'Permissions-Policy header set', hasHeader('permissions-policy'), hasHeader('permissions-policy') ? 'Permissions-Policy header present' : 'No Permissions-Policy header found', 'low', 2));
+
+  if (page.isHttps) {
+    const mixedContentMatches = [...html.matchAll(/(?:src|href)=["']http:\/\/[^"']+["']/gi)];
+    const hasMixedContent = mixedContentMatches.length > 0;
+    results.push(check('trust.mixedContent', 'No mixed content (insecure http:// resources)', !hasMixedContent, hasMixedContent ? `${mixedContentMatches.length} resource(s) loaded over insecure http:// on an https page` : 'No insecure http:// resource references found', 'high', 7));
+  }
 
   return results;
 }

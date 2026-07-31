@@ -1,8 +1,16 @@
-import type { CheckResult } from '../../../lib/types';
+import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData } from '../fetchSite';
 
-function check(id: string, label: string, passed: boolean, detail: string, severity: CheckResult['severity'], weight: number): CheckResult {
-  return { id, category: 'conversion', label, passed, detail, severity, weight };
+function check(
+  id: string,
+  label: string,
+  passed: boolean,
+  detail: string,
+  severity: CheckResult['severity'],
+  weight: number,
+  measurementType: MeasurementType = 'detected',
+): CheckResult {
+  return { id, category: 'conversion', label, passed, detail, severity, weight, measurementType };
 }
 
 const CTA_WORDS = /(get a quote|request a quote|book now|call now|contact us|get started|free quote|book a|enquire|schedule|get in touch|buy now|order now)/i;
@@ -30,6 +38,12 @@ export function runConversionChecks(page: PageData): CheckResult[] {
 
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   results.push(check('conv.serviceDescriptions', 'Sufficient page content/detail', wordCount >= 300, `Homepage has approximately ${wordCount} words of visible text`, 'medium', 5));
+
+  const hasWhatsApp = /(wa\.me\/|api\.whatsapp\.com)/i.test(html);
+  results.push(check('conv.whatsapp', 'WhatsApp contact link present', hasWhatsApp, hasWhatsApp ? 'WhatsApp link found' : 'No WhatsApp link found — informational, not all businesses need one', 'info', 2));
+
+  const hasBookingLink = /(calendly\.com|acuityscheduling\.com|setmore\.com|book\.squareup\.com|square\.site)/i.test(html);
+  results.push(check('conv.bookingLink', 'Online booking link present', hasBookingLink, hasBookingLink ? 'Booking/scheduling link found' : 'No booking/scheduling tool link found — informational, not all businesses need one', 'info', 2));
 
   return results;
 }

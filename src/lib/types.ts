@@ -9,6 +9,17 @@ export type CategoryId =
   | 'conversion'
   | 'localSeo';
 
+/**
+ * How confident this result is, so the UI never presents a guess as a measured fact:
+ * - measured: real browser data (PageSpeed Insights / Lighthouse)
+ * - detected: deterministic fact from the actual HTTP response/HTML (a header is present,
+ *   robots.txt returned 200, JSON-LD parsed) — not a guess, just not browser-rendered
+ * - inferred: regex/static heuristic on raw HTML — real signal, lower confidence
+ * - not_available: the current infrastructure genuinely can't check this (e.g. no
+ *   PAGESPEED_API_KEY configured) — shown honestly rather than silently omitted
+ */
+export type MeasurementType = 'measured' | 'detected' | 'inferred' | 'not_available';
+
 export interface CheckResult {
   id: string;
   category: CategoryId;
@@ -19,6 +30,7 @@ export interface CheckResult {
   severity: Severity;
   /** Points this check contributes to the category score (0 if failed) */
   weight: number;
+  measurementType: MeasurementType;
 }
 
 export interface Recommendation {
@@ -32,6 +44,11 @@ export interface Recommendation {
   estimatedTime: string;
   priority: number;
   aiGenerated: boolean;
+  /** The specific detected detail behind this recommendation, e.g. "Measured LCP: 14.1 seconds" */
+  evidence: string;
+  /** Which page this was found on — the audited URL by default, or a discovered page's URL */
+  affectedUrl: string;
+  detectionMethod: MeasurementType;
 }
 
 export interface CategoryScore {
@@ -39,6 +56,13 @@ export interface CategoryScore {
   label: string;
   score: number;
   checks: CheckResult[];
+}
+
+/** A secondary discovered page's own category breakdown — homepage stays on AuditResult's top-level fields for backwards compatibility. */
+export interface PageAuditResult {
+  url: string;
+  overallScore: number;
+  categories: CategoryScore[];
 }
 
 export interface GrowthEstimate {
@@ -62,6 +86,8 @@ export interface AuditResult {
     partial: boolean;
     warnings: string[];
   };
+  /** Additional discovered pages beyond the homepage, each with their own category breakdown. Absent on older stored scans. */
+  pages?: PageAuditResult[];
 }
 
 export interface Lead {

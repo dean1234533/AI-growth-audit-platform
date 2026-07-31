@@ -1,8 +1,16 @@
-import type { CheckResult } from '../../../lib/types';
+import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData } from '../fetchSite';
 
-function check(id: string, label: string, passed: boolean, detail: string, severity: CheckResult['severity'], weight: number): CheckResult {
-  return { id, category: 'accessibility', label, passed, detail, severity, weight };
+function check(
+  id: string,
+  label: string,
+  passed: boolean,
+  detail: string,
+  severity: CheckResult['severity'],
+  weight: number,
+  measurementType: MeasurementType = 'detected',
+): CheckResult {
+  return { id, category: 'accessibility', label, passed, detail, severity, weight, measurementType };
 }
 
 export function runAccessibilityChecks(page: PageData): CheckResult[] {
@@ -32,7 +40,33 @@ export function runAccessibilityChecks(page: PageData): CheckResult[] {
   results.push(check('a11y.focusStates', 'Visible focus states defined', hasFocusStyles, hasFocusStyles ? 'Focus-related CSS detected' : 'No :focus or outline styling detected in page source', 'medium', 4));
 
   const hasContrastRisk = /color:\s*#(ccc|ddd|eee|ccc|d0d0d0)/i.test(page.html);
-  results.push(check('a11y.contrast', 'No obvious low-contrast colour patterns', !hasContrastRisk, hasContrastRisk ? 'Very light text colours detected inline, which often indicates low contrast' : 'No obvious low-contrast patterns detected in inline styles', 'medium', 4));
+  results.push(
+    check(
+      'a11y.contrast',
+      'No obvious low-contrast colour patterns',
+      !hasContrastRisk,
+      hasContrastRisk ? 'Very light text colours detected inline, which often indicates low contrast' : 'No obvious low-contrast patterns detected in inline styles',
+      'medium',
+      4,
+      'inferred',
+    ),
+  );
+
+  results.push(check('a11y.htmlLang', 'HTML lang attribute set', !!page.htmlLang, page.htmlLang ? `lang="${page.htmlLang}"` : 'No lang attribute found on <html>', 'high', 6));
+
+  const emptyLinks = page.links.filter((l) => !l.text && !/^(#|mailto:|tel:)/.test(l.href));
+  results.push(check('a11y.emptyLinks', 'No links with empty accessible text', emptyLinks.length === 0, emptyLinks.length === 0 ? 'All links have visible text' : `${emptyLinks.length} link(s) found with no text content (e.g. icon-only links without aria-label)`, 'medium', 5));
+
+  const emptyButtons = page.buttons.filter((b) => !b.text && !b.hasAccessibleName);
+  results.push(check('a11y.emptyButtons', 'No buttons with empty accessible text', emptyButtons.length === 0, page.buttons.length === 0 ? 'No buttons found' : emptyButtons.length === 0 ? 'All buttons have text or an aria-label' : `${emptyButtons.length} button(s) found with no text and no aria-label`, 'high', 6));
+
+  const untitledIframes = page.iframes.filter((f) => !f.title);
+  results.push(check('a11y.iframeTitles', 'Iframes have a title attribute', page.iframes.length === 0 || untitledIframes.length === 0, page.iframes.length === 0 ? 'No iframes found' : `${untitledIframes.length} of ${page.iframes.length} iframe(s) missing a title attribute`, 'medium', 4));
+
+  const idCounts = new Map<string, number>();
+  for (const id of page.ids) idCounts.set(id, (idCounts.get(id) ?? 0) + 1);
+  const duplicateIds = [...idCounts.entries()].filter(([, count]) => count > 1);
+  results.push(check('a11y.duplicateIds', 'No duplicate id attributes', duplicateIds.length === 0, duplicateIds.length === 0 ? 'No duplicate id attributes found' : `${duplicateIds.length} duplicate id value(s) found (e.g. "${duplicateIds[0][0]}")`, 'medium', 5));
 
   return results;
 }

@@ -1,25 +1,13 @@
-import { buildCategoryScores, buildGrowthEstimate, buildOverallScore } from '../src/lib/scoring';
-import { buildRecommendations } from '../src/lib/recommendations';
-import type { AuditResult, CheckResult, ScanFrequency } from '../src/lib/types';
-import { fetchAndParse } from '../src/server/lib/fetchSite';
-import { runSeoChecks } from '../src/server/lib/checks/seo';
-import { runAccessibilityChecks } from '../src/server/lib/checks/accessibility';
-import { runMobileChecks } from '../src/server/lib/checks/mobile';
-import { runTrustChecks } from '../src/server/lib/checks/trust';
-import { runConversionChecks } from '../src/server/lib/checks/conversion';
-import { runLocalSeoChecks } from '../src/server/lib/checks/localSeo';
-import { runPerformanceChecks } from '../src/server/lib/checks/performance';
-import { enrichRecommendationsWithAi } from '../src/server/lib/aiNarrative';
+import type { ScanFrequency } from '../src/lib/types';
+import { runFullAudit, type AuditEnv } from '../src/server/lib/runFullAudit';
 import { addFirestoreDocument, updateFirestoreDocument, getFirestoreDocument, runQuery, parseServiceAccount } from '../src/server/lib/firestore';
 import { notifyWebsiteScan, notifyCompetitorScan } from '../src/server/lib/notifyScan';
 import { notifyAdmin, type AdminAlertEnv } from '../src/server/lib/adminAlert';
 
-interface CronEnv extends AdminAlertEnv {
-  PAGESPEED_API_KEY?: string;
+interface CronEnv extends AuditEnv, AdminAlertEnv {
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
   VAPID_PRIVATE_KEY_JWK?: string;
   PUBLIC_VAPID_KEY?: string;
-  AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
 }
 
 interface WebsiteDoc {
@@ -47,40 +35,9 @@ const FREQUENCY_MS: Record<Exclude<ScanFrequency, 'manual'>, number> = {
   monthly: 30 * 24 * 60 * 60 * 1000,
 };
 
-async function runAudit(targetUrl: string, env: CronEnv): Promise<AuditResult | null> {
-  const { page, robotsTxt, sitemapXml } = await fetchAndParse(targetUrl);
-  if (!page) return null;
-
-  const perf = await runPerformanceChecks(targetUrl, env.PAGESPEED_API_KEY);
-  const warnings = perf.warning ? [perf.warning] : [];
-
-  const checks: CheckResult[] = [
-    ...runSeoChecks(page, robotsTxt, sitemapXml),
-    ...perf.checks,
-    ...runAccessibilityChecks(page),
-    ...runMobileChecks(page),
-    ...runTrustChecks(page),
-    ...runConversionChecks(page),
-    ...runLocalSeoChecks(page),
-  ];
-
-  const categories = buildCategoryScores(checks);
-  const overallScore = buildOverallScore(categories);
-  const growthEstimate = buildGrowthEstimate(categories);
-
-  const failedChecks = checks.filter((c) => !c.passed && c.severity !== 'info');
-  const baseRecommendations = buildRecommendations(failedChecks);
-  const recommendations = await enrichRecommendationsWithAi(env.AI, baseRecommendations);
-
-  return {
-    url: page.finalUrl,
-    scannedAt: new Date().toISOString(),
-    overallScore,
-    categories,
-    recommendations,
-    growthEstimate,
-    meta: { pageTitle: page.title, partial: warnings.length > 0, warnings },
-  };
+async function runAudit(targetUrl: string, env: CronEnv, options?: { crawlPages?: boolean; runPerformance?: boolean }) {
+  const { result } = await runFullAudit(targetUrl, env, options);
+  return result;
 }
 
 /** Runs on the daily Cron Trigger: scans every monitored website whose schedule says it's due. */
@@ -150,7 +107,7 @@ export async function runDueScans(env: CronEnv): Promise<void> {
     const websiteId = competitor.path[1];
     if (!websiteId) continue;
     try {
-      const audit = await runAudit(competitor.url, env);
+      const audit = await runAudit(competitor.url, env, { crawlPages: false, runPerformance: false });
       if (!audit) continue;
 
       await addFirestoreDocument(serviceAccount, `websites/${websiteId}/competitors/${competitor.id}/scans`, { ...audit });
