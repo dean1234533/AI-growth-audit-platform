@@ -7,8 +7,10 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   getAdditionalUserInfo,
+  signOut,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../lib/firebaseClient';
+import { BRAND_EMAIL } from '../../lib/seo/site';
 import { ensureUserDoc } from '../../lib/userSettings';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
@@ -78,6 +80,12 @@ export default function AuthForm() {
     setError(null);
     try {
       const cred = await signInWithPopup(auth, googleProvider);
+      if (cred.user.email !== BRAND_EMAIL) {
+        await signOut(auth);
+        setError('Google sign-in is reserved for the site admin. Please use email and password instead.');
+        setLoading(false);
+        return;
+      }
       await ensureUserDoc(cred.user.uid, cred.user.displayName ?? cred.user.email ?? '');
       if (getAdditionalUserInfo(cred)?.isNewUser) {
         markPwaInstallEligible();
