@@ -1,7 +1,9 @@
 /**
  * Single source of truth for plan-based access limits. Every place that needs to know "how
  * many websites can this user monitor" — the website-creation route, the quota-display route,
- * tests — reads from here. Nothing else in the codebase should hardcode 1 / 5 / unlimited.
+ * the pricing-page/billing-card copy (src/lib/plans.ts), tests — reads from here. Nothing else
+ * in the codebase should hardcode 1 / 5 / unlimited. This file has no server-only imports
+ * (no Firestore, no Cloudflare bindings) specifically so client-bundled code can import it too.
  */
 
 export type PlanId = 'free' | 'pro' | 'admin';
