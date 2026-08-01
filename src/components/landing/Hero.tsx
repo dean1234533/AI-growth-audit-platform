@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Globe, Sparkles, ArrowRight, ShieldCheck, Zap, Search, ChevronDown } from 'lucide-react';
+import { Globe, Sparkles, ArrowRight, Zap, Search, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { AuditIntakeContext } from '../../lib/api';
 
@@ -27,7 +27,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
   }
 
   return (
-    <section className={`relative px-6 ${compact ? 'py-4' : 'pt-36 pb-28 sm:pt-48 sm:pb-40'}`}>
+    <section id="top" className={`relative scroll-mt-24 px-6 ${compact ? 'py-4' : 'pt-36 pb-28 sm:pt-48 sm:pb-40'}`}>
       <div className="mx-auto max-w-4xl text-center">
         {!compact && (
           <>
@@ -38,7 +38,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
               className="glass mx-auto mb-8 inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-brand-700 dark:text-brand-200"
             >
               <Sparkles className="size-4" />
-              Free AI-Powered Website Analysis
+              Website Audit &amp; Monitoring
             </motion.div>
 
             <motion.h1
@@ -47,10 +47,10 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
               transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
               className="font-display text-[2.75rem] leading-[1.05] font-extrabold tracking-tight text-ink sm:text-7xl dark:text-white"
             >
-              Free AI Website
+              Know When Your
               <br />
               <span className="bg-[linear-gradient(120deg,#3b82f6,#4b7cff_45%,#00c48c)] bg-clip-text text-transparent">
-                Growth Audit
+                Website Needs Attention
               </span>
             </motion.h1>
 
@@ -60,8 +60,8 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
               transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
               className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-slate sm:text-xl"
             >
-              Find out exactly what's stopping your website from getting more enquiries, customers and
-              Google traffic — in under 30 seconds.
+              Scan your website for SEO, performance, accessibility, conversion and local search
+              issues — then keep monitoring it automatically so you know when something changes.
             </motion.p>
           </>
         )}
@@ -86,9 +86,23 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
             />
           </div>
           <Button type="submit" size="lg" loading={loading} icon={<Search className="size-4" />} className="shrink-0">
-            {loading ? 'Analysing…' : 'Analyse My Website'}
+            {loading ? 'Analysing…' : 'Start Free Audit'}
           </Button>
         </motion.form>
+
+        {!compact && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.32 }}
+            className="mt-3 text-sm text-slate"
+          >
+            No account required. No credit card.{' '}
+            <a href="/login" className="font-semibold text-brand-500 hover:underline">
+              Already have an account? Log in
+            </a>
+          </motion.p>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -145,9 +159,6 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
         >
           <span className="inline-flex items-center gap-2">
             <Zap className="size-4 text-brand-500" /> Results in ~30 seconds
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <ShieldCheck className="size-4 text-brand-500" /> No obligation, no spam
           </span>
           <span className="inline-flex items-center gap-2">
             <ArrowRight className="size-4 text-brand-500" /> Real, data-backed recommendations

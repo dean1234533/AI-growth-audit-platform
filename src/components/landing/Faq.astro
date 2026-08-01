@@ -1,0 +1,68 @@
+---
+import { PLANS } from '../../lib/plans';
+
+const FREE = PLANS.find((p) => p.id === 'free')!;
+const PRO = PLANS.find((p) => p.id === 'pro')!;
+
+// Every answer here must match what the product actually does — pulled
+// from the same PLANS source as the pricing section, not written by hand.
+const FAQS = [
+  {
+    q: 'What is Growth Audit?',
+    a: 'Growth Audit checks your website for SEO, performance, accessibility, local SEO and conversion issues, then tells you what needs fixing. You can run a free audit instantly, or create an account to save your website and monitor it automatically over time.',
+  },
+  {
+    q: 'Is the audit really free?',
+    a: 'Yes. Running an audit is completely free and does not require an account. Monitoring more than one website ongoing is the part that requires the paid plan.',
+  },
+  {
+    q: 'Do I need an account to run an audit?',
+    a: 'No. You can run a full audit on any website without creating an account.',
+  },
+  {
+    q: 'What do I get with a free account?',
+    a: `${FREE.websiteLimit} monitored website, with ${FREE.features.filter((f) => f !== `${FREE.websiteLimit} monitored website`).join(', ').toLowerCase()}, plus your audit history saved in one place.`,
+  },
+  {
+    q: 'How many websites can I monitor?',
+    a: `On the Free plan, ${FREE.websiteLimit} website.`,
+  },
+  {
+    q: 'How many websites can I monitor on Pro?',
+    a: `Up to ${PRO.websiteLimit} websites, with ${PRO.features.filter((f) => !f.includes('monitored website')).join(', ').toLowerCase()}.`,
+  },
+  {
+    q: 'What happens when I upgrade?',
+    a: `You can monitor up to ${PRO.websiteLimit} websites instead of ${FREE.websiteLimit}, with daily scans, competitor monitoring and weekly AI reports.`,
+  },
+  {
+    q: 'Can I cancel?',
+    a: 'Yes — you can cancel any time from your billing settings. There is no lock-in contract.',
+  },
+];
+---
+
+<section id="faq" class="relative scroll-mt-24 px-6 py-24 sm:py-32">
+  <div class="mx-auto max-w-3xl">
+    <div class="mb-12 text-center">
+      <span class="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">FAQ</span>
+      <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl dark:text-white">
+        Common questions
+      </h2>
+    </div>
+
+    <div class="space-y-3">
+      {
+        FAQS.map((item) => (
+          <details class="glass group rounded-2xl px-5 py-4 open:pb-4 [&_summary::-webkit-details-marker]:hidden">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink dark:text-white">
+              {item.q}
+              <span class="shrink-0 text-slate transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-slate">{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

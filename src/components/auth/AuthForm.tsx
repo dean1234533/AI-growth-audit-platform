@@ -28,8 +28,13 @@ function redirectToDashboard() {
   window.location.href = url ? `/dashboard?url=${encodeURIComponent(url)}` : '/dashboard';
 }
 
+function initialMode(): 'signin' | 'signup' {
+  if (typeof window === 'undefined') return 'signin';
+  return new URLSearchParams(window.location.search).get('mode') === 'signup' ? 'signup' : 'signin';
+}
+
 export default function AuthForm() {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -101,7 +106,7 @@ export default function AuthForm() {
           {mode === 'signup' ? 'Create your free account' : 'Welcome back'}
         </h1>
         <p className="mt-1.5 text-sm text-slate">
-          {mode === 'signup' ? 'Monitor your website automatically, for free.' : 'Sign in to your website health dashboard.'}
+          {mode === 'signup' ? 'Monitor your website automatically, for free.' : 'Log in to your website health dashboard.'}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-7 space-y-3">
@@ -132,7 +137,7 @@ export default function AuthForm() {
           {error && <p className="text-sm font-medium text-rose-500">{error}</p>}
 
           <Button type="submit" size="lg" loading={loading} className="w-full">
-            {mode === 'signup' ? 'Create Account' : 'Sign In'}
+            {mode === 'signup' ? 'Create Account' : 'Log In'}
           </Button>
         </form>
 
@@ -151,7 +156,7 @@ export default function AuthForm() {
             onClick={() => setMode(mode === 'signup' ? 'signin' : 'signup')}
             className="font-semibold text-brand-500 hover:underline"
           >
-            {mode === 'signup' ? 'Sign in' : 'Create one free'}
+            {mode === 'signup' ? 'Log in' : 'Create one free'}
           </button>
         </p>
       </GlassCard>

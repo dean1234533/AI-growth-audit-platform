@@ -1,6 +1,10 @@
 import { FloatingBackground } from '../landing/FloatingBackground';
 import { Hero } from '../landing/Hero';
+import { TryFreeAudit } from '../landing/TryFreeAudit';
+import { WhyAccount } from '../landing/WhyAccount';
 import { HowItWorks } from '../landing/HowItWorks';
+import { WhyMonitoring } from '../landing/WhyMonitoring';
+import { HomepagePricing } from '../landing/HomepagePricing';
 import type { AuditIntakeContext } from '../../lib/api';
 
 interface LandingPageProps {
@@ -21,7 +25,11 @@ export function LandingPage({ onAnalyse, loading, errorMessage, compact = false 
     <div className="relative">
       <FloatingBackground />
       <Hero onAnalyse={onAnalyse} loading={loading} errorMessage={errorMessage} />
+      <TryFreeAudit />
+      <WhyAccount />
       <HowItWorks />
+      <WhyMonitoring />
+      <HomepagePricing />
     </div>
   );
 }

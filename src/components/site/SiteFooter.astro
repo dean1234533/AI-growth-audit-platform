@@ -1,39 +1,24 @@
 ---
-import { Mail } from 'lucide-react';
-
 const COLUMNS = [
   {
     title: 'Product',
     links: [
-      { label: 'Run a Free Audit', href: '/' },
-      { label: 'Sign In', href: '/login' },
-      { label: 'Pricing', href: '/pricing' },
+      { label: 'Start Free Audit', href: '/' },
+      { label: 'Log In', href: '/login' },
     ],
   },
   {
     title: 'Resources',
     links: [
       { label: 'Blog', href: '/blog' },
-      { label: 'Ultimate Website SEO Guide', href: '/guides/website-seo-guide' },
-      { label: 'FAQ Hub', href: '/faq' },
-      { label: 'Compare', href: '/compare' },
+      { label: 'FAQ', href: '/faq' },
     ],
   },
   {
-    title: 'By industry',
+    title: 'Legal',
     links: [
-      { label: 'Electricians', href: '/industries/electricians' },
-      { label: 'Plumbers', href: '/industries/plumbers' },
-      { label: 'Painters & Decorators', href: '/industries/painters-and-decorators' },
-      { label: 'Dentists', href: '/industries/dentists' },
-      { label: 'Restaurants', href: '/industries/restaurants' },
-    ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'About', href: '/about' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'Privacy Policy', href: '/privacy' },
+      { label: 'Terms', href: '/terms' },
     ],
   },
 ];
@@ -41,35 +26,15 @@ const COLUMNS = [
 
 <footer class="relative border-t border-ink/[0.06] px-6 py-16 dark:border-white/10">
   <div class="mx-auto max-w-6xl">
-    <div class="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
       <div>
         <a href="/" class="inline-flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
           <img src="/logo.jpg" alt="" width="32" height="32" class="size-8 rounded-xl" />
           Growth Audit
         </a>
         <p class="mt-4 max-w-xs text-sm leading-relaxed text-slate">
-          Free AI-powered website audits for small businesses — real, data-backed recommendations to win more enquiries.
+          AI-powered website audits and monitoring for businesses.
         </p>
-
-        <form id="newsletter-form" class="glass mt-6 flex items-center gap-2 rounded-2xl p-2">
-          <div class="flex flex-1 items-center gap-2 px-3">
-            <Mail className="size-4 shrink-0 text-slate" />
-            <input
-              type="email"
-              name="email"
-              required
-              placeholder="Monthly website health reports"
-              class="w-full bg-transparent text-sm text-ink placeholder:text-slate/70 outline-none dark:text-white"
-            />
-          </div>
-          <button
-            type="submit"
-            class="shrink-0 rounded-xl bg-[linear-gradient(120deg,#3b82f6,#4b7cff)] px-4 py-2.5 text-sm font-semibold text-white"
-          >
-            Subscribe
-          </button>
-        </form>
-        <p id="newsletter-message" class="mt-2 text-xs font-medium text-slate"></p>
       </div>
 
       {COLUMNS.map((col) => (
@@ -93,27 +58,3 @@ const COLUMNS = [
     </div>
   </div>
 </footer>
-
-<script>
-  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
-  const message = document.getElementById('newsletter-message');
-
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = (form.elements.namedItem('email') as HTMLInputElement)?.value;
-    if (!email || !message) return;
-    message.textContent = 'Subscribing…';
-    try {
-      const res = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      if (!res.ok) throw new Error();
-      message.textContent = "You're subscribed! Check your inbox.";
-      form.reset();
-    } catch {
-      message.textContent = 'Something went wrong. Please try again.';
-    }
-  });
-</script>

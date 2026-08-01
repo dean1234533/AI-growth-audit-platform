@@ -6,23 +6,23 @@ const STEPS = [
   {
     icon: ScanSearch,
     title: 'Scan',
-    description: 'We analyse your website using multiple AI-powered checks across SEO, speed, trust and more.',
+    description: 'Run a full website audit.',
   },
   {
     icon: Lightbulb,
     title: 'Discover',
-    description: 'We identify the specific technical, SEO and conversion problems holding your site back.',
+    description: 'Find SEO, performance, accessibility, conversion and local SEO issues.',
   },
   {
     icon: TrendingUp,
     title: 'Improve',
-    description: 'Receive prioritised, actionable recommendations to turn more visitors into enquiries.',
+    description: 'Get prioritised recommendations and monitor your website for changes.',
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="relative px-6 py-28 sm:py-40">
+    <section id="how-it-works" className="relative scroll-mt-24 px-6 py-28 sm:py-40">
       <div className="mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
