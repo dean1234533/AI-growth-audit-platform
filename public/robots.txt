@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /login
+Disallow: /offline
+Disallow: /api/
 
 Sitemap: https://app.dean-da-dev.co.uk/sitemap-index.xml
