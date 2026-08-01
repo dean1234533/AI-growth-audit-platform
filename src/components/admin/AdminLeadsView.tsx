@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ShieldAlert, Megaphone, ChevronDown } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { GlassCard } from '../ui/GlassCard';
-import { OutreachPanel } from './OutreachPanel';
 import type { LeadStatus, StoredLead } from '../../lib/types';
 
 const STATUS_OPTIONS: LeadStatus[] = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
@@ -20,7 +19,6 @@ export default function AdminLeadsView() {
   const user = useAuthUser();
   const [leads, setLeads] = useState<StoredLead[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [outreachOpenId, setOutreachOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -101,40 +99,25 @@ export default function AdminLeadsView() {
                   {lead.message && <div className="mt-1 text-xs text-slate">"{lead.message}"</div>}
                   <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate">
                     {lead.auditScore != null && <span>Score: {lead.auditScore}/100</span>}
+                    {lead.topIssues && lead.topIssues.length > 0 && <span>Top issue: {lead.topIssues[0]}</span>}
                     {lead.recommendedServices && lead.recommendedServices.length > 0 && (
                       <span>Suggested: {lead.recommendedServices.join(', ')}</span>
                     )}
                     {lead.createdAt && <span>{new Date(lead.createdAt).toLocaleDateString('en-GB')}</span>}
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  {user && lead.website && lead.topIssues && lead.topIssues.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setOutreachOpenId((id) => (id === lead.id ? null : lead.id))}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-ink/5 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-ink/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                    >
-                      <Megaphone className="size-3.5" /> Outreach
-                      <ChevronDown className={`size-3 transition-transform ${outreachOpenId === lead.id ? 'rotate-180' : ''}`} />
-                    </button>
-                  )}
-                  <select
-                    value={lead.status}
-                    onChange={(e) => updateStatus(lead.id, e.target.value as LeadStatus)}
-                    className={`rounded-full border-0 px-3 py-1.5 text-xs font-bold uppercase outline-none ${STATUS_COLOR[lead.status]}`}
-                  >
-                    {STATUS_OPTIONS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  value={lead.status}
+                  onChange={(e) => updateStatus(lead.id, e.target.value as LeadStatus)}
+                  className={`shrink-0 rounded-full border-0 px-3 py-1.5 text-xs font-bold uppercase outline-none ${STATUS_COLOR[lead.status]}`}
+                >
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
               </div>
-
-              {user && outreachOpenId === lead.id && lead.website && (
-                <OutreachPanel user={user} business={lead.business ?? lead.name ?? ''} website={lead.website} findings={lead.topIssues ?? []} />
-              )}
             </GlassCard>
           ))}
         </div>
