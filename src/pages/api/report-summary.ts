@@ -2,8 +2,9 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import type { WeeklyDigest } from '../../lib/reports';
 import { verifyFirebaseIdToken } from '../../server/lib/verifyFirebaseIdToken';
-import { parseServiceAccount } from '../../server/lib/firestore';
+import { getFirestoreDocument, parseServiceAccount, type ServiceAccount } from '../../server/lib/firestore';
 import { createGeminiRunner, getStoredGeminiKey, type AiRunner } from '../../server/lib/gemini';
+import { AI_REPORTS_UPGRADE_MESSAGE, canUseAiReports, resolvePlanId } from '../../server/lib/access';
 
 export const prerender = false;
 
@@ -14,31 +15,41 @@ interface Env {
 
 const MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8';
 
-/** Bearer token is optional — this route still works on the shared AI when absent/invalid,
- * exactly as before. A valid token only unlocks looking up *this* user's own Gemini key. */
-async function resolveCallerUid(request: Request): Promise<string | null> {
+interface VerifiedCaller {
+  uid: string;
+  email: string | null;
+}
+
+/**
+ * AI-written weekly reports are a Pro feature, so — like coach.ts — a verified caller is
+ * required. Never trust a uid/email in the request body.
+ */
+async function requireCaller(request: Request): Promise<VerifiedCaller | null> {
   const authHeader = request.headers.get('authorization') ?? '';
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!idToken) return null;
   const projectId = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID as string | undefined;
   if (!projectId) return null;
   const verified = await verifyFirebaseIdToken(idToken, projectId);
-  return verified?.uid ?? null;
+  if (!verified?.uid) return null;
+  return { uid: verified.uid, email: verified.email ?? null };
+}
+
+async function resolveCallerPlan(serviceAccount: ServiceAccount, caller: VerifiedCaller) {
+  const userDoc = await getFirestoreDocument(serviceAccount, 'users', caller.uid);
+  const billingPlan = typeof userDoc?.plan === 'string' ? userDoc.plan : null;
+  return resolvePlanId(caller.email, billingPlan);
 }
 
 /** The caller's own Gemini key, if they have one set — returns undefined (meaning "use the
  * shared AI") on any lookup failure, never throws. */
-async function resolveGeminiRunner(request: Request, cfEnv: Env): Promise<AiRunner | undefined> {
-  const uid = await resolveCallerUid(request);
-  if (!uid) return undefined;
-  const serviceAccount = parseServiceAccount(cfEnv.FIREBASE_SERVICE_ACCOUNT_JSON);
+async function resolveGeminiRunner(serviceAccount: ServiceAccount | null, uid: string): Promise<AiRunner | undefined> {
   if (!serviceAccount) return undefined;
   const key = await getStoredGeminiKey(serviceAccount, uid);
   return key ? createGeminiRunner(key) : undefined;
 }
 
-function jsonError(message: string, status: number): Response {
-  return new Response(JSON.stringify({ error: message }), { status, headers: { 'content-type': 'application/json' } });
+function jsonError(message: string, status: number, extra?: Record<string, unknown>): Response {
+  return new Response(JSON.stringify({ error: message, ...extra }), { status, headers: { 'content-type': 'application/json' } });
 }
 
 function greeting(): string {
@@ -66,7 +77,17 @@ Top priority right now: ${digest.topPriority ? `${digest.topPriority.title} — 
 
 /** A short conversational narrative for the top of a weekly report — grounded in the same digest data the report itself renders. */
 export const POST: APIRoute = async ({ request }) => {
+  const caller = await requireCaller(request);
+  if (!caller) return jsonError('Not authorized', 401);
+
   const cfEnv = env as unknown as Env;
+  const serviceAccount = parseServiceAccount(cfEnv.FIREBASE_SERVICE_ACCOUNT_JSON);
+  if (!serviceAccount) return jsonError('Server not configured', 500);
+
+  const planId = await resolveCallerPlan(serviceAccount, caller);
+  if (!canUseAiReports(planId)) {
+    return jsonError('AI reports are a Pro feature', 403, { message: AI_REPORTS_UPGRADE_MESSAGE });
+  }
 
   let body: { digest?: WeeklyDigest; userName?: string };
   try {
@@ -79,7 +100,7 @@ export const POST: APIRoute = async ({ request }) => {
   const name = body.userName?.trim();
   const salutation = `${greeting()}${name ? `, ${name}` : ''} 👋`;
 
-  const geminiRunner = await resolveGeminiRunner(request, cfEnv);
+  const geminiRunner = await resolveGeminiRunner(serviceAccount, caller.uid);
   const aiRunner = geminiRunner ?? cfEnv.AI;
 
   if (!aiRunner) {

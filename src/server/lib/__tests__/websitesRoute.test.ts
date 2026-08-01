@@ -173,6 +173,33 @@ describe('POST /api/websites — security', () => {
     const res = await POST({ request: makeRequest({ url: 'https://x.com', frequency: 'weekly', audit: sampleAudit }) } as never);
     expect(res.status).toBe(200);
   });
+
+  it('FREE: cannot create a website with frequency "daily"', async () => {
+    mockVerify.mockResolvedValue({ uid: 'free-uid', email: 'free@example.com' });
+    mockGetDoc.mockResolvedValue({ plan: 'free' });
+    mockRunQuery.mockResolvedValue([]);
+    const res = await POST({ request: makeRequest({ url: 'https://x.com', frequency: 'daily', audit: sampleAudit }) } as never);
+    expect(res.status).toBe(403);
+    const json = (await res.json()) as any;
+    expect(json.error).toBe('Daily scans are a Pro feature');
+    expect(mockAddDoc).not.toHaveBeenCalled();
+  });
+
+  it('FREE: can still create a website with frequency "weekly"', async () => {
+    mockVerify.mockResolvedValue({ uid: 'free-uid', email: 'free@example.com' });
+    mockGetDoc.mockResolvedValue({ plan: 'free' });
+    mockRunQuery.mockResolvedValue([]);
+    const res = await POST({ request: makeRequest({ url: 'https://x.com', frequency: 'weekly', audit: sampleAudit }) } as never);
+    expect(res.status).toBe(200);
+  });
+
+  it('PRO: can create a website with frequency "daily"', async () => {
+    mockVerify.mockResolvedValue({ uid: 'pro-uid', email: 'pro@example.com' });
+    mockGetDoc.mockResolvedValue({ plan: 'pro' });
+    mockRunQuery.mockResolvedValue([]);
+    const res = await POST({ request: makeRequest({ url: 'https://x.com', frequency: 'daily', audit: sampleAudit }) } as never);
+    expect(res.status).toBe(200);
+  });
 });
 
 describe('GET /api/websites — quota', () => {

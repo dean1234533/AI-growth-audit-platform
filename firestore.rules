@@ -7,6 +7,20 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Mirrors the ADMIN_EMAIL constant and resolvePlanId()'s logic in src/server/lib/access.ts —
+    // rules can't import that TS module, so this is a deliberate, minimal duplication of just the
+    // "is this caller pro or admin" predicate (not the whole plan-resolution flow). Used only for
+    // features that have no server API route to enforce through (competitors, scan frequency) —
+    // anything with an API route (website creation, AI Coach, AI reports) enforces there instead,
+    // where src/server/lib/access.ts is the single real source of truth.
+    function isAdmin() {
+      return request.auth.token.email == 'deanburt1308@gmail.com';
+    }
+    function isProOrAdmin() {
+      return isAdmin()
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.plan == 'pro';
+    }
+
     // Anonymous, server-only collections — written exclusively via the service-account
     // REST client in src/server/lib/firestore.ts (functions/api routes), which
     // authenticates as an admin and bypasses these rules entirely. No client access.
@@ -67,10 +81,19 @@ service cloud.firestore {
       // before writing. Allowing a direct client create here would let a client add unlimited
       // websites by just calling the Firestore SDK instead of the quota-checked route.
       allow create: if false;
-      // Only allow the owner to update their own doc, and only when uid is unchanged.
+      // Only allow the owner to update their own doc, and only when uid is unchanged. Daily scan
+      // frequency is a Pro feature — the settings UI writes frequency changes directly here (no
+      // API route), so this is the only place that can actually enforce it. Grandfathered: if
+      // frequency is already 'daily' (e.g. the user was Pro and downgraded), unrelated field
+      // edits on the same doc still go through — this only blocks newly *setting* it to 'daily'.
       allow update: if request.auth != null
         && request.auth.uid == resource.data.uid
-        && request.resource.data.uid == resource.data.uid;
+        && request.resource.data.uid == resource.data.uid
+        && (
+          request.resource.data.frequency == resource.data.frequency
+          || request.resource.data.frequency != 'daily'
+          || isProOrAdmin()
+        );
       allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
 
       // Scan history for this website. Reads and creates are owner-only (the client
@@ -88,9 +111,15 @@ service cloud.firestore {
       // Competitor websites tracked against this monitored website — same ownership model:
       // only the parent website's owner can read/add/update/remove a competitor, and only
       // the owner (or the cron service account, which bypasses rules) can write its scans.
+      // Competitor monitoring is a Pro feature; the client writes directly here (no API route),
+      // so this is the only enforcement point — adding one requires Pro/admin, but an existing
+      // tracked competitor stays readable/removable if the owner later downgrades.
       match /competitors/{competitorId} {
-        allow read, create, update, delete: if request.auth != null
+        allow read, update, delete: if request.auth != null
           && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid;
+        allow create: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/websites/$(websiteId)).data.uid
+          && isProOrAdmin();
 
         match /scans/{scanId} {
           allow read, create: if request.auth != null

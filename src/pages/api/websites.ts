@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { verifyFirebaseIdToken } from '../../server/lib/verifyFirebaseIdToken';
 import { addFirestoreDocument, getFirestoreDocument, parseServiceAccount, runQuery, type ServiceAccount } from '../../server/lib/firestore';
-import { buildWebsiteQuota, canAddWebsite, resolvePlanId, websiteLimitMessage } from '../../server/lib/access';
+import { buildWebsiteQuota, canAddWebsite, canUseDailyScans, DAILY_SCANS_UPGRADE_MESSAGE, resolvePlanId, websiteLimitMessage } from '../../server/lib/access';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
 
 export const prerender = false;
@@ -99,6 +99,10 @@ export const POST: APIRoute = async ({ request }) => {
 
   if (!canAddWebsite(planId, currentCount)) {
     return jsonError('Website limit reached', 403, { message: websiteLimitMessage(planId) });
+  }
+
+  if (body.frequency === 'daily' && !canUseDailyScans(planId)) {
+    return jsonError('Daily scans are a Pro feature', 403, { message: DAILY_SCANS_UPGRADE_MESSAGE });
   }
 
   const now = new Date();

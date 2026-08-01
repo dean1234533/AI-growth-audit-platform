@@ -65,6 +65,42 @@ export function websiteLimitMessage(planId: PlanId): string | null {
   }
 }
 
+/** Whether `planId` can use AI Coach. Free cannot; Pro and admin can. */
+export function canUseAiCoach(planId: PlanId): boolean {
+  return planId === 'pro' || planId === 'admin';
+}
+
+/** User-facing copy for the "AI Coach is Pro-only" rejection. */
+export const AI_COACH_UPGRADE_MESSAGE = 'AI Coach is available on Pro. Upgrade to unlock personalised AI guidance.';
+
+/** Whether `planId` gets the AI-written weekly report narrative. Free cannot; Pro and admin can.
+ * Kept as its own named function (rather than reusing canUseAiCoach) so each Pro feature's
+ * call sites stay self-documenting, even though the underlying rule is currently identical. */
+export function canUseAiReports(planId: PlanId): boolean {
+  return planId === 'pro' || planId === 'admin';
+}
+
+/** User-facing copy for the "Weekly AI reports are Pro-only" rejection. */
+export const AI_REPORTS_UPGRADE_MESSAGE = 'AI-written reports are available on Pro. Upgrade to unlock weekly AI report summaries.';
+
+/** Whether `planId` may set a website's scan frequency to 'daily'. Free is capped at weekly/
+ * monthly/manual; Pro and admin can also choose daily. */
+export function canUseDailyScans(planId: PlanId): boolean {
+  return planId === 'pro' || planId === 'admin';
+}
+
+/** User-facing copy for the "Daily scans are Pro-only" rejection. */
+export const DAILY_SCANS_UPGRADE_MESSAGE = 'Daily scans are available on Pro. Upgrade to monitor your website every day instead of weekly.';
+
+/** Whether `planId` may add another tracked competitor. Free cannot track competitors at all;
+ * Pro and admin can. */
+export function canAddCompetitor(planId: PlanId): boolean {
+  return planId === 'pro' || planId === 'admin';
+}
+
+/** User-facing copy for the "Competitor monitoring is Pro-only" rejection. */
+export const COMPETITOR_MONITORING_UPGRADE_MESSAGE = 'Competitor monitoring is available on Pro. Upgrade to track competitors alongside your website.';
+
 export interface WebsiteQuota {
   planId: PlanId;
   currentCount: number;

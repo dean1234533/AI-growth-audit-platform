@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import { BRAND_NAME, BRAND_EMAIL, SITE_NAME } from '../lib/seo/site';
+import { PLANS } from '../lib/plans';
+
+const FREE = PLANS.find((p) => p.id === 'free')!;
+const PRO = PLANS.find((p) => p.id === 'pro')!;
+const LAST_UPDATED = '1 August 2026';
+---
+
+<BaseLayout
+  title="Terms of Service"
+  description={`The terms that apply when you use ${SITE_NAME}.`}
+  path="/terms"
+>
+  <Breadcrumbs items={[{ name: 'Terms', path: '/terms' }]} />
+
+  <section class="px-6 pt-10 pb-20 sm:pt-16">
+    <div class="mx-auto max-w-3xl">
+      <h1 class="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-5xl dark:text-white">Terms of Service</h1>
+      <p class="mt-3 text-sm text-slate">Last updated: {LAST_UPDATED}</p>
+
+      <div class="glass mt-10 space-y-8 rounded-[28px] p-7 leading-relaxed text-slate sm:p-10">
+        <p>
+          These terms apply when you use {SITE_NAME} ("Growth Audit"), operated by {BRAND_NAME}, at
+          <strong class="font-semibold text-ink dark:text-white">app.dean-da-dev.co.uk</strong>. By running an audit,
+          creating an account, or subscribing to Pro, you agree to these terms.
+        </p>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">1. The service</h2>
+          <p class="mt-3">
+            Growth Audit scans a website you provide and reports on SEO, performance, accessibility, conversion and local
+            SEO signals it detects, then offers recommendations. You can run a one-off audit with no account, or create a
+            free account to save a website and monitor it automatically over time.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">2. Plans</h2>
+          <p class="mt-3">
+            <strong class="font-semibold text-ink dark:text-white">Free ({FREE.price})</strong> includes {FREE.websiteLimit}{' '}
+            monitored website, weekly scans, website health tracking and push notifications.
+          </p>
+          <p class="mt-3">
+            <strong class="font-semibold text-ink dark:text-white">Pro ({PRO.price})</strong> includes up to {PRO.websiteLimit}{' '}
+            monitored websites, daily scans, competitor monitoring, AI Coach and weekly AI reports.
+          </p>
+          <p class="mt-3">
+            Pro subscriptions are billed monthly via Stripe and renew automatically until cancelled. You can cancel at any
+            time from your account billing settings; your Pro access continues until the end of the current billing period,
+            with no partial refund for the remaining days. We don't offer refunds for partial months, except where required
+            by law.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">3. Your account</h2>
+          <p class="mt-3">
+            You're responsible for keeping your login credentials secure and for all activity under your account. You must
+            provide accurate information and only add websites you own or are authorised to audit and monitor.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">4. Acceptable use</h2>
+          <p class="mt-3">You agree not to:</p>
+          <ul class="mt-3 list-disc space-y-1.5 pl-5">
+            <li>Use the service to scan websites you don't own or don't have permission to audit.</li>
+            <li>Attempt to bypass plan limits, rate limits or other technical restrictions.</li>
+            <li>Use the service to build a competing product, or resell access to it.</li>
+            <li>Use the service in any way that's unlawful, abusive or disrupts it for other users.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">5. Accuracy of results</h2>
+          <p class="mt-3">
+            Audit results, scores and AI Coach guidance are generated automatically and are provided as a starting point for
+            improving your website — not as a guarantee of any outcome (such as improved rankings, traffic or enquiries).
+            You're responsible for reviewing and validating any recommendation before acting on it.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">6. Availability</h2>
+          <p class="mt-3">
+            We aim to keep Growth Audit available and monitoring running on schedule, but we don't guarantee uninterrupted
+            service, and scheduled scans may occasionally be delayed (for example during maintenance or a third-party
+            outage).
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">7. Limitation of liability</h2>
+          <p class="mt-3">
+            Growth Audit is provided "as is". To the fullest extent permitted by law, {BRAND_NAME} is not liable for any
+            indirect, incidental or consequential loss arising from your use of the service, including decisions made based
+            on audit results or AI Coach guidance.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">8. Termination</h2>
+          <p class="mt-3">
+            You can delete your account at any time. We may suspend or terminate accounts that breach these terms, misuse
+            the service, or where we're required to for legal reasons.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">9. Changes to these terms</h2>
+          <p class="mt-3">
+            We may update these terms from time to time. If we make material changes, we'll update the date at the top of
+            this page. Continued use of Growth Audit after a change means you accept the updated terms.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">10. Governing law</h2>
+          <p class="mt-3">These terms are governed by the laws of England and Wales.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">11. Contact</h2>
+          <p class="mt-3">
+            Questions about these terms can be sent to
+            <a href={`mailto:${BRAND_EMAIL}`} class="font-semibold text-brand-500 hover:underline">{BRAND_EMAIL}</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

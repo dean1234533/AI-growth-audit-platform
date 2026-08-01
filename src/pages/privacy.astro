@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import { BRAND_NAME, BRAND_EMAIL, SITE_NAME } from '../lib/seo/site';
+
+const LAST_UPDATED = '1 August 2026';
+---
+
+<BaseLayout
+  title="Privacy Policy"
+  description={`How ${SITE_NAME} collects, uses and protects your data.`}
+  path="/privacy"
+>
+  <Breadcrumbs items={[{ name: 'Privacy Policy', path: '/privacy' }]} />
+
+  <section class="px-6 pt-10 pb-20 sm:pt-16">
+    <div class="mx-auto max-w-3xl">
+      <h1 class="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-5xl dark:text-white">Privacy Policy</h1>
+      <p class="mt-3 text-sm text-slate">Last updated: {LAST_UPDATED}</p>
+
+      <div class="glass mt-10 space-y-8 rounded-[28px] p-7 leading-relaxed text-slate sm:p-10">
+        <p>
+          This policy explains what data {SITE_NAME} ("Growth Audit", "we", "us") collects when you use
+          <strong class="font-semibold text-ink dark:text-white">app.dean-da-dev.co.uk</strong>, why we collect it, and the
+          choices you have. Growth Audit is built and operated by {BRAND_NAME}.
+        </p>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">1. Running a free audit</h2>
+          <p class="mt-3">
+            Running an audit does not require an account. We process the website URL you enter (and, if you provide them,
+            an optional business name, business type and location) in order to run the scan and generate your report.
+            Anonymous audit results are not linked to your identity and are not saved beyond what's needed to display your
+            report.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">2. Creating an account</h2>
+          <p class="mt-3">If you create a free account, we collect and store:</p>
+          <ul class="mt-3 list-disc space-y-1.5 pl-5">
+            <li>Your email address (and, if you sign up via Google, the name and email associated with that Google account).</li>
+            <li>The website(s) you choose to monitor, and the audit results, scores and issue history for those websites.</li>
+            <li>Your plan (Free or Pro) and, for Pro subscribers, billing status as provided by our payment processor, Stripe.</li>
+            <li>A push notification token, only if you opt in to notifications, so we can alert you when monitoring detects something that needs attention.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">3. How we use your data</h2>
+          <p class="mt-3">We use the data above only to:</p>
+          <ul class="mt-3 list-disc space-y-1.5 pl-5">
+            <li>Run audits and scheduled monitoring scans for the websites you've added.</li>
+            <li>Show you your website's health history and send push notifications you've opted into.</li>
+            <li>Operate the AI Coach feature (Pro plan), which sends your website's scan data to an AI model to generate guidance — see section 5.</li>
+            <li>Process payments and manage your subscription, via Stripe.</li>
+            <li>Keep the service secure and diagnose technical problems.</li>
+          </ul>
+          <p class="mt-3">We do not sell your data, and we do not use it for advertising.</p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">4. Where your data is stored</h2>
+          <p class="mt-3">
+            Account and website data is stored using Google Firebase (Authentication and Firestore). The application itself
+            runs on Cloudflare Workers. Both providers act as data processors on our behalf and maintain their own security
+            and compliance standards.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">5. AI processing</h2>
+          <p class="mt-3">
+            Audit scoring and the AI Coach feature use AI models — either Cloudflare Workers AI, or Google's Gemini API if
+            you've added your own Gemini API key in your account settings. When AI Coach is used, the relevant scan data and
+            your question are sent to the model provider to generate a response. This data is used only to generate that
+            response and is not used by us to train any model.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">6. Payments</h2>
+          <p class="mt-3">
+            Pro plan payments are handled entirely by Stripe. We never see or store your full card details — Stripe provides
+            us only with your subscription status, which we use to determine your plan.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">7. Cookies &amp; local storage</h2>
+          <p class="mt-3">
+            We use essential cookies/local storage only — to keep you signed in and remember your theme preference (light or
+            dark mode). We do not use third-party advertising or tracking cookies.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">8. Data retention</h2>
+          <p class="mt-3">
+            We keep your account and website data for as long as your account is active. If you delete your account, we
+            delete your account data within 30 days, except where we're required to retain billing records for legal or tax
+            purposes.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">9. Your rights</h2>
+          <p class="mt-3">
+            If you're in the UK or EU, you have the right to access, correct, export or delete your personal data, and to
+            object to or restrict certain processing. To exercise any of these rights, or to delete your account, email us
+            at <a href={`mailto:${BRAND_EMAIL}`} class="font-semibold text-brand-500 hover:underline">{BRAND_EMAIL}</a>.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">10. Children's privacy</h2>
+          <p class="mt-3">
+            Growth Audit is intended for business use and is not directed at children. We do not knowingly collect data from
+            anyone under 16.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">11. Changes to this policy</h2>
+          <p class="mt-3">
+            If we make material changes to this policy, we'll update the date at the top of this page. Continued use of
+            Growth Audit after a change means you accept the updated policy.
+          </p>
+        </div>
+
+        <div>
+          <h2 class="font-display text-xl font-bold text-ink dark:text-white">12. Contact</h2>
+          <p class="mt-3">
+            Questions about this policy or your data can be sent to
+            <a href={`mailto:${BRAND_EMAIL}`} class="font-semibold text-brand-500 hover:underline">{BRAND_EMAIL}</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

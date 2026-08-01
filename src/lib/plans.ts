@@ -22,19 +22,33 @@ export const PLANS: PlanDefinition[] = [
     name: 'Free',
     price: '£0',
     websiteLimit: FREE_LIMIT,
-    features: [`${FREE_LIMIT} monitored website`, 'Weekly scans', 'AI Coach', 'Push notifications'],
+    // AI Coach is enforced Pro-only server-side (src/pages/api/coach.ts, via canUseAiCoach() in
+    // src/server/lib/access.ts) — kept off this list so the Free/Pro difference reads clearly.
+    features: [`${FREE_LIMIT} monitored website`, 'Weekly scans', 'Website health tracking', 'Push notifications'],
   },
   {
     id: 'pro',
     name: 'Pro',
     price: '£5/mo',
     websiteLimit: PRO_LIMIT,
+    // Every feature below is now actually enforced, not just marketing copy:
+    //  - website count: src/pages/api/websites.ts (canAddWebsite)
+    //  - "Daily scans": src/pages/api/websites.ts on create + firestore.rules on update
+    //    (canUseDailyScans / isProOrAdmin() — the settings UI writes frequency directly to
+    //    Firestore with no API route, so the rule is the only enforcement point for changes)
+    //  - "Competitor monitoring": firestore.rules `create` on websites/{id}/competitors
+    //    (isProOrAdmin() — same reason, no API route exists for this write)
+    //  - "AI Coach": src/pages/api/coach.ts (canUseAiCoach)
+    //  - "Weekly AI reports": src/pages/api/report-summary.ts (canUseAiReports) — note this only
+    //    gates who gets the AI-written narrative; it doesn't actually run on a weekly schedule,
+    //    it's generated on-demand whenever ReportsSection.tsx is viewed.
     features: [
       `Up to ${PRO_LIMIT} monitored websites`,
       'Daily scans',
       'Competitor monitoring',
       'AI Coach',
-      'Push notifications + weekly AI reports',
+      'Push notifications',
+      'Weekly AI reports',
     ],
   },
 ];

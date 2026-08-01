@@ -18,10 +18,12 @@ export default function ReportsSection({ siteName, siteUrl, userName, current, p
   const digest = buildWeeklyDigest(siteName, siteUrl, current, previous);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(true);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setSummaryLoading(true);
+    setUpgradeRequired(false);
     authHeaders()
       .then((headers) =>
         fetch('/api/report-summary', {
@@ -30,9 +32,14 @@ export default function ReportsSection({ siteName, siteUrl, userName, current, p
           body: JSON.stringify({ digest, userName }),
         }),
       )
-      .then((res) => res.json() as Promise<{ summary?: string }>)
-      .then((json) => {
-        if (!cancelled) setAiSummary(json.summary ?? null);
+      .then(async (res) => {
+        const json = (await res.json()) as { summary?: string };
+        if (cancelled) return;
+        if (res.status === 403) {
+          setUpgradeRequired(true);
+          return;
+        }
+        setAiSummary(json.summary ?? null);
       })
       .catch(() => {})
       .finally(() => {
@@ -60,6 +67,13 @@ export default function ReportsSection({ siteName, siteUrl, userName, current, p
         <Sparkles className="mt-0.5 size-4 shrink-0 text-brand-500" />
         {summaryLoading ? (
           <span className="h-4 w-2/3 animate-pulse rounded bg-brand-500/15" />
+        ) : upgradeRequired ? (
+          <p className="text-sm leading-relaxed text-ink dark:text-slate-100">
+            AI-written weekly summaries are available on Pro.{' '}
+            <a href="/pricing" className="font-semibold text-brand-500 hover:underline">
+              Upgrade to Pro
+            </a>
+          </p>
         ) : (
           <p className="text-sm leading-relaxed text-ink dark:text-slate-100">{aiSummary}</p>
         )}

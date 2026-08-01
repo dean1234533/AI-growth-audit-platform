@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, getDocs } from 'firebase/firestore';
-import { Sparkles, Send, Bot, User, ChevronDown, Zap, CalendarDays, CalendarRange } from 'lucide-react';
+import { Sparkles, Send, Bot, User, ChevronDown, Zap, CalendarDays, CalendarRange, Lock } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { authHeaders } from '../../lib/api';
 import { GlassCard } from '../ui/GlassCard';
@@ -128,6 +128,7 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
   const [competitors, setCompetitors] = useState<CompetitorSummary[]>([]);
   const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [explaining, setExplaining] = useState<string | null>(null);
+  const [upgradeMessage, setUpgradeMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -159,7 +160,12 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
         headers: { 'content-type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ question, siteName, audit, previous, competitors, history: nextMessages.slice(0, -1) }),
       });
-      const json = (await res.json()) as { answer?: string; error?: string };
+      const json = (await res.json()) as { answer?: string; error?: string; message?: string };
+      if (res.status === 403) {
+        setUpgradeMessage(json.message ?? json.error ?? 'AI Coach is available on Pro.');
+        setMessages(messages);
+        return;
+      }
       if (!res.ok) throw new Error(json.error ?? 'Something went wrong');
       setMessages((m) => [...m, { role: 'assistant', content: json.answer ?? '' }]);
     } catch {
@@ -184,7 +190,11 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
           history: [],
         }),
       });
-      const json = (await res.json()) as { answer?: string; error?: string };
+      const json = (await res.json()) as { answer?: string; error?: string; message?: string };
+      if (res.status === 403) {
+        setUpgradeMessage(json.message ?? json.error ?? 'AI Coach is available on Pro.');
+        return;
+      }
       setExplanations((e) => ({ ...e, [rec.id]: json.answer ?? "Couldn't generate an explanation — please try again." }));
     } catch {
       setExplanations((e) => ({ ...e, [rec.id]: "Couldn't generate an explanation — please try again." }));
@@ -206,6 +216,24 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
     { key: 'thisWeek', label: 'This Week', icon: CalendarDays },
     { key: 'thisMonth', label: 'This Month', icon: CalendarRange },
   ];
+
+  if (upgradeMessage) {
+    return (
+      <GlassCard gradientBorder className="p-8 text-center">
+        <span className="mx-auto inline-flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3b82f6,#4b7cff)] text-white">
+          <Lock className="size-5" />
+        </span>
+        <h3 className="mt-4 font-display text-lg font-bold text-ink dark:text-white">AI Coach is available on Pro</h3>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-slate">{upgradeMessage}</p>
+        <a
+          href="/pricing"
+          className="mt-6 inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(120deg,#3b82f6,#4b7cff)] px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_36px_-12px_rgba(59,130,246,0.55)] transition-shadow hover:shadow-[0_20px_44px_-10px_rgba(59,130,246,0.65)]"
+        >
+          Upgrade to Pro
+        </a>
+      </GlassCard>
+    );
+  }
 
   return (
     <div className="space-y-6">

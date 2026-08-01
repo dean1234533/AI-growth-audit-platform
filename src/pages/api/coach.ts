@@ -2,8 +2,9 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import type { AuditResult } from '../../lib/types';
 import { verifyFirebaseIdToken } from '../../server/lib/verifyFirebaseIdToken';
-import { parseServiceAccount } from '../../server/lib/firestore';
+import { getFirestoreDocument, parseServiceAccount, type ServiceAccount } from '../../server/lib/firestore';
 import { createGeminiRunner, getStoredGeminiKey, type AiRunner } from '../../server/lib/gemini';
+import { AI_COACH_UPGRADE_MESSAGE, canUseAiCoach, resolvePlanId } from '../../server/lib/access';
 
 export const prerender = false;
 
@@ -14,31 +15,43 @@ interface Env {
 
 const MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8';
 
-/** Bearer token is optional here — Coach still works on the shared AI when absent/invalid,
- * exactly as before. A valid token only unlocks looking up *this* user's own Gemini key. */
-async function resolveCallerUid(request: Request): Promise<string | null> {
+interface VerifiedCaller {
+  uid: string;
+  email: string | null;
+}
+
+/**
+ * AI Coach is a Pro feature, so — unlike the old "token optional" behaviour — a verified caller
+ * is now required. Never trust a uid/email in the request body; a client could put anything
+ * there, so identity only ever comes from a server-verified ID token (mirrors websites.ts's
+ * requireCaller exactly, for the same reason).
+ */
+async function requireCaller(request: Request): Promise<VerifiedCaller | null> {
   const authHeader = request.headers.get('authorization') ?? '';
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!idToken) return null;
   const projectId = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID as string | undefined;
   if (!projectId) return null;
   const verified = await verifyFirebaseIdToken(idToken, projectId);
-  return verified?.uid ?? null;
+  if (!verified?.uid) return null;
+  return { uid: verified.uid, email: verified.email ?? null };
+}
+
+async function resolveCallerPlan(serviceAccount: ServiceAccount, caller: VerifiedCaller) {
+  const userDoc = await getFirestoreDocument(serviceAccount, 'users', caller.uid);
+  const billingPlan = typeof userDoc?.plan === 'string' ? userDoc.plan : null;
+  return resolvePlanId(caller.email, billingPlan);
 }
 
 /** The caller's own Gemini key, if they have one set — returns undefined (meaning "use the
  * shared AI") on any lookup failure, never throws. */
-async function resolveGeminiRunner(request: Request, cfEnv: Env): Promise<AiRunner | undefined> {
-  const uid = await resolveCallerUid(request);
-  if (!uid) return undefined;
-  const serviceAccount = parseServiceAccount(cfEnv.FIREBASE_SERVICE_ACCOUNT_JSON);
+async function resolveGeminiRunner(serviceAccount: ServiceAccount | null, uid: string): Promise<AiRunner | undefined> {
   if (!serviceAccount) return undefined;
   const key = await getStoredGeminiKey(serviceAccount, uid);
   return key ? createGeminiRunner(key) : undefined;
 }
 
-function jsonError(message: string, status: number): Response {
-  return new Response(JSON.stringify({ error: message }), {
+function jsonError(message: string, status: number, extra?: Record<string, unknown>): Response {
+  return new Response(JSON.stringify({ error: message, ...extra }), {
     status,
     headers: { 'content-type': 'application/json' },
   });
@@ -97,8 +110,19 @@ ${topRecs}${trendSection}${competitorSection}`;
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  const caller = await requireCaller(request);
+  if (!caller) return jsonError('Not authorized', 401);
+
   const cfEnv = env as unknown as Env;
-  const geminiRunner = await resolveGeminiRunner(request, cfEnv);
+  const serviceAccount = parseServiceAccount(cfEnv.FIREBASE_SERVICE_ACCOUNT_JSON);
+  if (!serviceAccount) return jsonError('Server not configured', 500);
+
+  const planId = await resolveCallerPlan(serviceAccount, caller);
+  if (!canUseAiCoach(planId)) {
+    return jsonError('AI Coach is a Pro feature', 403, { message: AI_COACH_UPGRADE_MESSAGE });
+  }
+
+  const geminiRunner = await resolveGeminiRunner(serviceAccount, caller.uid);
   const aiRunner = geminiRunner ?? cfEnv.AI;
   if (!aiRunner) return jsonError('AI coach is not available right now.', 503);
 

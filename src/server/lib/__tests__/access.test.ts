@@ -1,5 +1,39 @@
 import { describe, it, expect } from 'vitest';
-import { canAddWebsite, resolvePlanId, websiteLimitMessage, buildWebsiteQuota, getPlanLimits } from '../access';
+import {
+  canAddWebsite,
+  canAddCompetitor,
+  canUseAiCoach,
+  canUseAiReports,
+  canUseDailyScans,
+  resolvePlanId,
+  websiteLimitMessage,
+  buildWebsiteQuota,
+  getPlanLimits,
+} from '../access';
+
+describe('canUseAiCoach', () => {
+  it('free → not allowed', () => expect(canUseAiCoach('free')).toBe(false));
+  it('pro → allowed', () => expect(canUseAiCoach('pro')).toBe(true));
+  it('admin → allowed', () => expect(canUseAiCoach('admin')).toBe(true));
+});
+
+describe('canUseAiReports', () => {
+  it('free → not allowed', () => expect(canUseAiReports('free')).toBe(false));
+  it('pro → allowed', () => expect(canUseAiReports('pro')).toBe(true));
+  it('admin → allowed', () => expect(canUseAiReports('admin')).toBe(true));
+});
+
+describe('canUseDailyScans', () => {
+  it('free → not allowed', () => expect(canUseDailyScans('free')).toBe(false));
+  it('pro → allowed', () => expect(canUseDailyScans('pro')).toBe(true));
+  it('admin → allowed', () => expect(canUseDailyScans('admin')).toBe(true));
+});
+
+describe('canAddCompetitor', () => {
+  it('free → not allowed', () => expect(canAddCompetitor('free')).toBe(false));
+  it('pro → allowed', () => expect(canAddCompetitor('pro')).toBe(true));
+  it('admin → allowed', () => expect(canAddCompetitor('admin')).toBe(true));
+});
 
 describe('getPlanLimits', () => {
   it('free plan: maxWebsites 1, not unlimited', () => {
