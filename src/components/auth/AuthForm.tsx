@@ -35,8 +35,16 @@ function initialMode(): 'signin' | 'signup' {
   return new URLSearchParams(window.location.search).get('mode') === 'signup' ? 'signup' : 'signin';
 }
 
+/** Google sign-in only ever succeeds for the admin account (enforced in handleGoogle below) —
+ * the button itself is hidden from everyone else so it isn't shown as a working option it isn't. */
+function showGoogleButton(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).get('admin') === '1';
+}
+
 export default function AuthForm() {
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
+  const [googleVisible] = useState<boolean>(showGoogleButton);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -149,13 +157,17 @@ export default function AuthForm() {
           </Button>
         </form>
 
-        <div className="my-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate">
-          <span className="h-px flex-1 bg-ink/10 dark:bg-white/10" /> or <span className="h-px flex-1 bg-ink/10 dark:bg-white/10" />
-        </div>
+        {googleVisible && (
+          <>
+            <div className="my-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate">
+              <span className="h-px flex-1 bg-ink/10 dark:bg-white/10" /> or <span className="h-px flex-1 bg-ink/10 dark:bg-white/10" />
+            </div>
 
-        <Button type="button" variant="secondary" size="lg" onClick={handleGoogle} disabled={loading} className="w-full">
-          Continue with Google
-        </Button>
+            <Button type="button" variant="secondary" size="lg" onClick={handleGoogle} disabled={loading} className="w-full">
+              Continue with Google
+            </Button>
+          </>
+        )}
 
         <p className="mt-6 text-center text-sm text-slate">
           {mode === 'signup' ? 'Already have an account?' : "Don't have an account?"}{' '}
