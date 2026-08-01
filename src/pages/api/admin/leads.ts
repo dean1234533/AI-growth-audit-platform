@@ -1,8 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { verifyFirebaseIdToken } from '../../../server/lib/verifyFirebaseIdToken';
 import { listFirestoreDocuments, updateFirestoreDocument, parseServiceAccount } from '../../../server/lib/firestore';
-import { ADMIN_EMAIL } from '../../../server/lib/adminAlert';
+import { requireAdmin } from '../../../server/lib/requireAdmin';
 
 export const prerender = false;
 
@@ -12,15 +11,6 @@ interface Env {
 
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), { status, headers: { 'content-type': 'application/json' } });
-}
-
-async function requireAdmin(request: Request): Promise<boolean> {
-  const authHeader = request.headers.get('authorization') ?? '';
-  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const projectId = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID as string | undefined;
-  if (!projectId) return false;
-  const verified = await verifyFirebaseIdToken(idToken, projectId);
-  return verified?.email === ADMIN_EMAIL;
 }
 
 export const GET: APIRoute = async ({ request }) => {
