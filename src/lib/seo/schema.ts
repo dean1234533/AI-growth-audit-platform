@@ -1,14 +1,17 @@
-import { SITE_NAME, SITE_URL, canonicalUrl } from './site';
+import { SITE_NAME, SITE_URL, BRAND_NAME, BRAND_URL, canonicalUrl } from './site';
 
 type SchemaObject = Record<string, unknown>;
 
+/** Dean Da Dev is the operating business — Growth Audit is one of its products, not a
+ * business/location in its own right, so it isn't the Organization entity itself. */
 export function buildOrganizationSchema(): SchemaObject {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: SITE_NAME,
-    url: SITE_URL,
+    name: BRAND_NAME,
+    url: BRAND_URL,
     logo: canonicalUrl('/icon-512.png'),
+    sameAs: [SITE_URL],
   };
 }
 
@@ -17,11 +20,13 @@ export function buildSoftwareApplicationSchema(): SchemaObject {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: SITE_NAME,
+    url: SITE_URL,
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP' },
     description:
       'Free AI-powered website audit covering SEO, performance, accessibility, trust, mobile, conversion and local SEO — plus growth opportunities and recommended web development services to fix them.',
+    creator: { '@type': 'Organization', name: BRAND_NAME, url: BRAND_URL },
   };
 }
 
