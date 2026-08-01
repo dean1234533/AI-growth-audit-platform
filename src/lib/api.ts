@@ -12,7 +12,7 @@ async function parseErrorResponse(res: Response): Promise<ErrorResponse> {
   return (await res.json().catch(() => ({}))) as ErrorResponse;
 }
 
-async function authHeaders(): Promise<Record<string, string>> {
+export async function authHeaders(): Promise<Record<string, string>> {
   const idToken = await auth.currentUser?.getIdToken();
   return idToken ? { authorization: `Bearer ${idToken}` } : {};
 }
@@ -75,6 +75,21 @@ export async function runAudit(url: string, context?: AuditIntakeContext): Promi
     throw new ApiError(json.error ?? 'Something went wrong analysing this website. Please try again.');
   }
   return (await res.json()) as AuditResult;
+}
+
+export interface GeminiKeyStatus {
+  hasKey: boolean;
+  /** Last 4 characters only — the server never returns the full key (src/pages/api/gemini-key-status.ts). */
+  last4: string | null;
+}
+
+export async function getGeminiKeyStatus(): Promise<GeminiKeyStatus> {
+  const res = await fetch('/api/gemini-key-status', { headers: await authHeaders() });
+  if (!res.ok) {
+    const json = await parseErrorResponse(res);
+    throw new ApiError(json.message ?? json.error ?? 'Could not load your AI provider settings.');
+  }
+  return (await res.json()) as GeminiKeyStatus;
 }
 
 export async function submitLead(lead: Lead, audit: Pick<AuditResult, 'url' | 'overallScore' | 'scannedAt'>): Promise<void> {

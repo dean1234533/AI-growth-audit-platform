@@ -15,6 +15,7 @@ import { runConversionChecks } from './checks/conversion';
 import { runLocalSeoChecks } from './checks/localSeo';
 import { runPerformanceChecks } from './checks/performance';
 import { enrichRecommendationsWithAi } from './aiNarrative';
+import { createGeminiRunner } from './gemini';
 
 export interface AuditEnv {
   PAGESPEED_API_KEY?: string;
@@ -69,6 +70,10 @@ export interface RunFullAuditOptions {
   runPerformance?: boolean;
   /** Optional context supplied on the audit intake form — sharpens local-relevance checks and personalises copy. Never fabricated if absent. */
   businessContext?: AuditBusinessContext;
+  /** The scanned website's owner's own Gemini API key (users/{uid}/secrets/gemini), when
+   * they've set one — used for recommendation write-up instead of the shared Workers AI quota.
+   * Absent for anonymous scans (no owner) and for owners who haven't set a key. */
+  geminiApiKey?: string;
 }
 
 /**
@@ -169,7 +174,8 @@ export async function runFullAudit(
   // must never turn into a "fix this" recommendation, since there's nothing actionable to fix.
   const failedChecks = homepageChecks.filter((c) => !c.passed && c.severity !== 'info' && c.status !== 'not_applicable' && c.status !== 'not_verified');
   const baseRecommendations = buildRecommendations(failedChecks, homepage.finalUrl);
-  const recommendations = await enrichRecommendationsWithAi(env.AI, baseRecommendations);
+  const aiRunner = options.geminiApiKey ? createGeminiRunner(options.geminiApiKey) : env.AI;
+  const recommendations = await enrichRecommendationsWithAi(aiRunner, baseRecommendations);
 
   const pages: PageAuditResult[] = otherPages.map((p) => {
     const checks = staticChecksFor(p, robotsTxt, sitemapXml, {}, businessContext.location);

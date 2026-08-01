@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { collection, getDocs } from 'firebase/firestore';
 import { Sparkles, Send, Bot, User, ChevronDown, Zap, CalendarDays, CalendarRange } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
+import { authHeaders } from '../../lib/api';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import type { AuditResult, Recommendation } from '../../lib/types';
@@ -155,7 +156,7 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
     try {
       const res = await fetch('/api/coach', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ question, siteName, audit, previous, competitors, history: nextMessages.slice(0, -1) }),
       });
       const json = (await res.json()) as { answer?: string; error?: string };
@@ -173,7 +174,7 @@ export default function AiCoach({ websiteId, siteName, audit, previous }: AiCoac
     try {
       const res = await fetch('/api/coach', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({
           question: `Give me specific, step-by-step instructions to fix this issue on my website: "${rec.title}" — ${rec.description}`,
           siteName,

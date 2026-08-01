@@ -1,14 +1,41 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import type { AuditResult } from '../../lib/types';
+import { verifyFirebaseIdToken } from '../../server/lib/verifyFirebaseIdToken';
+import { parseServiceAccount } from '../../server/lib/firestore';
+import { createGeminiRunner, getStoredGeminiKey, type AiRunner } from '../../server/lib/gemini';
 
 export const prerender = false;
 
 interface Env {
   AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
+  FIREBASE_SERVICE_ACCOUNT_JSON?: string;
 }
 
 const MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8';
+
+/** Bearer token is optional here — Coach still works on the shared AI when absent/invalid,
+ * exactly as before. A valid token only unlocks looking up *this* user's own Gemini key. */
+async function resolveCallerUid(request: Request): Promise<string | null> {
+  const authHeader = request.headers.get('authorization') ?? '';
+  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!idToken) return null;
+  const projectId = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID as string | undefined;
+  if (!projectId) return null;
+  const verified = await verifyFirebaseIdToken(idToken, projectId);
+  return verified?.uid ?? null;
+}
+
+/** The caller's own Gemini key, if they have one set — returns undefined (meaning "use the
+ * shared AI") on any lookup failure, never throws. */
+async function resolveGeminiRunner(request: Request, cfEnv: Env): Promise<AiRunner | undefined> {
+  const uid = await resolveCallerUid(request);
+  if (!uid) return undefined;
+  const serviceAccount = parseServiceAccount(cfEnv.FIREBASE_SERVICE_ACCOUNT_JSON);
+  if (!serviceAccount) return undefined;
+  const key = await getStoredGeminiKey(serviceAccount, uid);
+  return key ? createGeminiRunner(key) : undefined;
+}
 
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {
@@ -71,7 +98,9 @@ ${topRecs}${trendSection}${competitorSection}`;
 
 export const POST: APIRoute = async ({ request }) => {
   const cfEnv = env as unknown as Env;
-  if (!cfEnv.AI) return jsonError('AI coach is not available right now.', 503);
+  const geminiRunner = await resolveGeminiRunner(request, cfEnv);
+  const aiRunner = geminiRunner ?? cfEnv.AI;
+  if (!aiRunner) return jsonError('AI coach is not available right now.', 503);
 
   let body: {
     question?: string;
@@ -96,7 +125,7 @@ export const POST: APIRoute = async ({ request }) => {
   const history = (body.history ?? []).slice(-6);
 
   try {
-    const result = await cfEnv.AI.run(MODEL, {
+    const result = await aiRunner.run(MODEL, {
       messages: [
         {
           role: 'system',

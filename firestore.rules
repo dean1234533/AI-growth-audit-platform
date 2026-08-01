@@ -46,6 +46,17 @@ service cloud.firestore {
         allow update: if request.auth != null && request.auth.uid == uid;
         allow create, delete: if false;
       }
+
+      // The user's own Gemini API key. Write-only from the client — the owner can set/replace/
+      // remove it (a blind write; Firestore rules don't require a prior read for update/delete),
+      // but NO ONE can ever read it back through the client SDK, not even the owner. The masked
+      // "•••• last4" the Settings page shows comes from GET /api/gemini-key-status, a trusted
+      // server route (src/pages/api/gemini-key-status.ts) that reads it via the service account
+      // (which bypasses these rules) and returns only the last 4 characters, never the full key.
+      match /secrets/gemini {
+        allow read: if false;
+        allow write: if request.auth != null && request.auth.uid == uid;
+      }
     }
 
     // Monitored websites — owned by the signed-in user who created them.

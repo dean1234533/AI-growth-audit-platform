@@ -3,6 +3,7 @@ import { runFullAudit, type AuditEnv } from '../src/server/lib/runFullAudit';
 import { addFirestoreDocument, updateFirestoreDocument, getFirestoreDocument, runQuery, parseServiceAccount } from '../src/server/lib/firestore';
 import { notifyWebsiteScan, notifyCompetitorScan } from '../src/server/lib/notifyScan';
 import { notifyAdmin, type AdminAlertEnv } from '../src/server/lib/adminAlert';
+import { getStoredGeminiKey } from '../src/server/lib/gemini';
 
 interface CronEnv extends AuditEnv, AdminAlertEnv {
   FIREBASE_SERVICE_ACCOUNT_JSON?: string;
@@ -55,7 +56,11 @@ async function processInBatches<T>(items: T[], handler: (item: T) => Promise<voi
   }
 }
 
-async function runAudit(targetUrl: string, env: CronEnv, options?: { crawlPages?: boolean; runPerformance?: boolean }) {
+async function runAudit(
+  targetUrl: string,
+  env: CronEnv,
+  options?: { crawlPages?: boolean; runPerformance?: boolean; geminiApiKey?: string },
+) {
   const { result } = await runFullAudit(targetUrl, env, options);
   return result;
 }
@@ -76,7 +81,8 @@ export async function runDueScans(env: CronEnv): Promise<void> {
 
   await processInBatches(dueWebsites, async (website) => {
     try {
-      const audit = await runAudit(website.url, env);
+      const geminiApiKey = await getStoredGeminiKey(serviceAccount, website.uid).catch(() => undefined);
+      const audit = await runAudit(website.url, env, { geminiApiKey });
       if (!audit) return;
 
       await addFirestoreDocument(serviceAccount, `websites/${website.id}/scans`, { ...audit });

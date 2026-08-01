@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Sparkles, FileText } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { buildWeeklyDigest } from '../../lib/reports';
+import { authHeaders } from '../../lib/api';
 import type { AuditResult } from '../../lib/types';
 
 interface ReportsSectionProps {
@@ -21,11 +22,14 @@ export default function ReportsSection({ siteName, siteUrl, userName, current, p
   useEffect(() => {
     let cancelled = false;
     setSummaryLoading(true);
-    fetch('/api/report-summary', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ digest, userName }),
-    })
+    authHeaders()
+      .then((headers) =>
+        fetch('/api/report-summary', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', ...headers },
+          body: JSON.stringify({ digest, userName }),
+        }),
+      )
       .then((res) => res.json() as Promise<{ summary?: string }>)
       .then((json) => {
         if (!cancelled) setAiSummary(json.summary ?? null);

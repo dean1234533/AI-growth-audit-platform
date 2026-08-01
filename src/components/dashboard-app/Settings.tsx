@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { updateProfile, deleteUser, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
-import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor, CreditCard, Globe, KeyRound } from 'lucide-react';
+import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor, CreditCard, Globe, KeyRound, Sparkles, ExternalLink } from 'lucide-react';
 import { auth, db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { getUserSettings, saveUserSettings, type UserSettings, type WorkingHours, type NotificationPref } from '../../lib/userSettings';
+import { saveGeminiKey, removeGeminiKey } from '../../lib/geminiKey';
+import { getGeminiKeyStatus, type GeminiKeyStatus } from '../../lib/api';
 import { setTheme, getStoredTheme, type ThemePreference } from '../../lib/theme';
 import {
   isPushSupported,
@@ -53,6 +55,11 @@ export default function Settings() {
   const [workingHoursEnabled, setWorkingHoursEnabled] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [passwordResetSent, setPasswordResetSent] = useState(false);
+  const [geminiKeyInput, setGeminiKeyInput] = useState('');
+  const [editingGeminiKey, setEditingGeminiKey] = useState(false);
+  const [savingGeminiKey, setSavingGeminiKey] = useState(false);
+  const [geminiKeySaved, setGeminiKeySaved] = useState(false);
+  const [geminiKeyStatus, setGeminiKeyStatus] = useState<GeminiKeyStatus | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -62,6 +69,11 @@ export default function Settings() {
       setWorkingHoursEnabled(s.workingHours !== null);
     });
     listPushSubscriptions(user.uid).then(setDevices);
+    // Masked status only (•••• last4) — the full key is never fetched into the browser; see
+    // src/pages/api/gemini-key-status.ts and firestore.rules (users/{uid}/secrets/gemini).
+    getGeminiKeyStatus()
+      .then(setGeminiKeyStatus)
+      .catch(() => setGeminiKeyStatus({ hasKey: false, last4: null }));
     setThemeState(getStoredTheme());
   }, [user]);
 
@@ -149,6 +161,41 @@ export default function Settings() {
       setError('Could not send a password reset email. Please try again.');
     } finally {
       setResettingPassword(false);
+    }
+  }
+
+  async function handleSaveGeminiKey() {
+    if (!user) return;
+    const key = geminiKeyInput.trim();
+    if (!key) return;
+    setSavingGeminiKey(true);
+    try {
+      await saveGeminiKey(user.uid, key);
+      // Deriving the masked status from what the user just typed (not re-fetching it) — the
+      // full key is cleared from state immediately after and never requested back from the server.
+      setGeminiKeyStatus({ hasKey: true, last4: key.slice(-4) });
+      setGeminiKeyInput('');
+      setEditingGeminiKey(false);
+      setGeminiKeySaved(true);
+      setTimeout(() => setGeminiKeySaved(false), 2000);
+    } catch {
+      setError('Could not save your Gemini key. Please try again.');
+    } finally {
+      setSavingGeminiKey(false);
+    }
+  }
+
+  async function handleRemoveGeminiKey() {
+    if (!user) return;
+    if (!window.confirm('Remove your Gemini key? The Coach and AI write-ups will fall back to the shared AI.')) return;
+    setSavingGeminiKey(true);
+    try {
+      await removeGeminiKey(user.uid);
+      setGeminiKeyStatus({ hasKey: false, last4: null });
+    } catch {
+      setError('Could not remove your Gemini key. Please try again.');
+    } finally {
+      setSavingGeminiKey(false);
     }
   }
 
@@ -326,6 +373,70 @@ export default function Settings() {
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+        </div>
+      </GlassCard>
+
+      <GlassCard className="p-8">
+        <div className="mb-5 inline-flex size-11 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
+          <Sparkles className="size-5" />
+        </div>
+        <h2 className="font-display text-lg font-bold text-ink dark:text-white">AI Provider</h2>
+        <p className="mt-1 text-xs text-slate">
+          By default the Coach, AI write-ups and weekly digest use a shared AI quota. Add your own free Gemini API key to use
+          your own quota instead — never shared with other users.
+        </p>
+
+        <div className="mt-5 rounded-2xl border border-ink/10 px-4 py-4 dark:border-white/10">
+          {geminiKeyStatus === null ? (
+            <div className="text-xs text-slate">Loading…</div>
+          ) : geminiKeyStatus.hasKey && !editingGeminiKey ? (
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-semibold text-ink dark:text-white">Gemini key connected</div>
+                <div className="text-xs text-slate">•••• {geminiKeyStatus.last4}</div>
+              </div>
+              <div className="flex gap-2">
+                <Button size="md" variant="secondary" onClick={() => setEditingGeminiKey(true)}>
+                  Change
+                </Button>
+                <Button size="md" variant="ghost" loading={savingGeminiKey} onClick={handleRemoveGeminiKey} className="text-rose-500 hover:bg-rose-500/10">
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <input
+                type="password"
+                placeholder="Paste your Gemini API key"
+                value={geminiKeyInput}
+                onChange={(e) => setGeminiKeyInput(e.target.value)}
+                className="w-full rounded-2xl border border-ink/10 px-4 py-3 text-sm text-ink outline-none focus:border-brand-400 dark:border-white/10 dark:text-white"
+              />
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  size="md"
+                  onClick={handleSaveGeminiKey}
+                  loading={savingGeminiKey}
+                  success={geminiKeySaved}
+                  disabled={!geminiKeyInput.trim()}
+                  icon={<Save className="size-4" />}
+                >
+                  {geminiKeySaved ? 'Saved' : 'Save Key'}
+                </Button>
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">
+                  <Button type="button" size="md" variant="secondary" icon={<ExternalLink className="size-4" />}>
+                    Get a Gemini API key
+                  </Button>
+                </a>
+                {editingGeminiKey && (
+                  <Button type="button" size="md" variant="ghost" onClick={() => setEditingGeminiKey(false)}>
+                    Cancel
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -103,6 +103,48 @@ describe('firestore.rules — pushSubscriptions & notifications', () => {
     });
   });
 
+  describe('users/{uid}/secrets/gemini — write-only from the client, never readable, not even by the owner', () => {
+    it('the owner can write (save/replace) their own key', async () => {
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      await assertSucceeds(setDoc(doc(db, `users/${OWNER_UID}/secrets/gemini`), { apiKey: 'real-key-123' }));
+    });
+
+    it('NOT EVEN THE OWNER can read it back — this is the property that keeps the plaintext key out of the browser', async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), `users/${OWNER_UID}/secrets/gemini`), { apiKey: 'real-key-123' });
+      });
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      await assertFails(getDoc(doc(db, `users/${OWNER_UID}/secrets/gemini`)));
+    });
+
+    it('the owner can delete (remove) their own key', async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), `users/${OWNER_UID}/secrets/gemini`), { apiKey: 'real-key-123' });
+      });
+      const db = testEnv.authenticatedContext(OWNER_UID).firestore();
+      const { deleteDoc } = await import('firebase/firestore');
+      await assertSucceeds(deleteDoc(doc(db, `users/${OWNER_UID}/secrets/gemini`)));
+    });
+
+    it('another authenticated user cannot read or write it (owner isolation)', async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), `users/${OWNER_UID}/secrets/gemini`), { apiKey: 'real-key-123' });
+      });
+      const db = testEnv.authenticatedContext(OTHER_UID).firestore();
+      await assertFails(getDoc(doc(db, `users/${OWNER_UID}/secrets/gemini`)));
+      await assertFails(setDoc(doc(db, `users/${OWNER_UID}/secrets/gemini`), { apiKey: 'hijacked-key' }));
+    });
+
+    it('an unauthenticated request cannot read or write it', async () => {
+      await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), `users/${OWNER_UID}/secrets/gemini`), { apiKey: 'real-key-123' });
+      });
+      const db = testEnv.unauthenticatedContext().firestore();
+      await assertFails(getDoc(doc(db, `users/${OWNER_UID}/secrets/gemini`)));
+      await assertFails(setDoc(doc(db, `users/${OWNER_UID}/secrets/gemini`), { apiKey: 'hijacked-key' }));
+    });
+  });
+
   describe('websites — creation is server-only (plan limits enforced by POST /api/websites, not by rules)', () => {
     it('the client can never create a website doc directly, even for their own uid', async () => {
       // This is the property that makes the website-limit enforcement in
