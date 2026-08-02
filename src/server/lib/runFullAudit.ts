@@ -6,6 +6,7 @@ import { fetchAndParse, discoverPages, checkLinkStatuses, checkHttpToHttpsRedire
 import { renderPage, type RenderedPageData } from './renderPage';
 import { hasRenderBudget, recordRenderUsage } from './scanBudget';
 import { computeScanPartial } from './scanPartial';
+import { resolveFetcher, type SelfFetchEnv } from './selfFetch';
 import { parseServiceAccount } from './firestore';
 import { runSeoChecks } from './checks/seo';
 import { runAccessibilityChecks } from './checks/accessibility';
@@ -17,7 +18,7 @@ import { runPerformanceChecks } from './checks/performance';
 import { enrichRecommendationsWithAi } from './aiNarrative';
 import { createGeminiRunner } from './gemini';
 
-export interface AuditEnv {
+export interface AuditEnv extends SelfFetchEnv {
   PAGESPEED_API_KEY?: string;
   AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
   /** Cloudflare Browser Rendering binding — absent in local dev (no remote-mode support) or if not yet provisioned. */
@@ -95,7 +96,13 @@ export async function runFullAudit(
   const runPerformance = options.runPerformance ?? true;
   const businessContext = options.businessContext ?? {};
 
-  const { page: homepage, robotsTxt, sitemapXml, error } = await fetchAndParse(targetUrl);
+  // Only non-undefined when targetUrl's host is one of THIS deployment's own hostnames
+  // (server-side config, see selfFetch.ts) — every external target is fetched exactly as
+  // before. Same fetcher reused for every discovered page below since discoverPages() only
+  // ever returns same-host URLs.
+  const fetcher = resolveFetcher(targetUrl, env);
+
+  const { page: homepage, robotsTxt, sitemapXml, error } = await fetchAndParse(targetUrl, fetcher);
   if (!homepage) {
     return { result: null, error: error ?? 'Unable to analyse this website' };
   }
@@ -133,8 +140,11 @@ export async function runFullAudit(
   const [rendered, perf, httpsRedirects, linkCheckResults] = await Promise.all([
     renderPromise,
     perfPromise,
+    // Deliberately always the public path (no fetcher) even for an internal target — this
+    // check's entire job is verifying Cloudflare's edge redirects plain-http to https, which
+    // the service binding (bypassing the edge) cannot meaningfully test.
     checkHttpToHttpsRedirect(homepage.finalUrl),
-    checkLinkStatuses(homepage.links, homepage.finalUrl),
+    checkLinkStatuses(homepage.links, homepage.finalUrl, {}, fetcher),
   ]);
 
   if (renderStart > 0) {
@@ -147,7 +157,7 @@ export async function runFullAudit(
   // Discover pages using both the static homepage links and (when rendering ran) the rendered
   // DOM's links — a JS-driven nav/footer can add links a static fetch never sees at all.
   const discoveredUrls = crawlPages ? discoverPages(homepage.finalUrl, sitemapXml, homepage.links, MAX_PAGES, rendered?.links ?? []) : [];
-  const otherPageResults = await Promise.allSettled(discoveredUrls.map((url) => fetchAndParse(url)));
+  const otherPageResults = await Promise.allSettled(discoveredUrls.map((url) => fetchAndParse(url, fetcher)));
 
   const otherPages: PageData[] = [];
   for (const r of otherPageResults) {

@@ -31,11 +31,19 @@ const LINK_CHECK_TIMEOUT_MS = 6000;
 const MAX_BODY_BYTES = 3_000_000;
 const USER_AGENT = 'Mozilla/5.0 (compatible; GrowthAuditBot/1.0; +https://growthaudit.app)';
 
-async function timedFetch(url: string, opts: { timeoutMs?: number; method?: string; redirect?: RequestRedirect } = {}): Promise<Response | null> {
+/** A fetch-shaped function — either the global `fetch`, or a Cloudflare Service Binding's
+ * `.fetch()` (see selfFetch.ts) for targets that belong to this same deployment. */
+export type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
+
+async function timedFetch(
+  url: string,
+  opts: { timeoutMs?: number; method?: string; redirect?: RequestRedirect; fetcher?: Fetcher } = {},
+): Promise<Response | null> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? FETCH_TIMEOUT_MS);
+  const fetcher = opts.fetcher ?? fetch;
   try {
-    return await fetch(url, {
+    return await fetcher(url, {
       signal: controller.signal,
       headers: { 'User-Agent': USER_AGENT },
       redirect: opts.redirect ?? 'follow',
@@ -68,8 +76,8 @@ export async function checkHttpToHttpsRedirect(httpsUrl: string): Promise<boolea
   return res.url.startsWith('https://');
 }
 
-export async function fetchText(url: string): Promise<{ ok: boolean; status: number; text: string }> {
-  const res = await timedFetch(url);
+export async function fetchText(url: string, fetcher?: Fetcher): Promise<{ ok: boolean; status: number; text: string }> {
+  const res = await timedFetch(url, { fetcher });
   if (!res) return { ok: false, status: 0, text: '' };
   const text = await res.text().catch(() => '');
   return { ok: res.ok, status: res.status, text };
@@ -85,8 +93,9 @@ function headersToRecord(headers: Headers): Record<string, string> {
 
 export async function fetchAndParse(
   targetUrl: string,
+  fetcher?: Fetcher,
 ): Promise<{ page: PageData | null; robotsTxt: string | null; sitemapXml: string | null; error?: string }> {
-  const res = await timedFetch(targetUrl);
+  const res = await timedFetch(targetUrl, { fetcher });
   if (!res) {
     return {
       page: null,
@@ -254,7 +263,10 @@ export async function fetchAndParse(
   page.bodyText = stripTags(page.html).replace(/\s+/g, ' ').trim().slice(0, 20000);
 
   const origin = new URL(finalUrl).origin;
-  const [robots, sitemap] = await Promise.allSettled([fetchText(`${origin}/robots.txt`), fetchText(`${origin}/sitemap.xml`)]);
+  const [robots, sitemap] = await Promise.allSettled([
+    fetchText(`${origin}/robots.txt`, fetcher),
+    fetchText(`${origin}/sitemap.xml`, fetcher),
+  ]);
 
   return {
     page,
@@ -398,6 +410,7 @@ export async function checkLinkStatuses(
   links: { href: string }[],
   baseUrl: string,
   opts: { internalLimit?: number; externalLimit?: number } = {},
+  internalFetcher?: Fetcher,
 ): Promise<LinkCheckResult[]> {
   // Each checked link can cost up to 2 subrequests (HEAD, then a GET retry on 405/501/bot-block)
   // — confirmed live in remote testing that the original 15/5 defaults, combined with real
@@ -439,12 +452,13 @@ export async function checkLinkStatuses(
 
   const results = await Promise.allSettled(
     targets.map(async ({ href, isInternal }): Promise<LinkCheckResult> => {
-      let res = await timedFetch(href, { method: 'HEAD', timeoutMs: LINK_CHECK_TIMEOUT_MS });
+      const fetcher = isInternal ? internalFetcher : undefined;
+      let res = await timedFetch(href, { method: 'HEAD', timeoutMs: LINK_CHECK_TIMEOUT_MS, fetcher });
       if (!res || res.status === 405 || res.status === 501 || BOT_BLOCK_STATUSES.has(res.status)) {
         // A HEAD-specific 403/429 sometimes clears on GET (some bot-protection only inspects
         // HEAD requests) — worth a second try with the exact method a real visitor would use
         // before concluding it's blocked, since that changes broken vs. blocked classification.
-        const getRes = await timedFetch(href, { method: 'GET', timeoutMs: LINK_CHECK_TIMEOUT_MS });
+        const getRes = await timedFetch(href, { method: 'GET', timeoutMs: LINK_CHECK_TIMEOUT_MS, fetcher });
         if (getRes) res = getRes;
       }
       const status = res?.status ?? null;

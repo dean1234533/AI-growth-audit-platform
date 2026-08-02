@@ -16,6 +16,15 @@ directory = "dist/client"
 binding = "ASSETS"
 html_handling = "drop-trailing-slash"
 
+# Self-referential service binding — lets the audit scanner (fetchSite.ts) fetch this same
+# Worker's own hostnames in-process (no network hop, no DNS, no edge routing), which avoids
+# the Cloudflare self-loopback 522 a Worker's own `fetch()` can hit when calling its own zone.
+# Only used when the audited URL's host is in SELF_HOSTNAMES below — every other target still
+# goes through the normal public fetch path unchanged.
+[[services]]
+binding = "SELF"
+service = "ai-website-growth-audit-platform"
+
 [ai]
 binding = "AI"
 
@@ -52,3 +61,7 @@ PUBLIC_VAPID_KEY = "BEJacEYCXkvDlw1OTLFiK0kadycJzZBz9qlJfi-YnEvw9WOmYc3FeHV1AOQ1
 # Stripe price for the Pro plan (£5/mo, live mode) — not sensitive, it's already visible in
 # every Checkout URL. STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET are set as secrets instead.
 STRIPE_PRO_PRICE_ID = "price_1TytrgCVEvtoR0jJPNKRfApS"
+# Hostnames that resolve to THIS deployment — the scanner routes fetches to any of these
+# through the SELF service binding above instead of the public network. Comma-separated;
+# add more here (never in code) if another domain is ever hosted on this same Worker.
+SELF_HOSTNAMES = "app.dean-da-dev.co.uk,ai-website-growth-audit-platform.deanburt1308.workers.dev"

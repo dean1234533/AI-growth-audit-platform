@@ -14,6 +14,9 @@ interface Env extends AdminAlertEnv {
   VAPID_PRIVATE_KEY_JWK?: string;
   PUBLIC_VAPID_KEY?: string;
   AI?: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
+  /** Self-referential Service Binding + allowlist, declared in wrangler.toml — see selfFetch.ts. */
+  SELF?: { fetch: (url: string, init?: RequestInit) => Promise<Response> };
+  SELF_HOSTNAMES?: string;
 }
 
 async function runScheduledSafely(env: Env): Promise<void> {
