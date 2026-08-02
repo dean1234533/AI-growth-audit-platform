@@ -39,10 +39,17 @@ export async function renderPage(browserBinding: BrowserWorker, url: string): Pr
     browser = await puppeteer.launch(browserBinding);
     const page = await browser.newPage();
     await page.setViewport({ width: VIEWPORT_WIDTHS[0], height: 800 });
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: NAV_TIMEOUT_MS });
-    // networkidle0 only guarantees the network is quiet, not that a client-rendered app has
-    // finished mounting and running its effects (route-specific metadata/schema is often set
-    // in a useEffect, after first paint) — give it a brief settle window before capturing.
+    // 'networkidle0' waits for zero network connections for 500ms — confirmed live this never
+    // resolves for a real production site (Firestore realtime listeners keep a persistent
+    // connection open indefinitely), reliably burning the full NAV_TIMEOUT_MS and failing the
+    // whole render on any app using websockets/SSE/realtime-DB connections, analytics beacons,
+    // etc. 'load' (the standard document-load event) doesn't care about ongoing background
+    // network activity at all, so it isn't fooled by a connection that's never going idle.
+    await page.goto(url, { waitUntil: 'load', timeout: NAV_TIMEOUT_MS });
+    // 'load' only guarantees the initial document + its resources are in, not that a
+    // client-rendered app has finished mounting and running its effects (route-specific
+    // metadata/schema is often set in a useEffect, after first paint) — give it a brief settle
+    // window before capturing.
     await page.waitForSelector('footer', { timeout: 5000 }).catch(() => {});
 
     const renderedHtml = await page.content();

@@ -27,7 +27,14 @@ interface PageSpeedResponse {
   };
 }
 
-const PSI_TIMEOUT_MS = 25000;
+// PSI's own full mobile Lighthouse run (4 categories requested in one call) commonly takes
+// 20-60s for real-world sites — 25s was cutting it off before it finished for anything but
+// the simplest pages (confirmed live: vercel.com and a real production React SPA both hit
+// this exact "timed out or failed" path). Cloudflare Workers have no hard wall-clock limit on
+// an invocation (only CPU time is metered, and waiting on fetch() doesn't count against it) —
+// only an undocumented ~90s soft ceiling observed per individual subrequest — so 55s leaves
+// real headroom under that without making a single stuck request hang the audit indefinitely.
+const PSI_TIMEOUT_MS = 55000;
 
 /** Category of checks that genuinely can't run without PageSpeed Insights — shown honestly instead of silently omitted. */
 function notAvailablePerformanceChecks(reason: string): CheckResult[] {
