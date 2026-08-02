@@ -24,6 +24,7 @@ interface LighthouseAudit {
 interface PageSpeedResponse {
   lighthouseResult?: {
     audits: Record<string, LighthouseAudit>;
+    categories?: { performance?: { score?: number } };
   };
 }
 
@@ -38,16 +39,26 @@ const PSI_TIMEOUT_MS = 55000;
 
 /** Category of checks that genuinely can't run without PageSpeed Insights — shown honestly instead of silently omitted. */
 function notAvailablePerformanceChecks(reason: string): CheckResult[] {
-  const ids: [string, string][] = [
-    ['perf.lcp', 'Largest Contentful Paint'],
-    ['perf.fcp', 'First Contentful Paint'],
-    ['perf.cls', 'Cumulative Layout Shift'],
-    ['perf.tbt', 'Total Blocking Time'],
-    ['perf.speedIndex', 'Speed Index'],
-  ];
+  const ids: [string, string][] = [['perf.speedIndex', 'Speed Index']];
   return ids.map(([id, label]) =>
     check('performance', id, label, false, `Not measured: ${reason}`, 'info', 0, 'not_available'),
   );
+}
+
+/**
+ * Raw millisecond (or, for CLS, unitless) values for the metrics browserPerformance.ts also
+ * measures directly — PSI's own PAGESPEED_API_KEY, `numericValue`, so runFullAudit.ts can build
+ * a same-threshold fallback check ONLY for whichever specific metric the real browser
+ * measurement didn't produce (see mergePerformance.ts). Never used when the browser value is
+ * present — PSI is secondary per-metric, not just secondary overall.
+ */
+export interface PsiCoreMetrics {
+  lcp: number | null;
+  fcp: number | null;
+  cls: number | null;
+  tbt: number | null;
+  inp: number | null;
+  ttfb: number | null;
 }
 
 /**
@@ -62,13 +73,22 @@ function notAvailablePerformanceChecks(reason: string): CheckResult[] {
 export async function runPerformanceChecks(
   targetUrl: string,
   apiKey: string | undefined,
-): Promise<{ checks: CheckResult[]; lighthouseA11yChecks: CheckResult[]; lighthouseMobileChecks: CheckResult[]; warning?: string }> {
+): Promise<{
+  checks: CheckResult[];
+  lighthouseA11yChecks: CheckResult[];
+  lighthouseMobileChecks: CheckResult[];
+  warning?: string;
+  psiCoreMetrics: PsiCoreMetrics | null;
+  psiScore: number | null;
+}> {
   if (!apiKey) {
     return {
       checks: notAvailablePerformanceChecks('PAGESPEED_API_KEY is not configured on the server.'),
       lighthouseA11yChecks: [],
       lighthouseMobileChecks: [],
       warning: 'Performance checks skipped: PAGESPEED_API_KEY is not configured.',
+      psiCoreMetrics: null,
+      psiScore: null,
     };
   }
 
@@ -87,6 +107,8 @@ export async function runPerformanceChecks(
         lighthouseA11yChecks: [],
         lighthouseMobileChecks: [],
         warning: `Performance checks skipped: PageSpeed Insights returned HTTP ${res.status}.`,
+        psiCoreMetrics: null,
+        psiScore: null,
       };
     }
     json = await res.json();
@@ -96,6 +118,8 @@ export async function runPerformanceChecks(
       lighthouseA11yChecks: [],
       lighthouseMobileChecks: [],
       warning: 'Performance checks skipped: PageSpeed Insights request timed out or failed.',
+      psiCoreMetrics: null,
+      psiScore: null,
     };
   } finally {
     clearTimeout(timer);
@@ -108,32 +132,32 @@ export async function runPerformanceChecks(
       lighthouseA11yChecks: [],
       lighthouseMobileChecks: [],
       warning: 'Performance checks skipped: PageSpeed Insights returned no data.',
+      psiCoreMetrics: null,
+      psiScore: null,
     };
   }
 
   const results: CheckResult[] = [];
   const scorePass = (id: string, threshold = 0.9) => (audits[id]?.score ?? 0) >= threshold;
 
-  const lcp = audits['largest-contentful-paint'];
-  if (lcp) results.push(check('performance', 'perf.lcp', 'Largest Contentful Paint under 2.5s', (lcp.score ?? 0) >= 0.9, lcp.displayValue ?? 'unknown', (lcp.score ?? 0) >= 0.5 ? 'medium' : 'critical', 10));
-
-  const fcp = audits['first-contentful-paint'];
-  if (fcp) results.push(check('performance', 'perf.fcp', 'First Contentful Paint under 1.8s', (fcp.score ?? 0) >= 0.9, fcp.displayValue ?? 'unknown', (fcp.score ?? 0) >= 0.5 ? 'medium' : 'high', 7));
-
-  const cls = audits['cumulative-layout-shift'];
-  if (cls) results.push(check('performance', 'perf.cls', 'Cumulative Layout Shift under 0.1', (cls.score ?? 0) >= 0.9, cls.displayValue ?? 'unknown', (cls.score ?? 0) >= 0.5 ? 'medium' : 'high', 8));
-
-  const tbt = audits['total-blocking-time'];
-  if (tbt) results.push(check('performance', 'perf.tbt', 'Total Blocking Time under 200ms', (tbt.score ?? 0) >= 0.9, tbt.displayValue ?? 'unknown', (tbt.score ?? 0) >= 0.5 ? 'medium' : 'high', 7));
+  // Core Web Vitals (LCP/FCP/CLS/TBT/INP) and server-response-time are deliberately NOT pushed
+  // into `results` here anymore — browserPerformance.ts measures these directly from Growth
+  // Audit's own Browser Rendering session now, and is the primary source. Their raw values are
+  // still extracted below into `psiCoreMetrics` so mergePerformance.ts can fall back to PSI
+  // per-metric ONLY when the browser measurement didn't produce that specific metric (e.g.
+  // rendering failed entirely, or a real interaction never fired for INP).
+  const psiCoreMetrics: PsiCoreMetrics = {
+    lcp: audits['largest-contentful-paint']?.numericValue ?? null,
+    fcp: audits['first-contentful-paint']?.numericValue ?? null,
+    cls: audits['cumulative-layout-shift']?.numericValue ?? null,
+    tbt: audits['total-blocking-time']?.numericValue ?? null,
+    inp: audits['interaction-to-next-paint']?.numericValue ?? audits['experimental-interaction-to-next-paint']?.numericValue ?? audits['max-potential-fid']?.numericValue ?? null,
+    ttfb: audits['server-response-time']?.numericValue ?? null,
+  };
+  const psiScore = json.lighthouseResult?.categories?.performance?.score ?? null;
 
   const speedIndex = audits['speed-index'];
   if (speedIndex) results.push(check('performance', 'perf.speedIndex', 'Speed Index under 3.4s', (speedIndex.score ?? 0) >= 0.9, speedIndex.displayValue ?? 'unknown', (speedIndex.score ?? 0) >= 0.5 ? 'medium' : 'high', 6));
-
-  const inp = audits['interaction-to-next-paint'] ?? audits['experimental-interaction-to-next-paint'] ?? audits['max-potential-fid'];
-  if (inp) results.push(check('performance', 'perf.inp', 'Interaction responsiveness good', (inp.score ?? 0) >= 0.9, inp.displayValue ?? 'unknown', (inp.score ?? 0) >= 0.5 ? 'medium' : 'high', 7));
-
-  const serverResponse = audits['server-response-time'];
-  if (serverResponse) results.push(check('performance', 'perf.serverResponseTime', 'Server response time under 600ms', scorePass('server-response-time'), serverResponse.displayValue ?? 'unknown', 'high', 8));
 
   const pageWeight = audits['total-byte-weight'];
   if (pageWeight) results.push(check('performance', 'perf.pageWeight', 'Total page size reasonable', scorePass('total-byte-weight'), pageWeight.displayValue ?? 'unknown', 'medium', 5));
@@ -211,5 +235,5 @@ export async function runPerformanceChecks(
     );
   }
 
-  return { checks: results, lighthouseA11yChecks, lighthouseMobileChecks };
+  return { checks: results, lighthouseA11yChecks, lighthouseMobileChecks, psiCoreMetrics, psiScore };
 }

@@ -94,6 +94,40 @@ export interface ScanQuality {
   /** Why rendering was skipped, when it was — e.g. "daily browser-rendering budget exhausted". Absent when rendering ran. */
   jsRenderingReason?: string;
   performanceMeasured: boolean;
+  /** Which source the core performance metrics (LCP/FCP/CLS/TBT/INP) actually came from this
+   * scan — Growth Audit's own browser measurement (primary), PageSpeed Insights (fallback), or
+   * 'none' if both failed. See meta.performance for the full breakdown. */
+  performanceSource?: 'browser' | 'psi' | 'none';
+}
+
+/**
+ * Growth Audit's own browser-measured performance data (primary source) alongside PageSpeed
+ * Insights (secondary/supplementary) — see src/server/lib/checks/mergePerformance.ts, which
+ * builds this. Not the `lighthouse` npm package — real Chrome PerformanceObserver/Navigation
+ * Timing data captured from the same Browser Rendering session used for the rest of the scan.
+ */
+export interface PerformanceMeta {
+  browser: {
+    available: boolean;
+    lcp: number | null;
+    fcp: number | null;
+    cls: number | null;
+    tbt: number | null;
+    inp: number | null;
+    ttfb: number | null;
+    speedIndex: null;
+  };
+  psi: {
+    available: boolean;
+    score: number | null;
+    lcp: number | null;
+    fcp: number | null;
+    cls: number | null;
+    tbt: number | null;
+    inp: number | null;
+  };
+  primarySource: 'browser' | 'psi' | 'none';
+  score: number | null;
 }
 
 export interface AuditResult {
@@ -107,6 +141,10 @@ export interface AuditResult {
     pageTitle: string | null;
     screenshotUrl?: string;
     partial: boolean;
+    /** Explicit audit-quality state — see src/server/lib/runFullAudit.ts for exactly how each
+     * is determined. Absent on older stored scans (predates this field); treat as unknown, not
+     * STATIC_FALLBACK, when reading historical data. */
+    auditQuality?: 'FULL' | 'PARTIAL' | 'STATIC_FALLBACK';
     warnings: string[];
     /** Optional context supplied on the audit intake form — absent on audits run without it. */
     businessName?: string;

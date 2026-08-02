@@ -1,6 +1,7 @@
 import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData, LinkCheckResult } from '../fetchSite';
 import type { RenderedPageData } from '../renderPage';
+import { looksLikeJsAppShell } from './shared/jsShellDetection';
 
 function check(
   id: string,
@@ -37,6 +38,10 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
   const headings = rendered ? rendered.headings : page.headings;
   const images = rendered ? rendered.images : page.images;
   const structuredDataSource: MeasurementType = rendered ? 'measured' : 'detected';
+  // See jsShellDetection.ts — only downgrades a genuine "no H1 found" to not_verified when the
+  // static HTML itself looks like an unrendered JS-app shell, never just because rendering was
+  // unavailable. A real static page's genuinely missing H1 still fails, as before.
+  const isLikelyShell = !rendered && looksLikeJsAppShell(page);
 
   const title = page.title?.trim() ?? '';
   results.push(check('seo.missingTitle', 'Page title present', title.length > 0, title.length > 0 ? `Title: "${title}"` : 'No <title> tag found', 'critical', 10));
@@ -53,7 +58,21 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
     results.push(check('seo.metaDescriptionLength', 'Meta description length optimal (50-160 chars)', optimalLength, `Meta description is ${desc.length} characters`, 'low', 4));
   }
 
-  results.push(check('seo.missingH1', 'Exactly one H1 present', h1s.length === 1, h1s.length === 0 ? 'No H1 tag found' : `${h1s.length} H1 tag(s) found`, 'high', 8, structuredDataSource));
+  if (h1s.length === 0 && isLikelyShell) {
+    results.push({
+      id: 'seo.missingH1',
+      category: 'seo',
+      label: 'Exactly one H1 present',
+      passed: true,
+      detail: 'No H1 was found in the static HTML, but this page matches a JavaScript-app shell pattern — headings are likely rendered by JavaScript this scan could not execute.',
+      severity: 'info',
+      weight: 0,
+      measurementType: 'not_available',
+      status: 'not_verified',
+    });
+  } else {
+    results.push(check('seo.missingH1', 'Exactly one H1 present', h1s.length === 1, h1s.length === 0 ? 'No H1 tag found' : `${h1s.length} H1 tag(s) found`, 'high', 8, structuredDataSource));
+  }
   if (h1s.length > 1) {
     results.push(check('seo.multipleH1', 'Single H1 (not multiple)', false, `${h1s.length} H1 tags found`, 'low', 3, structuredDataSource));
   }

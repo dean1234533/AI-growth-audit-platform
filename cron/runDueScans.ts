@@ -59,7 +59,7 @@ async function processInBatches<T>(items: T[], handler: (item: T) => Promise<voi
 async function runAudit(
   targetUrl: string,
   env: CronEnv,
-  options?: { crawlPages?: boolean; runPerformance?: boolean; geminiApiKey?: string },
+  options?: { crawlPages?: boolean; runPerformance?: boolean; geminiApiKey?: string; priority?: 'monitoring' },
 ) {
   const { result } = await runFullAudit(targetUrl, env, options);
   return result;
@@ -82,7 +82,12 @@ export async function runDueScans(env: CronEnv): Promise<void> {
   await processInBatches(dueWebsites, async (website) => {
     try {
       const geminiApiKey = await getStoredGeminiKey(serviceAccount, website.uid).catch(() => undefined);
-      const audit = await runAudit(website.url, env, { geminiApiKey });
+      // 'monitoring' priority — checked against the daily Browser Rendering budget INSIDE
+      // runFullAudit (hasRenderBudget, scanBudget.ts) before any render is attempted, and is
+      // never allowed to spend into PROTECTED_CUSTOMER_RESERVATION_SECONDS. A skipped render
+      // still completes the rest of the audit via static analysis/PSI — see auditQuality on
+      // the result — rather than the scan failing outright.
+      const audit = await runAudit(website.url, env, { geminiApiKey, priority: 'monitoring' });
       if (!audit) return;
 
       await addFirestoreDocument(serviceAccount, `websites/${website.id}/scans`, { ...audit });

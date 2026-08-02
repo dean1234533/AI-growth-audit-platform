@@ -4,7 +4,8 @@ import { buildRecommendations } from '../../lib/recommendations';
 import type { AuditResult, CheckResult, PageAuditResult } from '../../lib/types';
 import { fetchAndParse, discoverPages, checkLinkStatuses, checkHttpToHttpsRedirect, type PageData } from './fetchSite';
 import { renderPage, type RenderedPageData } from './renderPage';
-import { hasRenderBudget, recordRenderUsage } from './scanBudget';
+import { hasRenderBudget, recordRenderUsage, recordBudgetSkip, type AuditPriority } from './scanBudget';
+import { dedupedRender, normalizeUrlForDedup } from './renderDedup';
 import { computeScanPartial } from './scanPartial';
 import { resolveFetcher, type SelfFetchEnv } from './selfFetch';
 import { parseServiceAccount } from './firestore';
@@ -15,6 +16,7 @@ import { runTrustChecks } from './checks/trust';
 import { runConversionChecks } from './checks/conversion';
 import { runLocalSeoChecks } from './checks/localSeo';
 import { runPerformanceChecks } from './checks/performance';
+import { mergePerformanceResults } from './checks/mergePerformance';
 import { enrichRecommendationsWithAi } from './aiNarrative';
 import { createGeminiRunner } from './gemini';
 
@@ -75,6 +77,13 @@ export interface RunFullAuditOptions {
    * they've set one — used for recommendation write-up instead of the shared Workers AI quota.
    * Absent for anonymous scans (no owner) and for owners who haven't set a key. */
   geminiApiKey?: string;
+  /** Who's asking, for Browser Rendering budget purposes — see scanBudget.ts. Defaults to
+   * 'public', the most restrictive tier, so a caller that forgets to specify this explicitly
+   * never accidentally gets customer/admin treatment. Callers should always pass this
+   * explicitly in practice (api/audit.ts resolves it server-side from the request's verified
+   * identity; runDueScans.ts passes 'monitoring' directly, since cron has no HTTP entry point
+   * to spoof). */
+  priority?: AuditPriority;
 }
 
 /**
@@ -95,6 +104,7 @@ export async function runFullAudit(
   const crawlPages = options.crawlPages ?? true;
   const runPerformance = options.runPerformance ?? true;
   const businessContext = options.businessContext ?? {};
+  const priority: AuditPriority = options.priority ?? 'public';
 
   // Only non-undefined when targetUrl's host is one of THIS deployment's own hostnames
   // (server-side config, see selfFetch.ts) — every external target is fetched exactly as
@@ -124,18 +134,32 @@ export async function runFullAudit(
   // after PSI (which alone already takes 15-25s) so a real-browser pass doesn't add latency
   // on top of it for the user-facing scan flow.
   let renderStart = 0;
+  let renderIsNew = false; // true only if THIS call actually started the render (vs joined an in-flight one from a concurrent request for the same URL) — see renderDedup.ts. Only the starting call records budget usage.
   const shouldAttemptRender = crawlPages && !!env.BROWSER; // crawlPages doubles as "this is a full scan, not a lightweight competitor check"
-  const budgetCheck = shouldAttemptRender ? await hasRenderBudget(serviceAccount) : { allowed: false as const, reason: 'budget_unknown' as const };
+  const budgetCheck = shouldAttemptRender ? await hasRenderBudget(serviceAccount, priority) : { allowed: false as const, reason: 'budget_unknown' as const };
+  if (shouldAttemptRender && !budgetCheck.allowed) {
+    recordBudgetSkip(serviceAccount, priority, budgetCheck.reason).catch(() => {});
+  }
 
   const renderPromise: Promise<RenderedPageData | null> = (async () => {
     if (!shouldAttemptRender || !budgetCheck.allowed || !env.BROWSER) return null;
     renderStart = Date.now();
-    return renderPage(env.BROWSER, homepage.finalUrl);
+    const browser = env.BROWSER;
+    const { promise, isNew } = dedupedRender(normalizeUrlForDedup(homepage.finalUrl), () => renderPage(browser, homepage.finalUrl));
+    renderIsNew = isNew;
+    return promise;
   })();
 
   const perfPromise = runPerformance
     ? runPerformanceChecks(targetUrl, env.PAGESPEED_API_KEY)
-    : Promise.resolve({ checks: [] as CheckResult[], lighthouseA11yChecks: [] as CheckResult[], lighthouseMobileChecks: [] as CheckResult[], warning: undefined as string | undefined });
+    : Promise.resolve({
+        checks: [] as CheckResult[],
+        lighthouseA11yChecks: [] as CheckResult[],
+        lighthouseMobileChecks: [] as CheckResult[],
+        warning: undefined as string | undefined,
+        psiCoreMetrics: null,
+        psiScore: null,
+      });
 
   const [rendered, perf, httpsRedirects, linkCheckResults] = await Promise.all([
     renderPromise,
@@ -147,12 +171,24 @@ export async function runFullAudit(
     checkLinkStatuses(homepage.links, homepage.finalUrl, {}, fetcher),
   ]);
 
-  if (renderStart > 0) {
+  if (renderStart > 0 && renderIsNew) {
     // Record real elapsed time regardless of success/failure — a timed-out render attempt
-    // still used real browser seconds against the daily budget.
-    recordRenderUsage(serviceAccount, Date.now() - renderStart).catch(() => {});
+    // still used real browser seconds against the daily budget. Only recorded by the call that
+    // actually started the render (renderIsNew) — a concurrent request that merely joined an
+    // in-flight render via renderDedup.ts must not double-count the same browser time.
+    recordRenderUsage(serviceAccount, Date.now() - renderStart, priority, rendered ? 'rendered' : 'static_fallback').catch(() => {});
   }
-  if (perf.warning) warnings.push(perf.warning);
+  // Browser-measured Core Web Vitals (from the same render session above) are primary; PSI
+  // fills in only the specific metrics the browser measurement didn't produce. A PSI-only
+  // failure is recorded in meta.performance.psi but deliberately NOT pushed to `warnings`
+  // when the browser measurement succeeded — see mergePerformance.ts — so a PSI timeout can no
+  // longer make an otherwise-complete scan read as partial.
+  const perfResult = mergePerformanceResults(rendered?.browserPerformance ?? null, {
+    coreMetrics: perf.psiCoreMetrics,
+    score: perf.psiScore,
+    warning: perf.warning,
+  });
+  if (perfResult.warning) warnings.push(perfResult.warning);
 
   // Discover pages using both the static homepage links and (when rendering ran) the rendered
   // DOM's links — a JS-driven nav/footer can add links a static fetch never sees at all.
@@ -177,6 +213,7 @@ export async function runFullAudit(
       rendered,
     ),
     ...perf.checks,
+    ...perfResult.checks,
     ...runAccessibilityChecks(homepage, rendered),
     ...perf.lighthouseA11yChecks,
     ...runMobileChecks(homepage, rendered),
@@ -208,9 +245,25 @@ export async function runFullAudit(
       ? (crawlPages ? 'Browser rendering is not configured for this environment' : 'Skipped for this lightweight scan')
       : !budgetCheck.allowed && budgetCheck.reason === 'exhausted'
         ? 'Daily browser-rendering budget likely exhausted (best-effort estimate, not a hard Cloudflare guarantee) — some checks fell back to static analysis'
-        : !budgetCheck.allowed && budgetCheck.reason === 'budget_unknown'
-          ? 'Could not confirm remaining browser-rendering budget, so skipped it as a precaution — some checks fell back to static analysis'
-          : 'Browser rendering failed for this scan — some checks fell back to static analysis';
+        : !budgetCheck.allowed && budgetCheck.reason === 'reserved_for_customers'
+          ? 'Remaining browser-rendering capacity is reserved for customer scans right now — this scan fell back to static analysis'
+          : !budgetCheck.allowed && budgetCheck.reason === 'public_allocation_exhausted'
+            ? "Today's browser-rendering allocation for the public audit tool is used up — this scan fell back to static analysis"
+            : !budgetCheck.allowed && budgetCheck.reason === 'budget_unknown'
+              ? 'Could not confirm remaining browser-rendering budget, so skipped it as a precaution — some checks fell back to static analysis'
+              : 'Browser rendering failed for this scan — some checks fell back to static analysis';
+
+  // Explicit audit-quality state (see PerformanceMeta/AuditResult in types.ts):
+  //  FULL: a real Browser Rendering pass succeeded, and nothing else significant failed.
+  //  PARTIAL: rendering succeeded but something else notable didn't (currently: performance
+  //   measurement failed on both sources — the only thing that still reaches `warnings`, see
+  //   mergePerformance.ts's Case 4).
+  //  STATIC_FALLBACK: no rendered data at all — whether because rendering was never attempted
+  //   by design (a lightweight competitor/comparison scan), was skipped by the budget system
+  //   above, or was attempted and genuinely failed. Rendering-dependent checks fall back to
+  //   not_verified (or, for a detected JS-app-shell page, several conversion/SEO checks do too
+  //   — see jsShellDetection.ts) rather than being scored as false failures.
+  const auditQuality: 'FULL' | 'PARTIAL' | 'STATIC_FALLBACK' = !rendered ? 'STATIC_FALLBACK' : warnings.length > 0 ? 'PARTIAL' : 'FULL';
 
   const result: AuditResult = {
     url: homepage.finalUrl,
@@ -222,6 +275,7 @@ export async function runFullAudit(
     meta: {
       pageTitle: homepage.title,
       partial: computeScanPartial(warnings, crawlPages, rendered),
+      auditQuality,
       warnings,
       ...(businessContext.businessName ? { businessName: businessContext.businessName } : {}),
       ...(businessContext.businessType ? { businessType: businessContext.businessType } : {}),
@@ -230,8 +284,10 @@ export async function runFullAudit(
         scannedAt: new Date().toISOString(),
         jsRenderingUsed: !!rendered,
         ...(jsRenderingReason ? { jsRenderingReason } : {}),
-        performanceMeasured: runPerformance && !perf.warning,
+        performanceMeasured: runPerformance && perfResult.performanceMeasured,
+        performanceSource: perfResult.meta.primarySource,
       },
+      ...(runPerformance ? { performance: perfResult.meta } : {}),
       pagesDiscovered: discoveredUrls.length,
       pagesScanned: otherPages.length,
       pagesSkipped: Math.max(0, discoveredUrls.length - otherPages.length),

@@ -33,6 +33,15 @@ service cloud.firestore {
     match /contactMessages/{msgId} {
       allow read, write: if false;
     }
+    // Daily Browser Rendering budget/priority counters (src/server/lib/scanBudget.ts) — written
+    // exclusively by the service account from server code (the audit pipeline, cron). No client
+    // needs to read or write this; a client that could would be able to see/forge scan-capacity
+    // accounting. Already implicitly denied by there being no matching rule below, but stated
+    // explicitly here (same pattern as leads/newsletter/contactMessages above) so it's obvious
+    // this was a deliberate decision, not an oversight, the next time this file is read.
+    match /scanBudget/{date} {
+      allow read, write: if false;
+    }
 
     // User profile/settings — owned solely by the signed-in user it belongs to. Billing fields
     // (plan, stripeCustomerId, stripeSubscriptionId) are excluded from client writes — those

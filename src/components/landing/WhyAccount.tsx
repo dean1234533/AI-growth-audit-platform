@@ -1,18 +1,15 @@
 import { motion } from 'framer-motion';
-import { Radar, History, BellRing, TrendingUp, Check } from 'lucide-react';
+import { History, TrendingUp } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
-import { PLANS } from '../../lib/plans';
 
-// Website-limit number comes from the same shared source pricing/FAQ read from — never
-// hardcode it here, or this section can drift from what's actually enforced.
-const FREE = PLANS.find((p) => p.id === 'free')!;
-
+// Deliberately NOT the same bullet list as HomepagePricing's Free-tier features (monitor 1
+// website, weekly scans, push notifications, etc. — those are the literal plan contents, shown
+// moments later in the pricing comparison below this section). This section exists to answer
+// a different question — "why bother creating an account at all" — so it stays focused on the
+// before/after contrast rather than repeating the same feature list twice on one page.
 const FREE_ACCOUNT_BENEFITS = [
-  { icon: Radar, text: `Monitor ${FREE.websiteLimit} website` },
-  { icon: History, text: 'Save audit history' },
-  { icon: TrendingUp, text: 'Automatic weekly scans' },
-  { icon: BellRing, text: 'Push notifications' },
-  { icon: Check, text: 'Track website health over time' },
+  { icon: History, text: 'See how your score changes over time, not just a one-off snapshot' },
+  { icon: TrendingUp, text: "Know the moment something on your site breaks, instead of finding out from a customer" },
 ];
 
 export function WhyAccount() {

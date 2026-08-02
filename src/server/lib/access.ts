@@ -29,7 +29,7 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
  * project grows past one admin, replace this with real custom claims rather than adding emails
  * to this list.
  */
-const ADMIN_EMAIL = 'deanburt1308@gmail.com';
+export const ADMIN_EMAIL = 'deanburt1308@gmail.com';
 
 /**
  * Resolves the effective plan for access-control purposes. `verifiedEmail` must come from a

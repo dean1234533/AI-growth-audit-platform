@@ -224,6 +224,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             scannedAt={latest.scannedAt}
             scoreDelta={digest?.scoreDelta ?? null}
             scanQuality={latest.meta.scanQuality}
+            auditQuality={latest.meta.auditQuality}
           />
 
           <div className="grid gap-4 sm:grid-cols-2">

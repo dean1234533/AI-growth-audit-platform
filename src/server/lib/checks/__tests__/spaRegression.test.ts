@@ -37,9 +37,11 @@ describe('SPA regression: static HTML empty, rendered content present', () => {
     ],
   });
 
-  it('static-only data does NOT find the H1 (proves the scenario is real)', () => {
+  it('static-only data does NOT find the H1, but — since this static HTML matches a JS-shell pattern — reports not_verified rather than a hard fail (proves the scenario is real without producing a false failure)', () => {
     const checks = runSeoChecks(staticPage, null, null, {}, null);
-    expect(findCheck(checks, 'seo.missingH1').passed).toBe(false);
+    const h1Check = findCheck(checks, 'seo.missingH1');
+    expect(h1Check.status).toBe('not_verified');
+    expect(h1Check.weight).toBe(0);
   });
 
   it('rendered data finds the H1', () => {
@@ -54,9 +56,26 @@ describe('SPA regression: static HTML empty, rendered content present', () => {
     expect(findCheck(checks, 'conv.contactForm').passed).toBe(true);
   });
 
-  it('static-only data does not find the contact form', () => {
+  it('static-only data does not find the contact form, but reports not_verified (JS shell) instead of a hard fail', () => {
     const checks = runConversionChecks(staticPage, null);
-    expect(findCheck(checks, 'conv.contactForm').passed).toBe(false);
+    const formCheck = findCheck(checks, 'conv.contactForm');
+    expect(formCheck.status).toBe('not_verified');
+    expect(formCheck.weight).toBe(0);
+  });
+
+  it('a genuinely static page with real (if sparse) content still hard-fails a real missing contact form — the shell heuristic never fires here', () => {
+    const smallRealSite = makePageData({
+      html: '<html><body><h1>Joe\'s Plumbing</h1><p>Call us on 01234 567890 for a free quote. We cover the whole county.</p></body></html>',
+      bodyText: "Joe's Plumbing Call us on 01234 567890 for a free quote. We cover the whole county.",
+      h1s: ['Joe\'s Plumbing'],
+      headings: [{ level: 1, text: "Joe's Plumbing" }],
+      forms: [],
+    });
+    const checks = runConversionChecks(smallRealSite, null);
+    const formCheck = findCheck(checks, 'conv.contactForm');
+    expect(formCheck.passed).toBe(false);
+    expect(formCheck.status).toBeUndefined();
+    expect(formCheck.weight).toBeGreaterThan(0);
   });
 
   it('rendered data finds the primary CTA', () => {

@@ -1,4 +1,9 @@
 import puppeteer, { type BrowserWorker } from '@cloudflare/puppeteer';
+import {
+  BROWSER_METRICS_COLLECTOR_SCRIPT,
+  deriveBrowserPerformanceMetrics,
+  type BrowserPerformanceMetrics,
+} from './checks/browserPerformance';
 
 export interface RenderedPageData {
   renderedHtml: string;
@@ -20,6 +25,8 @@ export interface RenderedPageData {
   viewportOverflow: { width: number; overflowPx: number }[];
   tapTargets: { total: number; tooSmall: number };
   renderMs: number;
+  /** Real browser-measured Core Web Vitals from this same render session — null only if the in-page collection step itself failed (the render still succeeds; performance simply falls back to PSI upstream). See browserPerformance.ts. */
+  browserPerformance: BrowserPerformanceMetrics | null;
 }
 
 const NAV_TIMEOUT_MS = 20_000;
@@ -39,6 +46,12 @@ export async function renderPage(browserBinding: BrowserWorker, url: string): Pr
     browser = await puppeteer.launch(browserBinding);
     const page = await browser.newPage();
     await page.setViewport({ width: VIEWPORT_WIDTHS[0], height: 800 });
+    // Attach the Core Web Vitals collectors BEFORE navigation — evaluateOnNewDocument runs the
+    // script on every subsequent document (including this first navigation) before any of the
+    // page's own scripts execute, so the PerformanceObservers below are listening before the
+    // first paint/layout-shift/long-task can happen. Reuses this SAME browser/page/navigation —
+    // no second Browser Rendering session, no second page load.
+    await page.evaluateOnNewDocument(BROWSER_METRICS_COLLECTOR_SCRIPT);
     // 'networkidle0' waits for zero network connections for 500ms — confirmed live this never
     // resolves for a real production site (Firestore realtime listeners keep a persistent
     // connection open indefinitely), reliably burning the full NAV_TIMEOUT_MS and failing the
@@ -51,6 +64,40 @@ export async function renderPage(browserBinding: BrowserWorker, url: string): Pr
     // metadata/schema is often set in a useEffect, after first paint) — give it a brief settle
     // window before capturing.
     await page.waitForSelector('footer', { timeout: 5000 }).catch(() => {});
+
+    // Single, side-effect-free interaction so INP has a real (rather than fabricated) sample to
+    // report: a Tab keypress moves focus and is a genuine discrete interaction under the Event
+    // Timing spec, but — unlike a synthesized click — it can never submit a form, add to a
+    // cart, or navigate away on a third-party site we don't control. If the page doesn't
+    // produce a qualifying Event Timing entry from it (most won't), INP stays null/not_available
+    // rather than being estimated — see browserPerformance.ts.
+    await page.keyboard.press('Tab').catch(() => {});
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const rawMetrics = await page
+      .evaluate(() => {
+        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+        const w = window as unknown as { __gaMetrics?: { fcp: number | null; lcp: number | null; cls: number; longTasks: { start: number; duration: number }[]; interactions: number[] } };
+        const m = w.__gaMetrics ?? { fcp: null, lcp: null, cls: 0, longTasks: [], interactions: [] };
+        return {
+          fcp: m.fcp,
+          lcp: m.lcp,
+          cls: m.cls,
+          longTasks: m.longTasks,
+          interactions: m.interactions,
+          nav: nav
+            ? {
+                responseStart: nav.responseStart,
+                requestStart: nav.requestStart,
+                domContentLoadedEventEnd: nav.domContentLoadedEventEnd,
+                loadEventEnd: nav.loadEventEnd,
+              }
+            : null,
+        };
+      })
+      .catch(() => null);
+
+    const browserPerformance = rawMetrics ? deriveBrowserPerformanceMetrics(rawMetrics) : null;
 
     const renderedHtml = await page.content();
 
@@ -174,6 +221,7 @@ export async function renderPage(browserBinding: BrowserWorker, url: string): Pr
       viewportOverflow,
       tapTargets,
       renderMs: Date.now() - start,
+      browserPerformance,
     };
   } catch (err) {
     console.error(`renderPage: failed for ${url}:`, err);

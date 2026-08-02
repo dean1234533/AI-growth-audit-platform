@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Sparkles, Clock, ListChecks, TrendingUp, TrendingDown, Minus, Eye } from 'lucide-react';
+import { Sparkles, Clock, ListChecks, TrendingUp, TrendingDown, Minus, Eye, Gauge } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { ScoreCircle } from './ScoreCircle';
 import { scoreBand } from '../../lib/scoreBand';
@@ -14,9 +14,20 @@ interface WebsiteHealthHeroProps {
   scoreDelta?: number | null;
   /** How thoroughly this specific scan actually checked the site — absent on older stored scans. */
   scanQuality?: ScanQuality;
+  /** FULL/PARTIAL/STATIC_FALLBACK — absent on scans stored before this field existed, in which case the jsRenderingUsed-based wording below is used instead. */
+  auditQuality?: 'FULL' | 'PARTIAL' | 'STATIC_FALLBACK';
 }
 
-export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta, scanQuality }: WebsiteHealthHeroProps) {
+const AUDIT_QUALITY_COPY: Record<'FULL' | 'PARTIAL' | 'STATIC_FALLBACK', { label: string; title: string }> = {
+  FULL: { label: 'Full audit', title: 'Full audit — browser-rendered checks completed.' },
+  PARTIAL: { label: 'Partial audit', title: 'Partial audit — some checks or data sources were unavailable.' },
+  STATIC_FALLBACK: {
+    label: 'Static fallback',
+    title: 'Static fallback — browser rendering was unavailable, so some browser-dependent checks could not be verified.',
+  },
+};
+
+export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta, scanQuality, auditQuality }: WebsiteHealthHeroProps) {
   const { label, color } = scoreBand(score);
   const sorted = [...categories].filter((c) => c.checks.length > 0).sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
@@ -82,13 +93,32 @@ export function WebsiteHealthHero({ score, categories, recommendationCount, scan
                 <Clock className="size-4 text-brand-500" />
                 Scanned {new Date(scannedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
               </span>
-              {scanQuality && (
+              {(auditQuality || scanQuality) && (
                 <span
                   className="inline-flex items-center gap-1.5"
-                  title={scanQuality.jsRenderingUsed ? 'This scan rendered the page in a real browser, not just its raw HTML.' : (scanQuality.jsRenderingReason ?? 'Real browser rendering was not used for this scan.')}
+                  title={
+                    auditQuality
+                      ? AUDIT_QUALITY_COPY[auditQuality].title
+                      : scanQuality!.jsRenderingUsed
+                        ? 'This scan rendered the page in a real browser, not just its raw HTML.'
+                        : (scanQuality!.jsRenderingReason ?? 'Real browser rendering was not used for this scan.')
+                  }
                 >
                   <Eye className="size-4 text-brand-500" />
-                  {scanQuality.jsRenderingUsed ? 'Real browser rendering used' : 'Static HTML analysis only'}
+                  {auditQuality ? AUDIT_QUALITY_COPY[auditQuality].label : scanQuality!.jsRenderingUsed ? 'Real browser rendering used' : 'Static HTML analysis only'}
+                </span>
+              )}
+              {scanQuality?.performanceSource && scanQuality.performanceSource !== 'none' && (
+                <span
+                  className="inline-flex items-center gap-1.5"
+                  title={
+                    scanQuality.performanceSource === 'browser'
+                      ? 'Performance (LCP, FCP, CLS, TBT, INP) measured directly in a real Chrome browser by Growth Audit’s own performance engine.'
+                      : 'Growth Audit’s own browser measurement was unavailable this scan, so performance came from Google PageSpeed Insights instead.'
+                  }
+                >
+                  <Gauge className="size-4 text-brand-500" />
+                  {scanQuality.performanceSource === 'browser' ? 'Browser measured performance' : 'PageSpeed Insights performance'}
                 </span>
               )}
             </div>

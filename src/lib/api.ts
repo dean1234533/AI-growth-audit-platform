@@ -64,10 +64,14 @@ export interface AuditIntakeContext {
   location?: string;
 }
 
+/** Attaches the caller's Firebase ID token when logged in (no-op if anonymous) purely so the
+ * server can resolve Browser Rendering priority (see auditPriority.ts) — a logged-in user's
+ * "Scan Now"/new-website audit gets protected customer capacity instead of the public tool's
+ * limited allocation. The server never trusts anything else about the request for this. */
 export async function runAudit(url: string, context?: AuditIntakeContext): Promise<AuditResult> {
   const res = await fetch('/api/audit', {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify({ url, ...context }),
   });
   if (!res.ok) {

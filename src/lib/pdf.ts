@@ -54,13 +54,35 @@ export function generateAuditPdf(audit: AuditResult, lead: Lead): void {
     minute: '2-digit',
     timeZoneName: 'short',
   });
-  const scanMethod = scanQuality
-    ? scanQuality.jsRenderingUsed
-      ? 'Real browser rendering + PageSpeed Insights'
-      : `Static HTML analysis${scanQuality.performanceMeasured ? ' + PageSpeed Insights' : ''}`
-    : null;
+  // Performance now has its own source, independent of whether page rendering itself
+  // succeeded — a PSI timeout no longer needs to be hidden behind "did rendering work",
+  // and Growth Audit's own browser-measured metrics (not PageSpeed Insights, not Lighthouse)
+  // are the primary source when rendering did run. See PerformanceMeta in types.ts.
+  const perfSuffix =
+    scanQuality?.performanceSource === 'browser'
+      ? ' + Growth Audit performance engine'
+      : scanQuality?.performanceSource === 'psi'
+        ? ' + PageSpeed Insights'
+        : '';
+  const scanMethod = scanQuality ? `${scanQuality.jsRenderingUsed ? 'Real browser rendering' : 'Static HTML analysis'}${perfSuffix}` : null;
   doc.text(`SCANNED ${scanTimestamp}${scanMethod ? `  ·  ${scanMethod}` : ''}`, PAGE_MARGIN, y);
-  y += 22;
+  y += 14;
+
+  // Explicit FULL/PARTIAL/STATIC_FALLBACK wording (see AuditResult.meta.auditQuality) — kept as
+  // its own line, separate from the technical scanMethod string above, since it's meant to be
+  // the plain-language summary a non-technical reader actually needs.
+  const auditQualityCopy: Record<'FULL' | 'PARTIAL' | 'STATIC_FALLBACK', string> = {
+    FULL: 'Full audit — browser-rendered checks completed.',
+    PARTIAL: 'Partial audit — some checks or data sources were unavailable.',
+    STATIC_FALLBACK: 'Static fallback — browser rendering was unavailable, so some browser-dependent checks could not be verified.',
+  };
+  if (audit.meta.auditQuality) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(auditQualityCopy[audit.meta.auditQuality], PAGE_MARGIN, y);
+    y += 16;
+  } else {
+    y += 8;
+  }
 
   doc.setTextColor(30, 30, 40);
   doc.setFont('helvetica', 'bold');

@@ -61,6 +61,7 @@ export function makeRenderedPageData(overrides: Partial<RenderedPageData> = {}):
     ],
     tapTargets: { total: 0, tooSmall: 0 },
     renderMs: 1200,
+    browserPerformance: null,
     ...overrides,
   };
 }

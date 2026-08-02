@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { runFullAudit, type AuditEnv } from '../../server/lib/runFullAudit';
 import { notifyAdmin, type AdminAlertEnv } from '../../server/lib/adminAlert';
+import { resolveHttpAuditPriority } from '../../server/lib/auditPriority';
 
 export const prerender = false;
 
@@ -48,7 +49,15 @@ export const POST: APIRoute = async ({ request }) => {
     location: body.location?.trim() || undefined,
   };
 
-  const { result, error } = await runFullAudit(targetUrl, cfEnv, { businessContext });
+  // Resolved server-side from a verified Firebase ID token (Bearer header), never from
+  // anything in the request body — see auditPriority.ts. Covers the public lead-gen tool
+  // (no token -> 'public'), a logged-in customer's "Scan Now"/new-website audit ('customer'),
+  // and Dean's own admin account ('admin') identically, whichever page on the site actually
+  // called this endpoint.
+  const projectId = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID as string | undefined;
+  const priority = await resolveHttpAuditPriority(request, projectId);
+
+  const { result, error } = await runFullAudit(targetUrl, cfEnv, { businessContext, priority });
   if (!result) {
     return jsonError(error ?? 'Unable to analyse this website', 422);
   }
