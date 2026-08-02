@@ -1,6 +1,7 @@
 import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData } from '../fetchSite';
 import type { RenderedPageData } from '../renderPage';
+import { isSoftwareProductSite } from './shared/siteType';
 
 function check(
   id: string,
@@ -19,9 +20,11 @@ function notVerified(id: string, label: string, reason: string): CheckResult {
   return { id, category: 'conversion', label, passed: true, detail: reason, severity: 'info', weight: 0, measurementType: 'not_available', status: 'not_verified' };
 }
 
-const CTA_WORDS = /(get a quote|request a quote|book now|call now|contact us|get started|free quote|book a|enquire|schedule|get in touch|buy now|order now|message us|chat with us|start your project|speak to)/i;
+const CTA_WORDS =
+  /(get a quote|request a quote|book now|call now|contact us|get started|free quote|book a|enquire|schedule|get in touch|buy now|order now|message us|chat with us|start your project|speak to|try (it )?free|try for free|start free|sign up free|sign up|start your free trial|analyse my|analyze my|get my free|start scanning|no credit card required)/i;
 
-const TRUST_BADGE_WORDS = /(insured|accredited|guarantee|certified|award|checkatrade|trustpilot|which\?\s*trusted|feefo|iso\s?\d{4,5}|gas safe|niceic|federation of master builders|\bfmb\b|trustmark)/i;
+const TRUST_BADGE_WORDS =
+  /(insured|accredited|guarantee|certified|award|checkatrade|trustpilot|which\?\s*trusted|feefo|iso\s?\d{4,5}|gas safe|niceic|federation of master builders|\bfmb\b|trustmark|no credit card|cancel anytime|money[- ]back|trusted by|gdpr|soc\s?2|data protection)/i;
 
 const BOOKING_PROVIDERS = /(calendly\.com|acuityscheduling\.com|setmore\.com|book\.squareup\.com|square\.site|housecallpro\.com|getjobber\.com|vagaro\.com|fresha\.com|simplybook\.me|bookings\.microsoft\.com)/i;
 // Caught live in remote testing: "Book a discovery call" (a real, working booking flow) didn't
@@ -97,8 +100,21 @@ export function runConversionChecks(page: PageData, rendered?: RenderedPageData 
     results.push(notVerified('conv.bookingLink', 'Online booking link present', 'Booking functionality may exist but could not be confidently verified — many booking widgets load via JavaScript on a custom domain, which this scan could not render.'));
   }
 
-  const hasPhoneCta = /href=["']tel:/i.test(html) || (rendered?.links.some((l) => l.href.toLowerCase().startsWith('tel:')) ?? false);
-  results.push(check('conv.phoneCta', 'Click-to-call phone link present', hasPhoneCta, hasPhoneCta ? 'A tel: link was found — visitors can call directly from mobile' : 'No tel: link found — mobile visitors can\'t tap-to-call', 'high', 6));
+  if (isSoftwareProductSite(page.jsonLd)) {
+    results.push({
+      id: 'conv.phoneCta',
+      category: 'conversion',
+      label: 'Click-to-call phone link present',
+      passed: true,
+      detail: 'Not applicable — this page identifies itself as a software product, not a phone-based local business.',
+      severity: 'info',
+      weight: 0,
+      measurementType: 'not_available',
+    });
+  } else {
+    const hasPhoneCta = /href=["']tel:/i.test(html) || (rendered?.links.some((l) => l.href.toLowerCase().startsWith('tel:')) ?? false);
+    results.push(check('conv.phoneCta', 'Click-to-call phone link present', hasPhoneCta, hasPhoneCta ? 'A tel: link was found — visitors can call directly from mobile' : 'No tel: link found — mobile visitors can\'t tap-to-call', 'high', 6));
+  }
 
   const hasPricingInfo = /£\d|\$\d|€\d|\bfrom\s+£|\bpricing\b|\bprice list\b/i.test(effectiveText) || /href=["'][^"']*pric(e|ing)[^"']*["']/i.test(html);
   results.push(check('conv.pricingInfo', 'Pricing information visible or linked', hasPricingInfo, hasPricingInfo ? 'Pricing signals found on the page' : 'No pricing information or pricing page found — this is often a source of friction before enquiry', 'medium', 5));

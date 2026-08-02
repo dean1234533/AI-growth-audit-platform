@@ -2,6 +2,20 @@ import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData } from '../fetchSite';
 import type { RenderedPageData } from '../renderPage';
 import { hasGoogleLocationLink } from './shared/googleLocationLinks';
+import { isSoftwareProductSite } from './shared/siteType';
+
+function notApplicableToSoftware(id: string, label: string): CheckResult {
+  return {
+    id,
+    category: 'trust',
+    label,
+    passed: true,
+    detail: 'Not applicable — this page identifies itself as a software product, not a local business.',
+    severity: 'info',
+    weight: 0,
+    measurementType: 'not_available',
+  };
+}
 
 function check(
   id: string,
@@ -27,6 +41,7 @@ export function runTrustChecks(page: PageData, rendered?: RenderedPageData | nul
   const results: CheckResult[] = [];
   const html = page.html;
   const text = page.bodyText.toLowerCase();
+  const isSoftwareProduct = isSoftwareProductSite(page.jsonLd);
 
   results.push(check('trust.ssl', 'Site served over HTTPS', page.isHttps, page.isHttps ? 'Site uses HTTPS' : 'Site is not served over HTTPS', 'critical', 12));
 
@@ -41,16 +56,24 @@ export function runTrustChecks(page: PageData, rendered?: RenderedPageData | nul
   const hasContactLink = /href=["'][^"']*contact[^"']*["']/i.test(html) || /contact\s+us/i.test(text);
   results.push(check('trust.contactPage', 'Contact page linked', hasContactLink, hasContactLink ? 'Contact link/page reference found' : 'No contact page link found', 'high', 8));
 
-  const hasPhone = PHONE_REGEX.test(text) || /tel:/i.test(html);
-  results.push(check('trust.phoneNumber', 'Phone number visible', hasPhone, hasPhone ? 'Phone number pattern found' : 'No phone number found on homepage', 'high', 8));
+  if (isSoftwareProduct) {
+    results.push(notApplicableToSoftware('trust.phoneNumber', 'Phone number visible'));
+  } else {
+    const hasPhone = PHONE_REGEX.test(text) || /tel:/i.test(html);
+    results.push(check('trust.phoneNumber', 'Phone number visible', hasPhone, hasPhone ? 'Phone number pattern found' : 'No phone number found on homepage', 'high', 8));
+  }
 
   const hasEmail = EMAIL_REGEX.test(text) || /mailto:/i.test(html);
   results.push(check('trust.email', 'Email address visible', hasEmail, hasEmail ? 'Email address found' : 'No email address found on homepage', 'medium', 6));
 
-  // Same detector as local.gbp (localSeo.ts) — the two checks used to maintain separate,
-  // divergently-drifted regexes for the same real-world signal.
-  const hasMap = hasGoogleLocationLink(html);
-  results.push(check('trust.googleMaps', 'Google Map embedded', hasMap, hasMap ? 'Google Maps embed/link found' : 'No Google Maps embed found', 'medium', 5));
+  if (isSoftwareProduct) {
+    results.push(notApplicableToSoftware('trust.googleMaps', 'Google Map embedded'));
+  } else {
+    // Same detector as local.gbp (localSeo.ts) — the two checks used to maintain separate,
+    // divergently-drifted regexes for the same real-world signal.
+    const hasMap = hasGoogleLocationLink(html);
+    results.push(check('trust.googleMaps', 'Google Map embedded', hasMap, hasMap ? 'Google Maps embed/link found' : 'No Google Maps embed found', 'medium', 5));
+  }
 
   const TESTIMONIAL_PATTERN = /testimonial|review|what our customers|client says|5[\s-]?star/i;
   const staticTestimonialMatch = TESTIMONIAL_PATTERN.test(text);
@@ -70,19 +93,23 @@ export function runTrustChecks(page: PageData, rendered?: RenderedPageData | nul
   const hasSocialLinks = /(facebook\.com|instagram\.com|linkedin\.com|twitter\.com|x\.com|tiktok\.com)\//i.test(html);
   results.push(check('trust.socialLinks', 'Social media links present', hasSocialLinks, hasSocialLinks ? 'Social media link(s) found' : 'No social media links found', 'low', 3));
 
-  const hasHoursText = /(monday|mon)[\s-]*(to|-)?\s*(friday|fri)|opening hours|business hours|\b\d{1,2}(am|pm)\s*-\s*\d{1,2}(am|pm)/i.test(text);
-  const hasHoursSchema = jsonLdHasOpeningHours(page.jsonLd);
-  const hasHours = hasHoursText || hasHoursSchema;
-  results.push(
-    check(
-      'trust.businessHours',
-      'Business hours listed',
-      hasHours,
-      hasHours ? (hasHoursSchema ? 'openingHoursSpecification found in structured data' : 'Business hours pattern found in page text') : 'No business hours found',
-      'medium',
-      4,
-    ),
-  );
+  if (isSoftwareProduct) {
+    results.push(notApplicableToSoftware('trust.businessHours', 'Business hours listed'));
+  } else {
+    const hasHoursText = /(monday|mon)[\s-]*(to|-)?\s*(friday|fri)|opening hours|business hours|\b\d{1,2}(am|pm)\s*-\s*\d{1,2}(am|pm)/i.test(text);
+    const hasHoursSchema = jsonLdHasOpeningHours(page.jsonLd);
+    const hasHours = hasHoursText || hasHoursSchema;
+    results.push(
+      check(
+        'trust.businessHours',
+        'Business hours listed',
+        hasHours,
+        hasHours ? (hasHoursSchema ? 'openingHoursSpecification found in structured data' : 'Business hours pattern found in page text') : 'No business hours found',
+        'medium',
+        4,
+      ),
+    );
+  }
 
   // Cookie banners are almost always injected by a third-party consent-management script
   // (Cookiebot, OneTrust, CookieYes) — the static HTML only ever contains the *loader* script
