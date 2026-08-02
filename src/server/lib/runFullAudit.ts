@@ -99,6 +99,15 @@ export async function runFullAudit(
   if (!homepage) {
     return { result: null, error: error ?? 'Unable to analyse this website' };
   }
+  if (homepage.status < 200 || homepage.status >= 300) {
+    // The fetch itself succeeded, but the server returned an error page (e.g. a Cloudflare 522,
+    // a 500, a maintenance page) rather than the real site — scoring that error page's markup
+    // as if it were the site's actual content would be actively misleading, not just incomplete.
+    return {
+      result: null,
+      error: `The website returned an error (HTTP ${homepage.status}) instead of a working page, so it can't be audited right now. Please try again shortly.`,
+    };
+  }
 
   const warnings: string[] = [];
   const serviceAccount = parseServiceAccount(env.FIREBASE_SERVICE_ACCOUNT_JSON);
