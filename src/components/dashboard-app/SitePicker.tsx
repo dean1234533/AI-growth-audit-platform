@@ -12,6 +12,8 @@ interface WebsiteDoc {
   url: string;
 }
 
+const LAST_WEBSITE_KEY = 'gaap:lastWebsiteId';
+
 interface SitePickerProps {
   anchor: string;
   eyebrow: string;
@@ -24,6 +26,7 @@ interface SitePickerProps {
 export default function SitePicker({ anchor, eyebrow, title, subtitle, emptyTitle, emptyBody }: SitePickerProps) {
   const user = useAuthUser();
   const [websites, setWebsites] = useState<WebsiteDoc[] | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -32,13 +35,23 @@ export default function SitePicker({ anchor, eyebrow, title, subtitle, emptyTitl
       const sites = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<WebsiteDoc, 'id'>) }));
       setWebsites(sites);
       if (sites.length === 1) {
+        window.localStorage.setItem(LAST_WEBSITE_KEY, sites[0].id);
+        setRedirecting(true);
         window.location.href = `/dashboard/${sites[0].id}#${anchor}`;
+        return;
+      }
+      if (sites.length > 1) {
+        const lastId = window.localStorage.getItem(LAST_WEBSITE_KEY);
+        if (lastId && sites.some((site) => site.id === lastId)) {
+          setRedirecting(true);
+          window.location.href = `/dashboard/${lastId}#${anchor}`;
+        }
       }
     });
     return unsubscribe;
   }, [user, anchor]);
 
-  if (!user || websites === null) {
+  if (!user || websites === null || redirecting) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="glass rounded-2xl px-6 py-4 text-sm font-medium text-slate">Loading…</div>
@@ -81,6 +94,7 @@ export default function SitePicker({ anchor, eyebrow, title, subtitle, emptyTitl
           <a
             key={site.id}
             href={`/dashboard/${site.id}#${anchor}`}
+            onClick={() => window.localStorage.setItem(LAST_WEBSITE_KEY, site.id)}
             className="glass gradient-border gradient-border-brand group flex items-center justify-between gap-3 rounded-[20px] px-6 py-5 transition-transform hover:-translate-y-1"
           >
             <span className="inline-flex items-center gap-2 font-semibold text-ink dark:text-white">

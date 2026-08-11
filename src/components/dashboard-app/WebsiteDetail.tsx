@@ -17,6 +17,7 @@ import {
   ListChecks,
   Lightbulb,
   ArrowRight,
+  ExternalLink,
 } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
@@ -72,6 +73,8 @@ function sectionFromHash(): Section {
   return hash === 'audit' || hash === 'coach' || hash === 'monitoring' || hash === 'reports' ? hash : 'top';
 }
 
+const LAST_WEBSITE_KEY = 'gaap:lastWebsiteId';
+
 export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const user = useAuthUser();
   const [website, setWebsite] = useState<WebsiteDoc | null | undefined>(undefined);
@@ -87,6 +90,10 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(LAST_WEBSITE_KEY, websiteId);
+  }, [websiteId]);
 
   useEffect(() => {
     if (!user) return;
@@ -209,7 +216,14 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
 
       <div>
         <h1 className="font-display text-2xl font-bold text-ink dark:text-white">{website.name}</h1>
-        <p className="text-sm text-slate">{website.url}</p>
+        <a
+          href={website.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-sm text-slate transition-colors hover:text-brand-500"
+        >
+          Visit site <ExternalLink className="size-3" />
+        </a>
       </div>
 
       {!latest ? (

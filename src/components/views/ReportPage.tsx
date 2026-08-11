@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Globe, AlertTriangle, Activity } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Globe, AlertTriangle, Activity, CalendarClock, MessageCircle, ShieldCheck } from 'lucide-react';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -14,6 +14,7 @@ import { FloatingBackground } from '../landing/FloatingBackground';
 import { generateAuditPdf } from '../../lib/pdf';
 import { markPwaInstallEligible } from '../pwa/InstallBanner';
 import { buildServiceRecommendations } from '../../lib/serviceRecommendations';
+import { CONSULTATION_URL } from '../../lib/seo/site';
 import type { AuditResult, Lead } from '../../lib/types';
 
 interface ReportPageProps {
@@ -92,8 +93,43 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
             auditQuality={audit.meta.auditQuality}
           />
 
-          <div className="mt-8 flex flex-wrap justify-center gap-3 sm:justify-start">
-            <Button size="lg" onClick={() => setModalOpen(true)} disabled={downloaded} success={downloaded}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="mt-8 overflow-hidden rounded-3xl border border-brand-400/25 bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(0,196,140,0.08))] p-6 shadow-[0_24px_70px_-40px_rgba(59,130,246,0.65)] sm:p-8"
+          >
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-300">
+                  <ShieldCheck className="size-4" /> Free, no-pressure advice
+                </span>
+                <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl dark:text-white">
+                  Want a clear plan for fixing your results?
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate sm:text-base">
+                  Book a free 15-minute website review with Dean. We’ll look at your audit together and identify the quickest wins for getting more enquiries.
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
+                <Button
+                  size="lg"
+                  icon={<CalendarClock className="size-4" />}
+                  onClick={() => window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer')}
+                  className="w-full sm:w-auto"
+                >
+                  Book My Free Website Review
+                </Button>
+                <Button size="lg" variant="secondary" icon={<MessageCircle className="size-4" />} onClick={() => handleGetFixed()} className="w-full sm:w-auto">
+                  Contact Me Instead
+                </Button>
+              </div>
+            </div>
+            <p className="mt-4 text-xs font-medium text-slate">No obligation · Your audit is already complete · Choose a time that suits you</p>
+          </motion.div>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-3 sm:justify-start">
+            <Button size="md" variant="secondary" onClick={() => setModalOpen(true)} disabled={downloaded} success={downloaded}>
               {downloaded ? (
                 <>
                   <CheckCircle2 className="size-4" /> Report downloaded
@@ -103,8 +139,8 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
               )}
             </Button>
             <Button
-              size="lg"
-              variant="secondary"
+              size="md"
+              variant="ghost"
               icon={<Activity className="size-4" />}
               onClick={() => {
                 window.location.href = `/login?url=${encodeURIComponent(audit.url)}`;
@@ -156,6 +192,22 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
         initialHelpWith={enquiryPrefill}
         recommendedServices={buildServiceRecommendations(audit).map((s) => s.title)}
       />
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0a0a12]/95 p-3 shadow-2xl backdrop-blur-xl sm:hidden">
+        <div className="mx-auto flex max-w-md gap-2">
+          <Button
+            size="md"
+            icon={<CalendarClock className="size-4" />}
+            onClick={() => window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer')}
+            className="flex-1"
+          >
+            Book Free Review
+          </Button>
+          <Button size="md" variant="secondary" onClick={() => handleGetFixed()} aria-label="Contact Dean">
+            <MessageCircle className="size-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

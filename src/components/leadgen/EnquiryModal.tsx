@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, User, Mail, Building2, Globe, MessageSquare, CheckCircle2, Send } from 'lucide-react';
+import { X, User, Mail, MessageSquare, CheckCircle2, Send } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import { submitEnquiry, ApiError } from '../../lib/api';
@@ -23,8 +23,16 @@ const CONTACT_OPTIONS: { id: EnquiryLead['preferredContact']; label: string }[] 
 
 const EMPTY: EnquiryLead = { name: '', email: '', business: '', website: '', helpWith: '', preferredContact: 'email', message: '' };
 
+function businessFromWebsite(website: string): string {
+  try {
+    return new URL(website.startsWith('http') ? website : `https://${website}`).hostname.replace(/^www\./, '');
+  } catch {
+    return website || 'Website audit visitor';
+  }
+}
+
 export function EnquiryModal({ open, onClose, audit, initialHelpWith, recommendedServices = [] }: EnquiryModalProps) {
-  const [form, setForm] = useState<EnquiryLead>({ ...EMPTY, website: audit.url });
+  const [form, setForm] = useState<EnquiryLead>({ ...EMPTY, website: audit.url, business: businessFromWebsite(audit.url) });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -55,7 +63,7 @@ export function EnquiryModal({ open, onClose, audit, initialHelpWith, recommende
     onClose();
     setTimeout(() => {
       setSent(false);
-      setForm({ ...EMPTY, website: audit.url });
+      setForm({ ...EMPTY, website: audit.url, business: businessFromWebsite(audit.url) });
     }, 300);
   }
 
@@ -102,16 +110,14 @@ export function EnquiryModal({ open, onClose, audit, initialHelpWith, recommende
               ) : (
                 <>
                   <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">Get These Fixed</span>
-                  <h3 className="mt-2 font-display text-xl font-bold text-ink dark:text-white">Tell me what you need</h3>
+                  <h3 className="mt-2 font-display text-xl font-bold text-ink dark:text-white">Ask Dean about your results</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-slate">
-                    Your audit results, score and top issues are automatically attached — I'll already know what's wrong.
+                    Your website and audit results are attached automatically, so you only need to leave your contact details.
                   </p>
 
                   <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                     <Field icon={User} placeholder="Your name" value={form.name} onChange={(v) => setForm((f) => ({ ...f, name: v }))} />
-                    <Field icon={Building2} placeholder="Business" value={form.business} onChange={(v) => setForm((f) => ({ ...f, business: v }))} />
                     <Field icon={Mail} type="email" placeholder="Email address" value={form.email} onChange={(v) => setForm((f) => ({ ...f, email: v }))} />
-                    <Field icon={Globe} placeholder="Website" value={form.website} onChange={(v) => setForm((f) => ({ ...f, website: v }))} />
                     <Field
                       icon={MessageSquare}
                       placeholder="What would you like help with?"
@@ -150,7 +156,7 @@ export function EnquiryModal({ open, onClose, audit, initialHelpWith, recommende
                     {error && <p className="text-sm font-medium text-rose-500">{error}</p>}
 
                     <Button type="submit" size="lg" loading={submitting} icon={<Send className="size-4" />} className="mt-2 w-full">
-                      Send Enquiry
+                      Send My Details
                     </Button>
                     <p className="text-center text-[11px] text-slate">No spam — just a reply about your website.</p>
                   </form>

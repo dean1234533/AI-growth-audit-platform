@@ -48,11 +48,11 @@ export function HowICanHelp({ audit, onGetFixed, onAskAi }: HowICanHelpProps) {
         )}
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button size="lg" onClick={() => onGetFixed()} icon={<Wrench className="size-4" />}>
-            Get These Fixed
+          <Button size="lg" onClick={() => window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer')} icon={<CalendarClock className="size-4" />}>
+            Book My Free Website Review
           </Button>
-          <Button size="lg" variant="secondary" onClick={() => window.open(CONSULTATION_URL, '_blank')} icon={<CalendarClock className="size-4" />}>
-            Book a Free Consultation
+          <Button size="lg" variant="secondary" onClick={() => onGetFixed()} icon={<Wrench className="size-4" />}>
+            Contact Me Instead
           </Button>
           {onAskAi && (
             <Button size="lg" variant="secondary" onClick={onAskAi} icon={<MessageCircle className="size-4" />}>

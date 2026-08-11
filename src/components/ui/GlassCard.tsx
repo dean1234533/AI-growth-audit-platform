@@ -27,7 +27,7 @@ export function GlassCard({ children, className = '', style, static: isStatic, g
       style={style}
       {...rest}
     >
-      <div className="relative z-10">{children}</div>
+      {children}
     </motion.div>
   );
 }

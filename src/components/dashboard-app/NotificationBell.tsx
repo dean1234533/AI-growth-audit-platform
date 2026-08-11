@@ -113,7 +113,7 @@ export default function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="glass fixed inset-x-4 top-16 z-50 overflow-hidden rounded-2xl shadow-[0_24px_48px_-16px_rgba(0,0,0,0.35)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[22rem]"
+            className="glass-strong fixed inset-x-4 top-16 z-50 overflow-hidden rounded-2xl shadow-[0_24px_48px_-16px_rgba(0,0,0,0.35)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[22rem]"
           >
             <div className="flex items-center justify-between border-b border-ink/[0.06] px-4 py-3 dark:border-white/10">
               <span className="text-sm font-bold text-ink dark:text-white">Notifications</span>
@@ -145,8 +145,8 @@ export default function NotificationBell() {
                           <span className="truncate text-sm font-semibold text-ink dark:text-white">{n.title}</span>
                           {!n.read && <span className="size-1.5 shrink-0 rounded-full bg-brand-500" />}
                         </span>
-                        <span className="mt-0.5 block text-xs text-slate">{n.body}</span>
-                        <span className="mt-1 block text-[11px] text-slate/70">{timeAgo(n.createdAt?.toDate() ?? null)}</span>
+                        <span className="mt-0.5 block text-xs text-slate-600 dark:text-slate-300">{n.body}</span>
+                        <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400">{timeAgo(n.createdAt?.toDate() ?? null)}</span>
                       </span>
                     </button>
                   );

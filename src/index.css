@@ -183,7 +183,7 @@ body {
   transition: opacity 0.4s ease;
   background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, #3b82f6 16%, transparent), transparent 70%);
   pointer-events: none;
-  z-index: 1;
+  z-index: -1;
 }
 .cursor-glow:hover::before {
   opacity: 1;
