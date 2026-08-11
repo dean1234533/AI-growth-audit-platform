@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '../ui/motion-lite';
 import { Globe, Sparkles, ArrowRight, Zap, Search, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { AuditIntakeContext } from '../../lib/api';
@@ -113,13 +113,15 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false }: Hero
           <button
             type="button"
             onClick={() => setShowDetails((s) => !s)}
-            className="mx-auto flex items-center gap-1 text-xs font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white"
+            aria-expanded={showDetails}
+            aria-controls="optional-business-details"
+            className="mx-auto flex min-h-11 items-center gap-1 px-3 text-xs font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white"
           >
             Add business details (optional)
             <ChevronDown className={`size-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
           </button>
           {showDetails && (
-            <div className="glass mt-3 grid gap-2 rounded-2xl p-3 sm:grid-cols-3">
+            <div id="optional-business-details" className="glass mt-3 grid gap-2 rounded-2xl p-3 sm:grid-cols-3">
               <input
                 type="text"
                 placeholder="Business name"

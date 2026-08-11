@@ -7,11 +7,14 @@ import Faq from '../components/landing/Faq.astro';
 import { SITE_DESCRIPTION } from '../lib/seo/site';
 import { sortByDateDesc } from '../lib/blog';
 
+export const prerender = true;
+
 const posts = sortByDateDesc(await getCollection('blog')).slice(0, 3);
 const industries = (await getCollection('industries')).slice(0, 6);
 ---
 
-<BaseLayout title="Free AI Website Growth Audit" description={SITE_DESCRIPTION} path="/">
+<BaseLayout title="Free AI Website Growth Audit & Report" description={SITE_DESCRIPTION} path="/">
+  <main>
   <AuditTool client:load />
 
   <section class="mx-auto max-w-6xl px-6 py-16">
@@ -88,4 +91,5 @@ const industries = (await getCollection('industries')).slice(0, 6);
       </div>
     </div>
   </section>
+  </main>
 </BaseLayout>

@@ -1,7 +1,7 @@
 export const SITE_NAME = 'AI Website Growth Audit';
 export const SITE_URL = (import.meta.env.SITE_URL || 'https://app.dean-da-dev.co.uk').replace(/\/$/, '');
 export const SITE_DESCRIPTION =
-  "Get a free AI-powered audit of your website in under 30 seconds. Discover the SEO, performance, accessibility and conversion issues stopping you from getting more enquiries — then see exactly what a custom website, booking system or web app could fix.";
+  'Get a free AI website audit covering SEO, speed, accessibility and conversions, with clear recommendations to help you win more enquiries.';
 export const BRAND_NAME = 'Dean Da Dev';
 export const BRAND_URL = 'https://dean-da-dev.co.uk';
 export const BRAND_EMAIL = 'dean@dean-da-dev.co.uk';

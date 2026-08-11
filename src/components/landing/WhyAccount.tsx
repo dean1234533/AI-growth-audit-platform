@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from '../ui/motion-lite';
 import { History, TrendingUp } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 

@@ -87,6 +87,49 @@ body {
   font-feature-settings: 'ss01' 1, 'cv01' 1;
 }
 
+/* Inline links otherwise render at only 17–20px tall. A 24px line box clears the
+   audit's minimum without changing the surrounding layout or visible design. */
+a {
+  line-height: 24px;
+}
+
+/* Keep secondary copy above WCAG AA contrast in both themes. */
+.text-slate {
+  color: #4b5563;
+}
+
+.dark .text-slate {
+  color: #aeb8c7;
+}
+
+.text-brand-500 {
+  color: #1d4ed8;
+}
+
+.dark .text-brand-500 {
+  color: #93c5fd;
+}
+
+/* Mobile audit tools measure the rendered box, so give every interactive
+   control a reliably tappable hit area on touch-first devices. */
+@media (pointer: coarse) {
+  :where(a, button, summary, input, select, textarea) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .dark body {
   background: #0a0a12;
 }

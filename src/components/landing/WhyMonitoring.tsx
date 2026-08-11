@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from '../ui/motion-lite';
 import { Search, Link2, Gauge, Smartphone, Accessibility, MousePointerClick, MapPin } from 'lucide-react';
 
 const CHANGES = [

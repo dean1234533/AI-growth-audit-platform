@@ -4,6 +4,7 @@ import SeoHead from '../components/seo/SeoHead.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import SiteFooter from '../components/site/SiteFooter.astro';
+import CookieConsent from '../components/site/CookieConsent.astro';
 import { InstallBanner } from '../components/pwa/InstallBanner';
 import { THEME_INIT_SCRIPT } from '../lib/theme';
 import { buildOrganizationSchema, buildSoftwareApplicationSchema } from '../lib/seo/schema';
@@ -35,12 +36,6 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Growth Audit" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400..700&display=swap"
-      rel="stylesheet"
-    />
     <SeoHead title={title} description={description} path={path} image={image} noindex={noindex} />
     <JsonLd schema={[buildOrganizationSchema(), buildSoftwareApplicationSchema()]} />
   </head>
@@ -48,7 +43,8 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
     {!bare && <SiteHeader />}
     <slot />
     {!bare && <SiteFooter />}
-    <InstallBanner client:only="react" />
+    {!bare && <CookieConsent />}
+    <InstallBanner client:idle />
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

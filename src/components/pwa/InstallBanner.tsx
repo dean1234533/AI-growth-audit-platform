@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Share, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -63,16 +62,12 @@ export function InstallBanner() {
   }
 
   return (
-    <AnimatePresence>
+    <>
       {visible && (
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 40 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+        <div
           className="glass fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-start gap-3 rounded-2xl p-4 shadow-[0_24px_48px_-16px_rgba(0,0,0,0.35)] sm:inset-x-auto sm:right-6 sm:bottom-6"
         >
-          <img src="/logo.jpg" alt="" width="40" height="40" className="size-10 shrink-0 rounded-xl" />
+          <img src="/logo.jpg" alt="Growth Audit logo" width="40" height="40" className="size-10 shrink-0 rounded-xl" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-ink dark:text-white">Install Growth Audit</p>
             {ios ? (
@@ -100,13 +95,13 @@ export function InstallBanner() {
             type="button"
             onClick={dismiss}
             aria-label="Dismiss"
-            className="shrink-0 rounded-lg p-1 text-slate transition-colors hover:bg-black/5 hover:text-ink dark:hover:bg-white/10 dark:hover:text-white"
+            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-slate transition-colors hover:bg-black/5 hover:text-ink dark:hover:bg-white/10 dark:hover:text-white"
           >
             <X className="size-4" />
           </button>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 

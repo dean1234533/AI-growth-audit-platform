@@ -1,5 +1,4 @@
 import type { HTMLAttributes, ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { useCursorGlow } from '../../lib/useCursorGlow';
 
 interface GlassCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationEnd'> {
@@ -14,10 +13,8 @@ export function GlassCard({ children, className = '', style, static: isStatic, g
   const onMouseMove = useCursorGlow<HTMLDivElement>();
 
   return (
-    <motion.div
+    <div
       onMouseMove={isStatic ? undefined : onMouseMove}
-      whileHover={isStatic ? undefined : { y: -4 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       className={[
         'glass relative rounded-[28px] transition-shadow duration-300',
         isStatic ? '' : 'cursor-glow hover:shadow-[0_32px_64px_-24px_rgba(59,130,246,0.35)]',
@@ -28,6 +25,6 @@ export function GlassCard({ children, className = '', style, static: isStatic, g
       {...rest}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

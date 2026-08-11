@@ -5,13 +5,14 @@ const NAV = [
   { label: 'How It Works', href: '/#how-it-works' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'FAQ', href: '/#faq' },
+  { label: 'Contact', href: '/contact' },
 ];
 ---
 
 <header class="sticky top-0 z-40 border-b border-ink/[0.06] bg-canvas/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/80">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
     <a href="/" class="inline-flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
-      <img src="/logo.jpg" alt="" width="32" height="32" class="size-8 rounded-xl" />
+      <img src="/logo.jpg" alt="Growth Audit logo" width="32" height="32" class="size-8 rounded-xl" />
       Growth Audit
     </a>
 
@@ -43,7 +44,7 @@ const NAV = [
         Start Free Audit
       </a>
       <details class="group relative">
-        <summary class="flex size-10 cursor-pointer list-none items-center justify-center rounded-xl text-ink dark:text-white [&::-webkit-details-marker]:hidden">
+        <summary aria-label="Open navigation menu" class="flex size-11 cursor-pointer list-none items-center justify-center rounded-xl text-ink dark:text-white [&::-webkit-details-marker]:hidden">
           <Menu className="size-5" />
         </summary>
         <nav class="glass absolute right-0 top-12 flex w-56 flex-col gap-1 rounded-2xl p-3 text-sm font-semibold text-ink dark:text-white">

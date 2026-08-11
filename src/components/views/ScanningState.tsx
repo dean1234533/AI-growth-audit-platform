@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from '../ui/motion-lite';
 import { useEffect, useState } from 'react';
 import { ScanSearch, Search, Gauge, ShieldCheck, Smartphone } from 'lucide-react';
 import { FloatingBackground } from '../landing/FloatingBackground';

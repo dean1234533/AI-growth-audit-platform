@@ -1,5 +1,4 @@
 import { useRef, useState, type ButtonHTMLAttributes, type MouseEvent, type ReactNode } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Loader2, Check } from 'lucide-react';
 
 type ConflictingHandlers = 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationEnd';
@@ -46,11 +45,6 @@ export function Button({
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const rippleId = useRef(0);
 
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-  const tx = useSpring(rawX, { stiffness: 300, damping: 18 });
-  const ty = useSpring(rawY, { stiffness: 300, damping: 18 });
-
   function handleClick(e: MouseEvent<HTMLButtonElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     const id = rippleId.current++;
@@ -59,24 +53,8 @@ export function Button({
     onClick?.(e);
   }
 
-  function handleMouseMove(e: MouseEvent<HTMLButtonElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    rawX.set((e.clientX - rect.left - rect.width / 2) * 0.18);
-    rawY.set((e.clientY - rect.top - rect.height / 2) * 0.28);
-  }
-
-  function handleMouseLeave() {
-    rawX.set(0);
-    rawY.set(0);
-  }
-
   return (
-    <motion.button
-      onMouseMove={disabled || loading ? undefined : handleMouseMove}
-      onMouseLeave={disabled || loading ? undefined : handleMouseLeave}
-      style={{ x: tx, y: ty }}
-      whileHover={disabled || loading ? undefined : { scale: 1.03 }}
-      whileTap={disabled || loading ? undefined : { scale: 0.96 }}
+    <button
       disabled={disabled || loading}
       onClick={handleClick}
       className={[
@@ -88,12 +66,9 @@ export function Button({
       {...rest}
     >
       {ripples.map((r) => (
-        <motion.span
+        <span
           key={r.id}
-          initial={{ opacity: 0.45, scale: 0 }}
-          animate={{ opacity: 0, scale: 4 }}
-          transition={{ duration: 0.65, ease: 'easeOut' }}
-          className="pointer-events-none absolute size-8 rounded-full bg-white/70"
+          className="pointer-events-none absolute size-8 animate-ping rounded-full bg-white/50"
           style={{ left: r.x - 16, top: r.y - 16 }}
         />
       ))}
@@ -102,14 +77,14 @@ export function Button({
         {loading ? (
           <Loader2 className="size-4 animate-spin" />
         ) : success ? (
-          <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
+          <span>
             <Check className="size-4" />
-          </motion.span>
+          </span>
         ) : (
           icon
         )}
         {children}
       </span>
-    </motion.button>
+    </button>
   );
 }

@@ -1,5 +1,7 @@
 ---
 import { PLANS } from '../../lib/plans';
+import JsonLd from '../seo/JsonLd.astro';
+import { buildFaqSchema } from '../../lib/seo/schema';
 
 const FREE = PLANS.find((p) => p.id === 'free')!;
 const PRO = PLANS.find((p) => p.id === 'pro')!;
@@ -41,6 +43,8 @@ const FAQS = [
   },
 ];
 ---
+
+<JsonLd schema={buildFaqSchema(FAQS.map((item) => ({ question: item.q, answer: item.a })))} />
 
 <section id="faq" class="relative scroll-mt-24 px-6 py-24 sm:py-32">
   <div class="mx-auto max-w-3xl">

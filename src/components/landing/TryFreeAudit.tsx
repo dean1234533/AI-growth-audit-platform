@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from '../ui/motion-lite';
 import { Search, Gauge, Smartphone, MousePointerClick } from 'lucide-react';
 
 const CHECKS = [

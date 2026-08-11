@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { lazy, Suspense, useState } from 'react';
+import { AnimatePresence, motion } from './ui/motion-lite';
 import { LandingPage } from './views/LandingPage';
 import { ScanningState } from './views/ScanningState';
-import { ReportPage } from './views/ReportPage';
 import { runAudit, ApiError, type AuditIntakeContext } from '../lib/api';
 import type { AuditResult } from '../lib/types';
 
 type View = 'landing' | 'scanning' | 'report';
+
+const ReportPage = lazy(() => import('./views/ReportPage').then((module) => ({ default: module.ReportPage })));
 
 interface AuditToolProps {
   /** Used on pages that already have their own hero/H1 (dedicated tool landing pages) —
@@ -48,9 +49,11 @@ export default function AuditTool({ compact = false }: AuditToolProps) {
           </motion.div>
         )}
         {view === 'report' && audit && (
-          <motion.div key="report" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
-            <ReportPage audit={audit} onBack={() => setView('landing')} />
-          </motion.div>
+          <Suspense fallback={<ScanningState />}>
+            <motion.div key="report" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+              <ReportPage audit={audit} onBack={() => setView('landing')} />
+            </motion.div>
+          </Suspense>
         )}
       </AnimatePresence>
     </div>

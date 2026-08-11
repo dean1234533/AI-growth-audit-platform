@@ -31,6 +31,7 @@ async function runScheduledSafely(env: Env): Promise<void> {
 }
 
 const SECURITY_HEADERS: Record<string, string> = {
+  'Content-Security-Policy': "default-src 'self'; base-uri 'self'; connect-src 'self' https: wss:; font-src 'self' data:; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'; frame-src 'self' https://*.firebaseapp.com https://js.stripe.com; img-src 'self' data: blob: https:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; upgrade-insecure-requests",
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
@@ -42,6 +43,12 @@ const SECURITY_HEADERS: Record<string, string> = {
  * binding, but not responses this Worker generates itself (SSR pages, API routes) — this
  * covers those, so every response gets the same security headers either way. */
 async function fetchWithSecurityHeaders(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const url = new URL(request.url);
+  if (url.protocol === 'http:') {
+    url.protocol = 'https:';
+    return Response.redirect(url.toString(), 308);
+  }
+
   const response = await astroEntry.fetch(request, env, ctx);
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {

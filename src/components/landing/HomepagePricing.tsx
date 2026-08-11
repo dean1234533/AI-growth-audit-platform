@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from '../ui/motion-lite';
 import { Check } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { PLANS } from '../../lib/plans';

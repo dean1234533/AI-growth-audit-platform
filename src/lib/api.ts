@@ -1,5 +1,4 @@
 import type { AuditResult, Lead, EnquiryLead, ScanFrequency } from './types';
-import { auth } from './firebaseClient';
 
 export class ApiError extends Error {}
 
@@ -13,6 +12,9 @@ async function parseErrorResponse(res: Response): Promise<ErrorResponse> {
 }
 
 export async function authHeaders(): Promise<Record<string, string>> {
+  // Firebase is by far the largest client dependency. Keep it off anonymous marketing-page
+  // loads and fetch it only when an API action may need the current user's token.
+  const { auth } = await import('./firebaseClient');
   const idToken = await auth.currentUser?.getIdToken();
   return idToken ? { authorization: `Bearer ${idToken}` } : {};
 }
