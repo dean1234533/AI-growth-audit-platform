@@ -16,6 +16,7 @@ import {
 import { GlassCard } from '../ui/GlassCard';
 import { SeverityBadge } from '../ui/SeverityBadge';
 import { scoreBand } from '../../lib/scoreBand';
+import { isCategoryScored } from '../../lib/scoring';
 import type { CategoryScore, MeasurementType, Recommendation } from '../../lib/types';
 
 /**
@@ -54,7 +55,13 @@ interface CategoryCardProps {
 export function CategoryCard({ category, recommendations }: CategoryCardProps) {
   const [open, setOpen] = useState(false);
   const Icon = CATEGORY_ICONS[category.id];
-  const { label, color, textClass, bgClass, ringClass } = scoreBand(category.score);
+  // A category whose checks are entirely weight-0 (e.g. every Local SEO check on a web
+  // application — see classifySiteType) was never actually scored; showing it as a red "0 —
+  // Critical" would misrepresent an inapplicable category as a confirmed failure.
+  const scored = isCategoryScored(category);
+  const { label, color, textClass, bgClass, ringClass } = scored
+    ? scoreBand(category.score)
+    : { label: 'N/A', color: '#9aa3b2', textClass: 'text-slate', bgClass: 'bg-slate/10', ringClass: 'ring-slate/20' };
   const failing = category.checks.filter((c) => !c.passed);
   const circumference = 2 * Math.PI * 20;
 
@@ -87,14 +94,14 @@ export function CategoryCard({ category, recommendations }: CategoryCardProps) {
         <div>
           <div className="text-sm font-semibold text-slate">{category.label}</div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-display text-4xl font-extrabold tracking-tight text-ink dark:text-white">{category.score}</span>
+            <span className="font-display text-4xl font-extrabold tracking-tight text-ink dark:text-white">{scored ? category.score : 'N/A'}</span>
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset ${bgClass} ${textClass} ${ringClass}`}>{label}</span>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-slate">
-            {failing.length === 0 ? 'All checks passed' : `${failing.length} issue${failing.length === 1 ? '' : 's'} found`}
+            {!scored ? 'Not applicable for this site' : failing.length === 0 ? 'All checks passed' : `${failing.length} issue${failing.length === 1 ? '' : 's'} found`}
           </span>
           <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}>
             <ChevronDown className="size-4 text-slate" />

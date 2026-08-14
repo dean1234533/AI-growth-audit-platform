@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Globe, AlertTriangle, Activity, CalendarClock, MessageCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Globe, AppWindow, AlertTriangle, Activity, CalendarClock, MessageCircle, ShieldCheck } from 'lucide-react';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -65,9 +65,20 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
             >
               <ArrowLeft className="size-4" /> Analyse another site
             </button>
-            <div className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-slate">
-              <Globe className="size-4 text-brand-500" />
-              {audit.url}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-slate">
+                <Globe className="size-4 text-brand-500" />
+                {audit.url}
+              </div>
+              {audit.meta.siteType && (
+                <div
+                  className="glass inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-slate"
+                  title={audit.meta.siteTypeReason}
+                >
+                  <AppWindow className="size-3.5 text-brand-500" />
+                  {audit.meta.siteType === 'app' ? 'App' : 'Website'}
+                </div>
+              )}
             </div>
           </div>
 

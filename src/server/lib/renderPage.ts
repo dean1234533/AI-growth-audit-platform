@@ -13,7 +13,7 @@ export interface RenderedPageData {
   images: { src: string; alt: string | null }[];
   links: { href: string; text: string }[];
   buttons: { text: string; hasAccessibleName: boolean; visible: boolean }[];
-  forms: { fieldCount: number; unlabelledFieldCount: number }[];
+  forms: { fieldCount: number; unlabelledFieldCount: number; hasPasswordField: boolean }[];
   jsonLd: unknown[];
   /** Elements with computed position sticky/fixed, sitting inside the viewport — the raw
    * signal conv.stickyCta filters for CTA-like text, rather than duplicating that logic here. */
@@ -135,7 +135,8 @@ export async function renderPage(browserBinding: BrowserWorker, url: string): Pr
           const hasPlaceholder = !!f.getAttribute('placeholder');
           return !hasAriaLabel && !hasForLabel && !hasWrappingLabel && !hasPlaceholder;
         });
-        return { fieldCount: fields.length, unlabelledFieldCount: unlabelled.length };
+        const hasPasswordField = fields.some((f) => (f.getAttribute('type') || '').toLowerCase() === 'password');
+        return { fieldCount: fields.length, unlabelledFieldCount: unlabelled.length, hasPasswordField };
       });
 
       const jsonLd: unknown[] = [];

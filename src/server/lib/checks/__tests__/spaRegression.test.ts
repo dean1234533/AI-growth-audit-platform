@@ -28,7 +28,7 @@ describe('SPA regression: static HTML empty, rendered content present', () => {
     visibleText: 'Book a discovery call. 9 verified Google Reviews. 5.0 out of 5.',
     buttons: [{ text: 'Book a discovery call', hasAccessibleName: true, visible: true }],
     links: [{ href: '/DiscoveryCall', text: 'Book a discovery call' }],
-    forms: [{ fieldCount: 3, unlabelledFieldCount: 0 }],
+    forms: [{ fieldCount: 3, unlabelledFieldCount: 0, hasPasswordField: false }],
     focusTest: { sampled: 5, withVisibleIndicator: 5 },
     viewportOverflow: [
       { width: 375, overflowPx: 0 },
@@ -52,12 +52,12 @@ describe('SPA regression: static HTML empty, rendered content present', () => {
   });
 
   it('rendered data finds the contact form', () => {
-    const checks = runConversionChecks(staticPage, rendered);
+    const checks = runConversionChecks(staticPage, rendered, false);
     expect(findCheck(checks, 'conv.contactForm').passed).toBe(true);
   });
 
   it('static-only data does not find the contact form, but reports not_verified (JS shell) instead of a hard fail', () => {
-    const checks = runConversionChecks(staticPage, null);
+    const checks = runConversionChecks(staticPage, null, false);
     const formCheck = findCheck(checks, 'conv.contactForm');
     expect(formCheck.status).toBe('not_verified');
     expect(formCheck.weight).toBe(0);
@@ -71,7 +71,7 @@ describe('SPA regression: static HTML empty, rendered content present', () => {
       headings: [{ level: 1, text: "Joe's Plumbing" }],
       forms: [],
     });
-    const checks = runConversionChecks(smallRealSite, null);
+    const checks = runConversionChecks(smallRealSite, null, false);
     const formCheck = findCheck(checks, 'conv.contactForm');
     expect(formCheck.passed).toBe(false);
     expect(formCheck.status).toBeUndefined();
@@ -79,7 +79,7 @@ describe('SPA regression: static HTML empty, rendered content present', () => {
   });
 
   it('rendered data finds the primary CTA', () => {
-    const checks = runConversionChecks(staticPage, rendered);
+    const checks = runConversionChecks(staticPage, rendered, false);
     expect(findCheck(checks, 'conv.primaryCta').passed).toBe(true);
   });
 

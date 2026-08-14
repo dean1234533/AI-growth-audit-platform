@@ -15,6 +15,7 @@ import { runMobileChecks } from './checks/mobile';
 import { runTrustChecks } from './checks/trust';
 import { runConversionChecks } from './checks/conversion';
 import { runLocalSeoChecks } from './checks/localSeo';
+import { classifySiteType } from './checks/shared/siteType';
 import { runPerformanceChecks } from './checks/performance';
 import { mergePerformanceResults } from './checks/mergePerformance';
 import { enrichRecommendationsWithAi } from './aiNarrative';
@@ -41,16 +42,17 @@ function staticChecksFor(
   page: PageData,
   robotsTxt: string | null,
   sitemapXml: string | null,
+  isApp: boolean,
   seoOpts: Parameters<typeof runSeoChecks>[3] = {},
   location?: string,
 ): CheckResult[] {
   return [
-    ...runSeoChecks(page, robotsTxt, sitemapXml, seoOpts),
+    ...runSeoChecks(page, robotsTxt, sitemapXml, { ...seoOpts, isApp }),
     ...runAccessibilityChecks(page),
     ...runMobileChecks(page),
-    ...runTrustChecks(page),
-    ...runConversionChecks(page),
-    ...runLocalSeoChecks(page, { location }),
+    ...runTrustChecks(page, undefined, isApp),
+    ...runConversionChecks(page, undefined, isApp),
+    ...runLocalSeoChecks(page, isApp, { location }),
   ];
 }
 
@@ -171,6 +173,13 @@ export async function runFullAudit(
     checkLinkStatuses(homepage.links, homepage.finalUrl, {}, fetcher),
   ]);
 
+  // Classified once — using the rendered snapshot when available, so a client-rendered sign-in
+  // screen or client-injected schema.org data is visible to the classifier too — and reused for
+  // every discovered page below; site type is a whole-site property, not something that should
+  // flip-flop per subpage.
+  const siteType = classifySiteType(homepage, rendered);
+  const isApp = siteType.type === 'app';
+
   if (renderStart > 0 && renderIsNew) {
     // Record real elapsed time regardless of success/failure — a timed-out render attempt
     // still used real browser seconds against the daily budget. Only recorded by the call that
@@ -209,6 +218,7 @@ export async function runFullAudit(
         httpsRedirects,
         linkCheckResults,
         otherPages: otherPages.map((p) => ({ url: p.finalUrl, title: p.title, metaDescription: p.metaDescription })),
+        isApp,
       },
       rendered,
     ),
@@ -218,9 +228,9 @@ export async function runFullAudit(
     ...perf.lighthouseA11yChecks,
     ...runMobileChecks(homepage, rendered),
     ...perf.lighthouseMobileChecks,
-    ...runTrustChecks(homepage, rendered),
-    ...runConversionChecks(homepage, rendered),
-    ...runLocalSeoChecks(homepage, { location: businessContext.location }),
+    ...runTrustChecks(homepage, rendered, isApp),
+    ...runConversionChecks(homepage, rendered, isApp),
+    ...runLocalSeoChecks(homepage, isApp, { location: businessContext.location }),
   ];
 
   const { categories, overallScore } = scorePage(homepageChecks);
@@ -234,7 +244,7 @@ export async function runFullAudit(
   const recommendations = await enrichRecommendationsWithAi(aiRunner, baseRecommendations);
 
   const pages: PageAuditResult[] = otherPages.map((p) => {
-    const checks = staticChecksFor(p, robotsTxt, sitemapXml, {}, businessContext.location);
+    const checks = staticChecksFor(p, robotsTxt, sitemapXml, isApp, {}, businessContext.location);
     const { categories: pageCategories, overallScore: pageScore } = scorePage(checks);
     return { url: p.finalUrl, overallScore: pageScore, categories: pageCategories };
   });
@@ -277,6 +287,8 @@ export async function runFullAudit(
       partial: computeScanPartial(warnings, crawlPages, rendered),
       auditQuality,
       warnings,
+      siteType: siteType.type,
+      siteTypeReason: siteType.reason,
       ...(businessContext.businessName ? { businessName: businessContext.businessName } : {}),
       ...(businessContext.businessType ? { businessType: businessContext.businessType } : {}),
       ...(businessContext.location ? { location: businessContext.location } : {}),

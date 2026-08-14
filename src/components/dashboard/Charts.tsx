@@ -16,6 +16,7 @@ import {
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import type { CategoryScore, Recommendation, Severity } from '../../lib/types';
+import { isCategoryScored } from '../../lib/scoring';
 import { GlassCard } from '../ui/GlassCard';
 
 const SEVERITY_COLORS: Record<Severity, string> = {
@@ -50,7 +51,10 @@ function truncate(text: string, max: number): string {
 }
 
 export function RadarScoreChart({ categories }: { categories: CategoryScore[] }) {
-  const data = categories.map((c) => ({ category: RADAR_LABEL_ABBREVIATIONS[c.label] ?? c.label, score: c.score }));
+  // A category that was never actually scored (e.g. Local SEO on a web application — see
+  // isCategoryScored) has no real score to plot; including it would draw a false 0 spoke that
+  // reads as a confirmed failure rather than "not applicable to this site".
+  const data = categories.filter(isCategoryScored).map((c) => ({ category: RADAR_LABEL_ABBREVIATIONS[c.label] ?? c.label, score: c.score }));
   return (
     <ChartCard title="Score Breakdown">
       <ResponsiveContainer width="100%" height={300}>

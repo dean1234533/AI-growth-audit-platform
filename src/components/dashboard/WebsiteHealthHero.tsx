@@ -3,6 +3,7 @@ import { Sparkles, Clock, ListChecks, TrendingUp, TrendingDown, Minus, Eye, Gaug
 import { GlassCard } from '../ui/GlassCard';
 import { ScoreCircle } from './ScoreCircle';
 import { scoreBand } from '../../lib/scoreBand';
+import { isCategoryScored } from '../../lib/scoring';
 import type { CategoryScore, ScanQuality } from '../../lib/types';
 
 interface WebsiteHealthHeroProps {
@@ -29,7 +30,11 @@ const AUDIT_QUALITY_COPY: Record<'FULL' | 'PARTIAL' | 'STATIC_FALLBACK', { label
 
 export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta, scanQuality, auditQuality }: WebsiteHealthHeroProps) {
   const { label, color } = scoreBand(score);
-  const sorted = [...categories].filter((c) => c.checks.length > 0).sort((a, b) => b.score - a.score);
+  // isCategoryScored (not just "has checks") — a category whose checks are all weight-0 (e.g.
+  // every Local SEO check on a web application) was never actually scored, so it must never be
+  // eligible to be crowned "Needs the most attention" off the back of a fabricated 0.
+  const scoredCategories = categories.filter(isCategoryScored);
+  const sorted = [...scoredCategories].sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
   const weakest = sorted[sorted.length - 1];
 
@@ -87,7 +92,7 @@ export function WebsiteHealthHero({ score, categories, recommendationCount, scan
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-sm font-medium text-slate sm:justify-start">
               <span className="inline-flex items-center gap-1.5">
                 <ListChecks className="size-4 text-brand-500" />
-                {categories.filter((c) => c.checks.length > 0).length} categories analysed
+                {scoredCategories.length} categories analysed
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Clock className="size-4 text-brand-500" />

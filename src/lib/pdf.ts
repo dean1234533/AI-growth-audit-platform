@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { isCategoryScored } from './scoring';
 import type { AuditResult, Lead } from './types';
 
 const BRAND_NAME = 'Dean Da Dev';
@@ -123,7 +124,10 @@ export function generateAuditPdf(audit: AuditResult, lead: Lead): void {
   doc.text('Category Scores', PAGE_MARGIN, y);
   y += 20;
 
-  audit.categories.forEach((cat) => {
+  // A category with no scoring-relevant checks (e.g. every Local SEO check on a web
+  // application — see isCategoryScored) was never actually scored; a red "0" bar in a
+  // customer-facing PDF would misrepresent it as a confirmed failure rather than not applicable.
+  audit.categories.filter(isCategoryScored).forEach((cat) => {
     ensureSpace(24);
     const [cr, cg, cb] = scoreRgb(cat.score);
     doc.setFont('helvetica', 'normal');

@@ -150,6 +150,14 @@ export interface AuditResult {
     businessName?: string;
     businessType?: string;
     location?: string;
+    /** Whether the scanned page was classified as a marketing/business website or a web
+     * application (SaaS product, dashboard, sign-in-gated tool) — see classifySiteType in
+     * src/server/lib/checks/shared/siteType.ts. Absent on older stored scans (predates this
+     * field); treat as unknown, not 'website', when reading historical data. */
+    siteType?: 'website' | 'app';
+    /** Why siteType was classified the way it was — always present alongside siteType, shown in
+     * the UI so the label is never an unexplained guess. */
+    siteTypeReason?: string;
     /** How thoroughly this scan actually checked the site — shown in the UI so a scan run
      * without rendering/PSI budget never silently looks as authoritative as a full one. */
     scanQuality?: ScanQuality;

@@ -1,3 +1,4 @@
+import { isCategoryScored } from './scoring';
 import type { AuditResult, CategoryId, CheckResult } from './types';
 
 export interface ServiceRecommendation {
@@ -10,8 +11,13 @@ function findCheck(checks: CheckResult[], id: string): CheckResult | undefined {
   return checks.find((c) => c.id === id);
 }
 
+/** Falls back to 100 (never a fabricated failure) both when the category is absent AND when it
+ * exists but was never actually scored (e.g. every Local SEO check on a web application — see
+ * isCategoryScored) — otherwise a category's 0-because-not-applicable score would read as a
+ * genuine 0/100 failure and drive a wrong service pitch below. */
 function categoryScore(audit: AuditResult, id: CategoryId): number {
-  return audit.categories.find((c) => c.id === id)?.score ?? 100;
+  const category = audit.categories.find((c) => c.id === id);
+  return category && isCategoryScored(category) ? category.score : 100;
 }
 
 /**
@@ -23,7 +29,7 @@ export function buildServiceRecommendations(audit: AuditResult): ServiceRecommen
   const allChecks = audit.categories.flatMap((c) => c.checks);
   const candidates: ServiceRecommendation[] = [];
 
-  const lowCategories = audit.categories.filter((c) => c.score < 50).length;
+  const lowCategories = audit.categories.filter((c) => isCategoryScored(c) && c.score < 50).length;
   if (lowCategories >= 3) {
     return [
       {

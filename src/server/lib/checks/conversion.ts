@@ -1,8 +1,20 @@
 import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData } from '../fetchSite';
 import type { RenderedPageData } from '../renderPage';
-import { isSoftwareProductSite } from './shared/siteType';
 import { looksLikeJsAppShell } from './shared/jsShellDetection';
+
+function notApplicableToApp(id: string, label: string): CheckResult {
+  return {
+    id,
+    category: 'conversion',
+    label,
+    passed: true,
+    detail: 'Not applicable — this page was identified as a web application, not a phone-based local business.',
+    severity: 'info',
+    weight: 0,
+    measurementType: 'not_available',
+  };
+}
 
 function check(
   id: string,
@@ -46,7 +58,7 @@ function withShellFallback(isLikelyShell: boolean, shellReason: string, result: 
   return { id: result.id, category: result.category, label: result.label, passed: true, detail: shellReason, severity: 'info', weight: 0, measurementType: 'not_available', status: 'not_verified' };
 }
 
-export function runConversionChecks(page: PageData, rendered?: RenderedPageData | null): CheckResult[] {
+export function runConversionChecks(page: PageData, rendered: RenderedPageData | null | undefined, isApp: boolean): CheckResult[] {
   const results: CheckResult[] = [];
   const html = page.html;
   const text = page.bodyText;
@@ -114,17 +126,8 @@ export function runConversionChecks(page: PageData, rendered?: RenderedPageData 
     results.push(notVerified('conv.bookingLink', 'Online booking link present', 'Booking functionality may exist but could not be confidently verified — many booking widgets load via JavaScript on a custom domain, which this scan could not render.'));
   }
 
-  if (isSoftwareProductSite(page.jsonLd)) {
-    results.push({
-      id: 'conv.phoneCta',
-      category: 'conversion',
-      label: 'Click-to-call phone link present',
-      passed: true,
-      detail: 'Not applicable — this page identifies itself as a software product, not a phone-based local business.',
-      severity: 'info',
-      weight: 0,
-      measurementType: 'not_available',
-    });
+  if (isApp) {
+    results.push(notApplicableToApp('conv.phoneCta', 'Click-to-call phone link present'));
   } else {
     const hasPhoneCta = /href=["']tel:/i.test(html) || (rendered?.links.some((l) => l.href.toLowerCase().startsWith('tel:')) ?? false);
     results.push(withShellFallback(isLikelyShell, shellReason, check('conv.phoneCta', 'Click-to-call phone link present', hasPhoneCta, hasPhoneCta ? 'A tel: link was found — visitors can call directly from mobile' : 'No tel: link found — mobile visitors can\'t tap-to-call', 'high', 6)));

@@ -1,7 +1,6 @@
 import type { CheckResult, MeasurementType } from '../../../lib/types';
 import type { PageData } from '../fetchSite';
 import { hasGoogleLocationLink } from './shared/googleLocationLinks';
-import { isSoftwareProductSite } from './shared/siteType';
 
 function check(
   id: string,
@@ -15,18 +14,18 @@ function check(
   return { id, category: 'localSeo', label, passed, detail, severity, weight, measurementType };
 }
 
-/** Not a real fail — this check only makes sense for a local/physical business, and the page
- * has explicitly declared itself a software product instead (see isSoftwareProductSite). Shown
- * as passed + weight 0 so it neither counts against the score nor produces a recommendation,
- * exactly like the existing not_available pattern used elsewhere (e.g. performance checks with
- * no PageSpeed key configured) — never silently omitted, never presented as a confirmed gap. */
-function notApplicableToSoftware(id: string, label: string): CheckResult {
+/** Not a real fail — this check only makes sense for a local/physical business, and the page was
+ * classified as a web application instead (see classifySiteType in shared/siteType.ts). Shown as
+ * passed + weight 0 so it neither counts against the score nor produces a recommendation, exactly
+ * like the existing not_available pattern used elsewhere (e.g. performance checks with no
+ * PageSpeed key configured) — never silently omitted, never presented as a confirmed gap. */
+function notApplicableToApp(id: string, label: string): CheckResult {
   return {
     id,
     category: 'localSeo',
     label,
     passed: true,
-    detail: 'Not applicable — this page identifies itself as a software product, not a local business.',
+    detail: 'Not applicable — this page was identified as a web application, not a local business.',
     severity: 'info',
     weight: 0,
     measurementType: 'not_available',
@@ -38,18 +37,17 @@ export interface LocalSeoCheckOptions {
   location?: string;
 }
 
-export function runLocalSeoChecks(page: PageData, opts: LocalSeoCheckOptions = {}): CheckResult[] {
+export function runLocalSeoChecks(page: PageData, isApp: boolean, opts: LocalSeoCheckOptions = {}): CheckResult[] {
   const results: CheckResult[] = [];
   const html = page.html;
   const text = page.bodyText;
-  const isSoftwareProduct = isSoftwareProductSite(page.jsonLd);
 
-  if (isSoftwareProduct) {
-    results.push(notApplicableToSoftware('local.gbp', 'Google Business Profile linked'));
-    results.push(notApplicableToSoftware('local.nap', 'Name/Address/Phone consistently present'));
-    results.push(notApplicableToSoftware('local.locationPages', 'Dedicated location/service-area pages'));
-    results.push(notApplicableToSoftware('local.serviceAreas', 'Service areas listed'));
-    results.push(notApplicableToSoftware('local.reviews', 'Review count/rating displayed'));
+  if (isApp) {
+    results.push(notApplicableToApp('local.gbp', 'Google Business Profile linked'));
+    results.push(notApplicableToApp('local.nap', 'Name/Address/Phone consistently present'));
+    results.push(notApplicableToApp('local.locationPages', 'Dedicated location/service-area pages'));
+    results.push(notApplicableToApp('local.serviceAreas', 'Service areas listed'));
+    results.push(notApplicableToApp('local.reviews', 'Review count/rating displayed'));
     return results;
   }
 

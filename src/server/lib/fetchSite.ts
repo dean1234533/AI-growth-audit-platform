@@ -24,6 +24,12 @@ export interface PageData {
   jsonLdParseErrors: number;
   bodyText: string;
   isHttps: boolean;
+  /** The `display` mode from a linked <link rel="manifest"> web app manifest (e.g. "standalone",
+   * "fullscreen", "minimal-ui", "browser") — a PWA declaring standalone/fullscreen display is a
+   * strong signal of being an installable application rather than a marketing site (see
+   * classifySiteType). Null when no manifest is linked, or it couldn't be fetched/parsed — never
+   * treated as evidence of anything either way. */
+  manifestDisplay: string | null;
 }
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -133,11 +139,13 @@ export async function fetchAndParse(
     jsonLdParseErrors: 0,
     bodyText: '',
     isHttps: finalUrl.startsWith('https://'),
+    manifestDisplay: null,
   };
 
   let jsonLdBuffer = '';
   let linkTextBuffer = '';
   let buttonTextBuffer = '';
+  let manifestHref: string | null = null;
 
   const rewriter = new HTMLRewriter()
     .on('html', {
@@ -167,6 +175,7 @@ export async function fetchAndParse(
       element(el) {
         const rel = (el.getAttribute('rel') || '').toLowerCase();
         if (rel === 'canonical') page.canonical = el.getAttribute('href');
+        if (rel === 'manifest') manifestHref = el.getAttribute('href');
       },
     })
     .on('img', {
@@ -263,16 +272,38 @@ export async function fetchAndParse(
   page.bodyText = stripTags(page.html).replace(/\s+/g, ' ').trim().slice(0, 20000);
 
   const origin = new URL(finalUrl).origin;
-  const [robots, sitemap] = await Promise.allSettled([
+  // Only fetched when the page actually links a manifest — never a blind guess at a
+  // conventional /manifest.json path, so a typical business site (no PWA manifest at all) never
+  // pays for this extra request.
+  const resolvedManifestUrl = manifestHref ? resolveUrl(manifestHref, finalUrl) : null;
+  const [robots, sitemap, manifest] = await Promise.allSettled([
     fetchText(`${origin}/robots.txt`, fetcher),
     fetchText(`${origin}/sitemap.xml`, fetcher),
+    resolvedManifestUrl ? fetchText(resolvedManifestUrl, fetcher) : Promise.resolve(null),
   ]);
+
+  if (manifest.status === 'fulfilled' && manifest.value?.ok) {
+    try {
+      const parsed = JSON.parse(manifest.value.text);
+      if (parsed && typeof parsed.display === 'string') page.manifestDisplay = parsed.display;
+    } catch {
+      // Invalid manifest JSON — leave manifestDisplay null, never treated as a signal either way.
+    }
+  }
 
   return {
     page,
     robotsTxt: robots.status === 'fulfilled' && robots.value.ok ? robots.value.text : null,
     sitemapXml: sitemap.status === 'fulfilled' && sitemap.value.ok ? sitemap.value.text : null,
   };
+}
+
+function resolveUrl(href: string, base: string): string | null {
+  try {
+    return new URL(href, base).toString();
+  } catch {
+    return null;
+  }
 }
 
 function stripTags(html: string): string {

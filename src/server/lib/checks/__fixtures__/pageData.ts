@@ -37,6 +37,7 @@ export function makePageData(overrides: Partial<PageData> = {}): PageData {
     jsonLdParseErrors: 0,
     bodyText: '',
     isHttps: true,
+    manifestDisplay: null,
     ...overrides,
   };
 }

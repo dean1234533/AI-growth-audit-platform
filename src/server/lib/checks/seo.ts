@@ -22,6 +22,10 @@ export interface SeoCheckOptions {
   linkCheckResults?: LinkCheckResult[];
   /** Other discovered pages' title/meta, for cross-page duplicate detection. */
   otherPages?: { url: string; title: string | null; metaDescription: string | null }[];
+  /** True when the page was classified as a web application rather than a local business — see
+   * classifySiteType in shared/siteType.ts. Skips checks that only make sense for a physical/
+   * local business. */
+  isApp?: boolean;
 }
 
 export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXml: string | null, opts: SeoCheckOptions = {}, rendered?: RenderedPageData | null): CheckResult[] {
@@ -138,8 +142,21 @@ export function runSeoChecks(page: PageData, robotsTxt: string | null, sitemapXm
     results.push(check('seo.duplicateSchema', 'No duplicate structured data types', false, `Duplicate schema type(s) found: ${duplicateTypes.join(', ')}`, 'low', 3, structuredDataSource));
   }
 
-  const hasLocalBusiness = jsonLdHasType(jsonLd, ['LocalBusiness', 'Organization', 'HomeAndConstructionBusiness']);
-  results.push(check('seo.localBusinessSchema', 'LocalBusiness schema present', hasLocalBusiness, hasLocalBusiness ? 'LocalBusiness/Organization schema found' : 'No LocalBusiness schema found', 'high', 8, structuredDataSource));
+  if (opts.isApp) {
+    results.push({
+      id: 'seo.localBusinessSchema',
+      category: 'seo',
+      label: 'LocalBusiness schema present',
+      passed: true,
+      detail: 'Not applicable — this page was identified as a web application, not a local business.',
+      severity: 'info',
+      weight: 0,
+      measurementType: 'not_available',
+    });
+  } else {
+    const hasLocalBusiness = jsonLdHasType(jsonLd, ['LocalBusiness', 'Organization', 'HomeAndConstructionBusiness']);
+    results.push(check('seo.localBusinessSchema', 'LocalBusiness schema present', hasLocalBusiness, hasLocalBusiness ? 'LocalBusiness/Organization schema found' : 'No LocalBusiness schema found', 'high', 8, structuredDataSource));
+  }
 
   const hasFaqSchema = jsonLdHasType(jsonLd, ['FAQPage']);
   results.push(check('seo.faqSchema', 'FAQ schema present', hasFaqSchema, hasFaqSchema ? 'FAQPage schema found' : 'No FAQPage schema found', 'low', 3, structuredDataSource));
