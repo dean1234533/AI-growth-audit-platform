@@ -1,28 +1,26 @@
 <aside
   id="cookie-consent"
   aria-label="Cookie consent"
-  class="glass fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-xl rounded-2xl p-5 shadow-2xl sm:inset-x-auto sm:right-6 sm:bottom-6"
+  class="glass fixed inset-x-4 bottom-3 z-[60] mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 rounded-2xl px-4 py-2.5 text-center shadow-2xl sm:inset-x-auto sm:right-6 sm:bottom-6 sm:max-w-xs sm:flex-col sm:items-stretch sm:text-left"
 >
-  <p class="font-semibold text-ink dark:text-white">Your privacy choices</p>
-  <p class="mt-2 text-sm leading-relaxed text-slate">
-    Growth Audit uses essential browser storage for sign-in, preferences and app features. You can
-    allow optional cookies if they are introduced later, or continue with essential storage only.
-    <a href="/privacy" class="font-semibold text-brand-700 underline dark:text-brand-200">Read our privacy policy</a>.
+  <p class="text-xs leading-snug text-slate">
+    Essential storage only.
+    <a href="/privacy" class="font-semibold text-brand-700 underline dark:text-brand-200">Privacy policy</a>
   </p>
-  <div class="mt-4 flex flex-wrap gap-3">
-    <button
-      type="button"
-      data-cookie-choice="all"
-      class="rounded-xl bg-brand-700 px-4 py-3 text-sm font-semibold text-white"
-    >
-      Accept all
-    </button>
+  <div class="flex shrink-0 gap-2">
     <button
       type="button"
       data-cookie-choice="essential"
-      class="rounded-xl border border-ink/15 px-4 py-3 text-sm font-semibold text-ink dark:border-white/20 dark:text-white"
+      class="rounded-lg border border-ink/15 px-3 py-2 text-xs font-semibold text-ink dark:border-white/20 dark:text-white"
     >
       Essential only
+    </button>
+    <button
+      type="button"
+      data-cookie-choice="all"
+      class="rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white"
+    >
+      Accept all
     </button>
   </div>
 </aside>
