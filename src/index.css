@@ -46,6 +46,7 @@
   --animate-glow-pulse: glow-pulse 3.5s ease-in-out infinite;
   --animate-spin-slow: spin 14s linear infinite;
   --animate-rise: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-announcement-in: announcement-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes float {
@@ -71,6 +72,11 @@
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes announcement-in {
+  from { opacity: 0; transform: translateY(-100%); }
   to { opacity: 1; transform: translateY(0); }
 }
 

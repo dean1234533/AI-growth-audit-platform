@@ -5,6 +5,7 @@ import JsonLd from '../components/seo/JsonLd.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import SiteFooter from '../components/site/SiteFooter.astro';
 import CookieConsent from '../components/site/CookieConsent.astro';
+import { AnnouncementBanner } from '../components/site/AnnouncementBanner';
 import { InstallBanner } from '../components/pwa/InstallBanner';
 import { THEME_INIT_SCRIPT } from '../lib/theme';
 import { buildOrganizationSchema, buildSoftwareApplicationSchema } from '../lib/seo/schema';
@@ -38,8 +39,10 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
     <meta name="apple-mobile-web-app-title" content="Growth Audit" />
     <SeoHead title={title} description={description} path={path} image={image} noindex={noindex} />
     <JsonLd schema={[buildOrganizationSchema(), buildSoftwareApplicationSchema()]} />
+    <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b89fe80abff1489294eea9f4b7cbef4f"}'></script>
   </head>
   <body class="bg-canvas text-ink dark:bg-[#0a0a12] dark:text-white">
+    {!bare && <AnnouncementBanner client:idle />}
     {!bare && <SiteHeader />}
     <slot />
     {!bare && <SiteFooter />}
