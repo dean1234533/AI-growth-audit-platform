@@ -116,6 +116,15 @@ a {
   color: #93c5fd;
 }
 
+/* Unlike <a>, a native <button> doesn't get a pointer cursor by default in any
+   browser — it computes to `default` (the plain arrow) unless explicitly styled.
+   Restore the expected "this is clickable" hand cursor site-wide rather than
+   patching every individual component. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
 /* Mobile audit tools measure the rendered box, so give every interactive
    control a reliably tappable hit area on touch-first devices. */
 @media (pointer: coarse) {
