@@ -123,6 +123,60 @@ export function buildScanNotifications(
   return notifications;
 }
 
+/**
+ * Built by the 15-minute lightweight uptime cron pass (cron/runLightweightChecks.ts), not the
+ * full-scan pipeline — a site going down/recovering is worth telling a Pro user about
+ * immediately, rather than waiting for the next scheduled full audit.
+ */
+export function buildUptimeNotification(status: 'down' | 'recovered', website: { id: string; name: string }): DraftNotification {
+  const base = { websiteId: website.id, websiteName: website.name };
+  const detailUrl = `/dashboard/${website.id}`;
+  if (status === 'down') {
+    return {
+      ...base,
+      type: 'site_down',
+      title: `${website.name} is down`,
+      body: `${website.name} did not respond to two checks in a row — it may be offline right now.`,
+      url: detailUrl,
+    };
+  }
+  return {
+    ...base,
+    type: 'site_recovered',
+    title: `${website.name} is back up`,
+    body: `${website.name} is responding again.`,
+    url: detailUrl,
+  };
+}
+
+/**
+ * Built when the 15-minute lightweight check's content-drift comparison (in
+ * cron/runLightweightChecks.ts) finds the homepage still responding (not "down") but its
+ * content has collapsed relative to its own last known-good snapshot — a hacked/defaced page, a
+ * crashed plugin blanking the site, or a bad deploy all return 200 OK and would otherwise look
+ * perfectly healthy to a plain uptime check.
+ */
+export function buildContentIssueNotification(status: 'issue' | 'recovered', website: { id: string; name: string }): DraftNotification {
+  const base = { websiteId: website.id, websiteName: website.name };
+  const detailUrl = `/dashboard/${website.id}`;
+  if (status === 'issue') {
+    return {
+      ...base,
+      type: 'content_issue',
+      title: `${website.name} looks broken`,
+      body: `${website.name} is responding, but its homepage content changed dramatically — this could be a hack, a crashed plugin, or a bad deploy. Worth checking.`,
+      url: detailUrl,
+    };
+  }
+  return {
+    ...base,
+    type: 'content_recovered',
+    title: `${website.name} looks normal again`,
+    body: `${website.name}'s homepage content is back to looking like itself.`,
+    url: detailUrl,
+  };
+}
+
 export function buildCompetitorActivityNotification(
   competitorName: string,
   competitorScore: number,

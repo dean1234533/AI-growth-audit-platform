@@ -116,8 +116,6 @@ export async function runDueScans(env: CronEnv): Promise<void> {
         audit,
         previous,
       }).catch((err) => console.error(`runDueScans: notify failed for website ${website.id}:`, err));
-
-      await notifyAdmin(env, 'Completed monitoring scan', [`${website.name} (${website.url}) scanned — score ${audit.overallScore}/100.`]);
     } catch (err) {
       console.error(`runDueScans: scan failed for website ${website.id} (${website.url}):`, err);
       await notifyAdmin(env, 'Failed scan', [`Scan failed for ${website.name} (${website.url}): ${err instanceof Error ? err.message : String(err)}`]);

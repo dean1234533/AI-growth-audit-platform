@@ -101,6 +101,15 @@ export function canAddCompetitor(planId: PlanId): boolean {
 /** User-facing copy for the "Competitor monitoring is Pro-only" rejection. */
 export const COMPETITOR_MONITORING_UPGRADE_MESSAGE = 'Competitor monitoring is available on Pro. Upgrade to track competitors alongside your website.';
 
+/** Whether `planId` gets the 15-minute instant downtime/recovery push alert (cron/runLightweightChecks.ts).
+ * Free relies on its next scheduled full scan to surface an outage; Pro and admin find out within minutes. */
+export function canUseInstantAlerts(planId: PlanId): boolean {
+  return planId === 'pro' || planId === 'admin';
+}
+
+/** User-facing copy for the "Instant downtime alerts are Pro-only" rejection. */
+export const INSTANT_ALERTS_UPGRADE_MESSAGE = 'Instant downtime alerts are available on Pro. Upgrade to get notified the moment your site goes down.';
+
 export interface WebsiteQuota {
   planId: PlanId;
   currentCount: number;

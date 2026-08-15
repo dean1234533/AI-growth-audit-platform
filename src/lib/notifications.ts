@@ -9,7 +9,11 @@ export type NotificationType =
   | 'competitor_activity'
   | 'security_warning'
   | 'performance_drop'
-  | 'content_recommendation';
+  | 'content_recommendation'
+  | 'site_down'
+  | 'site_recovered'
+  | 'content_issue'
+  | 'content_recovered';
 
 export interface AppNotification {
   id: string;

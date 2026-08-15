@@ -36,6 +36,9 @@ export const PLANS: PlanDefinition[] = [
     //  - "Daily scans": src/pages/api/websites.ts on create + firestore.rules on update
     //    (canUseDailyScans / isProOrAdmin() — the settings UI writes frequency directly to
     //    Firestore with no API route, so the rule is the only enforcement point for changes)
+    //  - "Instant downtime alerts": cron/runLightweightChecks.ts (canUseInstantAlerts) — a
+    //    separate 15-minute Cron Trigger, not gated via an API route or Firestore rule since
+    //    it's never client-initiated
     //  - "Competitor monitoring": firestore.rules `create` on websites/{id}/competitors
     //    (isProOrAdmin() — same reason, no API route exists for this write)
     //  - "AI Coach": src/pages/api/coach.ts (canUseAiCoach)
@@ -45,6 +48,7 @@ export const PLANS: PlanDefinition[] = [
     features: [
       `Up to ${PRO_LIMIT} monitored websites`,
       'Daily scans',
+      'Instant downtime alerts',
       'Competitor monitoring',
       'AI Coach',
       'Push notifications',

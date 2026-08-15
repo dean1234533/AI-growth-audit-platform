@@ -10,6 +10,10 @@ import {
   ShieldAlert,
   Gauge,
   Lightbulb,
+  WifiOff,
+  Wifi,
+  FileWarning,
+  FileCheck,
 } from 'lucide-react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '../../lib/firebaseClient';
@@ -24,6 +28,10 @@ const TYPE_ICON: Record<NotificationType, typeof Bell> = {
   security_warning: ShieldAlert,
   performance_drop: Gauge,
   content_recommendation: Lightbulb,
+  site_down: WifiOff,
+  site_recovered: Wifi,
+  content_issue: FileWarning,
+  content_recovered: FileCheck,
 };
 
 const TYPE_COLOR: Record<NotificationType, string> = {
@@ -35,6 +43,10 @@ const TYPE_COLOR: Record<NotificationType, string> = {
   security_warning: 'bg-rose-500/10 text-rose-500',
   performance_drop: 'bg-amber-500/10 text-amber-600',
   content_recommendation: 'bg-brand-500/10 text-brand-500',
+  site_down: 'bg-rose-500/10 text-rose-500',
+  site_recovered: 'bg-mint-500/10 text-mint-600',
+  content_issue: 'bg-rose-500/10 text-rose-500',
+  content_recovered: 'bg-mint-500/10 text-mint-600',
 };
 
 function timeAgo(date: Date | null): string {

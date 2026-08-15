@@ -5,6 +5,7 @@ import {
   canUseAiCoach,
   canUseAiReports,
   canUseDailyScans,
+  canUseInstantAlerts,
   resolvePlanId,
   websiteLimitMessage,
   buildWebsiteQuota,
@@ -33,6 +34,12 @@ describe('canAddCompetitor', () => {
   it('free → not allowed', () => expect(canAddCompetitor('free')).toBe(false));
   it('pro → allowed', () => expect(canAddCompetitor('pro')).toBe(true));
   it('admin → allowed', () => expect(canAddCompetitor('admin')).toBe(true));
+});
+
+describe('canUseInstantAlerts', () => {
+  it('free → not allowed', () => expect(canUseInstantAlerts('free')).toBe(false));
+  it('pro → allowed', () => expect(canUseInstantAlerts('pro')).toBe(true));
+  it('admin → allowed', () => expect(canUseInstantAlerts('admin')).toBe(true));
 });
 
 describe('getPlanLimits', () => {

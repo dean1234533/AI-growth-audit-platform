@@ -18,6 +18,10 @@ import {
   Lightbulb,
   ArrowRight,
   ExternalLink,
+  Wifi,
+  WifiOff,
+  Lock,
+  FileWarning,
 } from 'lucide-react';
 import { db } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
@@ -27,6 +31,8 @@ import { CONSULTATION_URL } from '../../lib/seo/site';
 import { buildWeeklyDigest } from '../../lib/reports';
 import { buildTimeline } from '../../lib/timeline';
 import { buildServiceRecommendations } from '../../lib/serviceRecommendations';
+import { getUserSettings, type UserSettings } from '../../lib/userSettings';
+import { ADMIN_EMAIL } from '../../server/lib/access';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -55,6 +61,14 @@ interface WebsiteDoc {
   status: 'active' | 'paused';
   lastScannedAt: Timestamp | null;
   nextScanDue: Timestamp | null;
+  /** Written by the 15-minute lightweight uptime cron pass (Pro/admin only) — see
+   * cron/runLightweightChecks.ts. Absent/null on a website that's never been checked yet. */
+  lastKnownUp?: boolean | null;
+  lastUptimeCheckAt?: Timestamp | null;
+  /** True when the same cron pass thinks the homepage's content has collapsed relative to its
+   * own last known-good snapshot (hack/crashed plugin/bad deploy) — independent of lastKnownUp,
+   * since a broken page can still return a healthy HTTP status. */
+  contentIssueFlagged?: boolean;
 }
 
 interface WebsiteDetailProps {
@@ -84,6 +98,17 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const [section, setSection] = useState<Section>(sectionFromHash);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [enquiryPrefill, setEnquiryPrefill] = useState<string | undefined>(undefined);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getUserSettings(user.uid).then(setSettings);
+  }, [user]);
+
+  // Mirrors access.ts's canUseInstantAlerts — this is purely cosmetic (which UI to show), not
+  // enforcement; the cron pass itself re-resolves the plan server-side from the trusted
+  // Firestore user doc before ever checking or notifying.
+  const canSeeUptimeStatus = settings?.plan === 'pro' || user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     const onHashChange = () => setSection(sectionFromHash());
@@ -265,6 +290,30 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
                   <Clock className="size-3 shrink-0" /> Next scan: {website.frequency === 'manual' ? 'Manual only' : formatTimestamp(website.nextScanDue)}
                 </div>
               </div>
+              {canSeeUptimeStatus ? (
+                website.lastKnownUp === false ? (
+                  <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-rose-500">
+                    <WifiOff className="size-3 shrink-0" /> Down since {formatTimestamp(website.lastUptimeCheckAt ?? null)}
+                  </div>
+                ) : website.lastKnownUp === true ? (
+                  <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-mint-600">
+                    <Wifi className="size-3 shrink-0" /> Up
+                  </div>
+                ) : (
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-slate">
+                    <Wifi className="size-3 shrink-0" /> Checking uptime…
+                  </div>
+                )
+              ) : (
+                <a href="/pricing" className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:underline dark:text-brand-300">
+                  <Lock className="size-3 shrink-0" /> Upgrade for instant downtime alerts
+                </a>
+              )}
+              {canSeeUptimeStatus && website.lastKnownUp !== false && website.contentIssueFlagged && (
+                <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-rose-500">
+                  <FileWarning className="size-3 shrink-0" /> Homepage content looks broken
+                </div>
+              )}
             </GlassCard>
 
             <GlassCard static className="p-5">

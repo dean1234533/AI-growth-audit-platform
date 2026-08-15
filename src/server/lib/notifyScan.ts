@@ -1,6 +1,6 @@
 import { addFirestoreDocument, getFirestoreDocument, listFirestoreDocuments, deleteFirestoreDocument } from './firestore';
 import { sendPushNotification, type PushSubscriptionJSON } from './push';
-import { buildScanNotifications, buildCompetitorActivityNotification, type ScanSnapshot, type DraftNotification } from './notificationRules';
+import { buildScanNotifications, buildCompetitorActivityNotification, buildUptimeNotification, buildContentIssueNotification, type ScanSnapshot, type DraftNotification } from './notificationRules';
 import { notifyAdmin, type AdminAlertEnv } from './adminAlert';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
 
@@ -115,5 +115,27 @@ export async function notifyCompetitorScan(
     name: params.websiteName,
   });
   if (!draft) return;
+  await deliverNotifications(serviceAccount, env, params.uid, [draft]);
+}
+
+/** Call from the 15-minute lightweight uptime cron pass when a monitored website's up/down state changes. */
+export async function notifyUptimeChange(
+  serviceAccount: ServiceAccount,
+  env: NotifyEnv,
+  params: { uid: string; websiteId: string; websiteName: string; status: 'down' | 'recovered' },
+): Promise<void> {
+  const draft = buildUptimeNotification(params.status, { id: params.websiteId, name: params.websiteName });
+  await deliverNotifications(serviceAccount, env, params.uid, [draft]);
+}
+
+/** Call from the 15-minute lightweight uptime cron pass when a monitored website's homepage
+ * content drifts from (or returns to) its last known-good snapshot — see checkSiteReachable's
+ * title/contentLength signals and runLightweightChecks.ts's comparison logic. */
+export async function notifyContentIssue(
+  serviceAccount: ServiceAccount,
+  env: NotifyEnv,
+  params: { uid: string; websiteId: string; websiteName: string; status: 'issue' | 'recovered' },
+): Promise<void> {
+  const draft = buildContentIssueNotification(params.status, { id: params.websiteId, name: params.websiteName });
   await deliverNotifications(serviceAccount, env, params.uid, [draft]);
 }

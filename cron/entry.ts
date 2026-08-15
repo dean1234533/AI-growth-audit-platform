@@ -6,6 +6,7 @@
 // directly by `astro build` itself) — see the "deploy" script in package.json.
 import astroEntry from '../dist/server/entry.mjs';
 import { runDueScans } from './runDueScans';
+import { runLightweightChecks } from './runLightweightChecks';
 import { notifyAdmin, type AdminAlertEnv } from '../src/server/lib/adminAlert';
 
 interface Env extends AdminAlertEnv {
@@ -19,13 +20,22 @@ interface Env extends AdminAlertEnv {
   SELF_HOSTNAMES?: string;
 }
 
-async function runScheduledSafely(env: Env): Promise<void> {
+// The daily full-scan trigger (0 6 * * *) and the 15-minute lightweight uptime trigger
+// (*/15 * * * *) share this one Worker, dispatched by cron expression — see wrangler.toml.
+const LIGHTWEIGHT_CHECK_CRON = '*/15 * * * *';
+
+async function runScheduledSafely(cron: string, env: Env): Promise<void> {
+  const isLightweightCheck = cron === LIGHTWEIGHT_CHECK_CRON;
   try {
-    await runDueScans(env);
+    if (isLightweightCheck) {
+      await runLightweightChecks(env);
+    } else {
+      await runDueScans(env);
+    }
   } catch (err) {
     console.error('cron: uncaught scheduled-run failure:', err);
     await notifyAdmin(env, 'Worker failure — scheduled scan run', [
-      `The daily cron run threw an uncaught error: ${err instanceof Error ? err.message : String(err)}`,
+      `The ${isLightweightCheck ? '15-minute uptime-check' : 'daily'} cron run threw an uncaught error: ${err instanceof Error ? err.message : String(err)}`,
     ]);
   }
 }
@@ -59,7 +69,7 @@ async function fetchWithSecurityHeaders(request: Request, env: Env, ctx: Executi
 
 export default {
   fetch: fetchWithSecurityHeaders,
-  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
-    ctx.waitUntil(runScheduledSafely(env));
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(runScheduledSafely(event.cron, env));
   },
 } satisfies ExportedHandler<Env>;
