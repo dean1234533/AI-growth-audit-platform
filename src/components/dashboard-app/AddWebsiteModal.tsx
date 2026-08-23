@@ -80,8 +80,8 @@ export function AddWebsiteModal({ open, onClose, uid, initialUrl, defaultFrequen
               <div className="mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#3b82f6,#4b7cff)] text-white">
                 <Plus className="size-6" />
               </div>
-              <h3 className="font-display text-xl font-bold text-ink dark:text-white">Add a website to monitor</h3>
-              <p className="mt-1 text-sm text-slate">We'll run a full audit now, then keep scanning on your chosen schedule.</p>
+              <h3 className="font-display text-xl font-bold text-ink dark:text-white">Add a site to monitor</h3>
+              <p className="mt-1 text-sm text-slate">Add a website or web app. We'll audit it now, then keep scanning on your chosen schedule.</p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <div className="flex items-center gap-2.5 rounded-2xl border border-ink/10 px-4 py-3 focus-within:border-brand-400 dark:border-white/10">
@@ -119,7 +119,7 @@ export function AddWebsiteModal({ open, onClose, uid, initialUrl, defaultFrequen
                 {error && <p className="text-sm font-medium text-rose-500">{error}</p>}
 
                 <Button type="submit" size="lg" loading={submitting} className="mt-2 w-full">
-                  {submitting ? 'Running first scan…' : 'Add Website'}
+                  {submitting ? 'Running first scan…' : 'Add Site'}
                 </Button>
               </form>
             </GlassCard>

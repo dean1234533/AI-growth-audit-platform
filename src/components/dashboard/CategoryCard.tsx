@@ -72,7 +72,7 @@ export function CategoryCard({ category, recommendations }: CategoryCardProps) {
           <div className={`inline-flex size-12 items-center justify-center rounded-2xl ${bgClass} ${textClass} shadow-inner`}>
             <Icon className="size-5.5" />
           </div>
-          <div className="relative size-11 shrink-0">
+          <div className="relative size-11 shrink-0" aria-label={scored ? `${category.score} percent` : 'Not scored'}>
             <svg width={44} height={44} className="-rotate-90">
               <circle cx={22} cy={22} r={20} stroke="currentColor" strokeWidth={4} fill="none" className="text-ink/[0.06] dark:text-white/10" />
               <circle
@@ -88,13 +88,15 @@ export function CategoryCard({ category, recommendations }: CategoryCardProps) {
                 style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1)' }}
               />
             </svg>
+            <span className="absolute inset-0 flex items-center justify-center font-display text-[0.65rem] font-black text-ink dark:text-white">
+              {scored ? category.score : '—'}
+            </span>
           </div>
         </div>
 
         <div>
           <div className="text-sm font-semibold text-slate">{category.label}</div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="font-display text-4xl font-extrabold tracking-tight text-ink dark:text-white">{scored ? category.score : 'N/A'}</span>
+          <div className="mt-2 flex items-center gap-2">
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset ${bgClass} ${textClass} ${ringClass}`}>{label}</span>
           </div>
         </div>

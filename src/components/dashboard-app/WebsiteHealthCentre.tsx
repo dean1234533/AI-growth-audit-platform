@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { collection, query, where, onSnapshot, type Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDocs, orderBy, limit, type Timestamp } from 'firebase/firestore';
 import { Plus, LogOut, Globe, Clock } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../lib/firebaseClient';
@@ -12,12 +12,15 @@ import { scoreBand } from '../../lib/scoreBand';
 import { AddWebsiteModal } from './AddWebsiteModal';
 import { getUserSettings } from '../../lib/userSettings';
 import { getWebsiteQuota, type WebsiteQuota } from '../../lib/api';
-import type { CategoryId, ScanFrequency } from '../../lib/types';
+import { deriveSiteName, monitoredSiteName, siteKind } from '../../lib/siteIdentity';
+import type { AuditResult, CategoryId, ScanFrequency } from '../../lib/types';
 
 interface WebsiteDoc {
   id: string;
   url: string;
   name: string;
+  businessName?: string;
+  siteType?: 'website' | 'app';
   frequency: string;
   status: string;
   lastScannedAt: Timestamp | null;
@@ -44,11 +47,33 @@ export default function WebsiteHealthCentre() {
 
   useEffect(() => {
     if (!user) return;
+    let active = true;
     const q = query(collection(db, 'websites'), where('uid', '==', user.uid));
     const unsubscribe = onSnapshot(q, (snap) => {
-      setWebsites(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as WebsiteDoc));
+      const stored = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as WebsiteDoc);
+      void Promise.all(stored.map(async (site) => {
+        if (site.siteType && site.businessName) return site;
+        try {
+          const latestQuery = query(collection(db, 'websites', site.id, 'scans'), orderBy('scannedAt', 'desc'), limit(1));
+          const latestSnap = await getDocs(latestQuery);
+          const latest = latestSnap.docs[0]?.data() as AuditResult | undefined;
+          if (!latest) return site;
+          return {
+            ...site,
+            siteType: site.siteType ?? latest.meta.siteType,
+            businessName: site.businessName?.trim() || latest.meta.businessName?.trim() || deriveSiteName(latest),
+          };
+        } catch {
+          return site;
+        }
+      })).then((enriched) => {
+        if (active) setWebsites(enriched);
+      });
     });
-    return unsubscribe;
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [user]);
 
   useEffect(() => {
@@ -88,7 +113,7 @@ export default function WebsiteHealthCentre() {
         </div>
         <div className="flex gap-3">
           <Button onClick={() => setModalOpen(true)} icon={<Plus className="size-4" />}>
-            Add Website
+            Add Site
           </Button>
           <Button variant="ghost" icon={<LogOut className="size-4" />} onClick={() => signOut(auth)}>
             Sign Out
@@ -125,12 +150,12 @@ export default function WebsiteHealthCentre() {
           <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-500">
             <Globe className="size-6" />
           </span>
-          <h2 className="font-display text-xl font-bold text-ink dark:text-white">No websites monitored yet</h2>
+          <h2 className="font-display text-xl font-bold text-ink dark:text-white">No sites monitored yet</h2>
           <p className="max-w-sm text-sm text-slate">
-            Add your first website and we'll run a full audit immediately, then keep scanning it automatically.
+            Add your first website or app and we'll run a full audit immediately, then keep scanning it automatically.
           </p>
           <Button onClick={() => setModalOpen(true)} icon={<Plus className="size-4" />}>
-            Add Your First Website
+            Add Your First Site
           </Button>
         </GlassCard>
       )}
@@ -139,6 +164,7 @@ export default function WebsiteHealthCentre() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {websites.map((site, i) => {
             const band = site.latestOverallScore !== null ? scoreBand(site.latestOverallScore) : null;
+            const displayName = monitoredSiteName(site);
             return (
               <motion.a
                 key={site.id}
@@ -149,11 +175,11 @@ export default function WebsiteHealthCentre() {
               >
                 <article className="group flex h-full flex-col rounded-2xl border border-ink/10 bg-white/75 p-5 shadow-[0_18px_45px_-32px_rgba(17,24,39,0.4)] transition hover:-translate-y-1 hover:border-brand-400/40 hover:shadow-[0_26px_55px_-30px_rgba(59,130,246,0.45)] dark:border-white/10 dark:bg-[#16162a]/80">
                   <div className="mb-5 flex items-center justify-between border-b border-ink/10 pb-3 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-slate dark:border-white/10">
-                    <span>Website</span><span>{String(i + 1).padStart(2, '0')}</span>
+                    <span>{siteKind(site.siteType)}</span><span>{String(i + 1).padStart(2, '0')}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="truncate font-display text-xl font-black tracking-tight text-ink dark:text-white">{site.name}</div>
+                      <div className="truncate font-display text-xl font-black tracking-tight text-ink dark:text-white">{displayName}</div>
                       <div className="mt-1 truncate font-mono text-[0.68rem] text-slate">{site.url}</div>
                     </div>
                     {site.latestOverallScore !== null && <ScoreCircle score={site.latestOverallScore} size={64} strokeWidth={5} />}

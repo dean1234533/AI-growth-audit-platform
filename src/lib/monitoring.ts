@@ -1,6 +1,7 @@
 import { addDoc, collection, doc, getDoc, getDocs, limit, query, updateDoc, serverTimestamp, Timestamp, where } from 'firebase/firestore';
 import { auth, db } from './firebaseClient';
 import { runAudit, createWebsite } from './api';
+import { deriveSiteName } from './siteIdentity';
 import type { AuditResult, ScanFrequency } from './types';
 
 /** Fire-and-forget admin alert for events that only happen client-side. */
@@ -51,6 +52,7 @@ function deriveName(url: string): string {
 interface ExistingWebsiteMatch {
   id: string;
   name: string;
+  businessName?: string;
   latestOverallScore?: number;
   latestCategoryScores?: { id: string; score: number }[];
 }
@@ -79,8 +81,12 @@ export async function addWebsiteWithFirstScan(
 
   const existing = await findExistingWebsite(uid, audit.url);
   if (existing) {
+    const refreshedName = existing.businessName?.trim() || deriveSiteName(audit);
     await addDoc(collection(db, 'websites', existing.id, 'scans'), audit);
     await updateDoc(doc(db, 'websites', existing.id), {
+      name: refreshedName,
+      ...(audit.meta.businessName?.trim() ? { businessName: audit.meta.businessName.trim() } : {}),
+      ...(audit.meta.siteType ? { siteType: audit.meta.siteType } : {}),
       lastScannedAt: serverTimestamp(),
       nextScanDue: nextScanDue ? Timestamp.fromDate(nextScanDue) : null,
       latestOverallScore: audit.overallScore,
@@ -90,7 +96,7 @@ export async function addWebsiteWithFirstScan(
     notifyScan({
       uid,
       websiteId: existing.id,
-      websiteName: existing.name,
+      websiteName: refreshedName,
       frequency,
       audit,
       previous:
@@ -106,18 +112,19 @@ export async function addWebsiteWithFirstScan(
   // website limit, enforced server-side — see src/pages/api/websites.ts and
   // src/server/lib/access.ts. firestore.rules denies a direct client write here, so this is
   // the only way a new website doc can come into existence.
-  const { websiteId } = await createWebsite(audit.url, deriveName(audit.url), frequency, audit);
+  const siteName = deriveSiteName(audit);
+  const { websiteId } = await createWebsite(audit.url, siteName, frequency, audit);
 
   notifyScan({
     uid,
     websiteId,
-    websiteName: deriveName(audit.url),
+    websiteName: siteName,
     frequency,
     audit,
     previous: null,
   });
 
-  notifyAdmin('new_website', { websiteUrl: audit.url, websiteName: deriveName(audit.url), frequency });
+  notifyAdmin('new_website', { websiteUrl: audit.url, websiteName: siteName, frequency });
 
   return { websiteId, audit };
 }
@@ -126,7 +133,7 @@ export async function addWebsiteWithFirstScan(
 export async function runManualScan(websiteId: string, url: string, frequency: ScanFrequency): Promise<AuditResult> {
   const websiteSnap = await getDoc(doc(db, 'websites', websiteId));
   const websiteData = websiteSnap.data() as
-    | { uid: string; name: string; latestOverallScore?: number; latestCategoryScores?: { id: string; score: number }[] }
+    | { uid: string; name: string; businessName?: string; latestOverallScore?: number; latestCategoryScores?: { id: string; score: number }[] }
     | undefined;
 
   const audit = await runAudit(url);
@@ -135,6 +142,9 @@ export async function runManualScan(websiteId: string, url: string, frequency: S
 
   await addDoc(collection(db, 'websites', websiteId, 'scans'), audit);
   await updateDoc(doc(db, 'websites', websiteId), {
+    name: websiteData?.businessName?.trim() || deriveSiteName(audit),
+    ...(audit.meta.businessName?.trim() ? { businessName: audit.meta.businessName.trim() } : {}),
+    ...(audit.meta.siteType ? { siteType: audit.meta.siteType } : {}),
     lastScannedAt: serverTimestamp(),
     nextScanDue: nextScanDue ? Timestamp.fromDate(nextScanDue) : null,
     latestOverallScore: audit.overallScore,

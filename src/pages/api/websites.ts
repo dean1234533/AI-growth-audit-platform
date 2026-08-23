@@ -4,6 +4,7 @@ import { verifyFirebaseIdToken } from '../../server/lib/verifyFirebaseIdToken';
 import { addFirestoreDocument, getFirestoreDocument, parseServiceAccount, runQuery, type ServiceAccount } from '../../server/lib/firestore';
 import { buildWebsiteQuota, canAddWebsite, canUseDailyScans, DAILY_SCANS_UPGRADE_MESSAGE, resolvePlanId, websiteLimitMessage } from '../../server/lib/access';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
+import { deriveSiteName } from '../../lib/siteIdentity';
 
 export const prerender = false;
 
@@ -107,7 +108,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const now = new Date();
   const nextScanDue = computeNextScanDue(body.frequency, now);
-  const name = body.name?.trim() || deriveName(body.audit.url);
+  const name = body.name?.trim() || deriveSiteName(body.audit);
 
   // Always write `caller.uid` — the verified token's uid — never anything the client might send
   // in the body, so a website can never be created on another user's behalf.
@@ -115,6 +116,8 @@ export const POST: APIRoute = async ({ request }) => {
     uid: caller.uid,
     url: body.audit.url,
     name,
+    businessName: body.audit.meta.businessName?.trim() || name,
+    ...(body.audit.meta.siteType ? { siteType: body.audit.meta.siteType } : {}),
     frequency: body.frequency,
     status: 'active',
     createdAt: now,
@@ -136,12 +139,4 @@ function computeNextScanDue(frequency: ScanFrequency, from: Date): Date | null {
   if (frequency === 'weekly') next.setDate(next.getDate() + 7);
   if (frequency === 'monthly') next.setMonth(next.getMonth() + 1);
   return next;
-}
-
-function deriveName(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return url;
-  }
 }

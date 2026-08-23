@@ -50,6 +50,7 @@ import { HowICanHelp } from '../dashboard/HowICanHelp';
 import { EnquiryModal } from '../leadgen/EnquiryModal';
 import { Button } from '../ui/Button';
 import { GlassCard } from '../ui/GlassCard';
+import { monitoredSiteName, siteKind } from '../../lib/siteIdentity';
 import type { AuditResult, ScanFrequency } from '../../lib/types';
 
 interface WebsiteDoc {
@@ -57,6 +58,8 @@ interface WebsiteDoc {
   uid: string;
   url: string;
   name: string;
+  businessName?: string;
+  siteType?: 'website' | 'app';
   frequency: ScanFrequency;
   status: 'active' | 'paused';
   lastScannedAt: Timestamp | null;
@@ -204,7 +207,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   if (website === null) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-        <p className="text-lg font-semibold text-ink dark:text-white">Website not found</p>
+        <p className="text-lg font-semibold text-ink dark:text-white">Site not found</p>
         <a href="/dashboard" className="text-sm font-semibold text-brand-500 hover:underline">
           Back to dashboard
         </a>
@@ -213,6 +216,9 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   }
 
   const latest = scans[scans.length - 1];
+  const displayName = monitoredSiteName(website);
+  const resolvedSiteType = latest?.meta.siteType ?? website.siteType;
+  const targetLabel = siteKind(resolvedSiteType);
   const previous = scans.length > 1 ? scans[scans.length - 2] : null;
   const topRecommendation = latest?.recommendations[0] ?? null;
   const digest = latest ? buildWeeklyDigest(website.name, website.url, latest, previous) : null;
@@ -222,7 +228,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
     <div className="mx-auto max-w-6xl space-y-10 px-6 py-16">
       <div id="top" className="flex flex-wrap items-center justify-between gap-4">
         <a href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white">
-          <ArrowLeft className="size-4" /> All websites
+          <ArrowLeft className="size-4" /> All sites
         </a>
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleScanNow} loading={scanning} icon={<RefreshCw className="size-4" />}>
@@ -240,7 +246,8 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
       {error && <p className="text-sm font-medium text-rose-500">{error}</p>}
 
       <div>
-        <h1 className="font-display text-2xl font-bold text-ink dark:text-white">{website.name}</h1>
+        <div className="text-xs font-bold uppercase tracking-[0.12em] text-brand-500">{targetLabel}</div>
+        <h1 className="mt-1 font-display text-2xl font-bold text-ink dark:text-white">{displayName}</h1>
         <a
           href={website.url}
           target="_blank"
@@ -264,6 +271,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             scoreDelta={digest?.scoreDelta ?? null}
             scanQuality={latest.meta.scanQuality}
             auditQuality={latest.meta.auditQuality}
+            siteType={resolvedSiteType}
           />
 
           <div className="grid gap-4 sm:grid-cols-2">

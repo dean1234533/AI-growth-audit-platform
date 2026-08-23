@@ -87,7 +87,7 @@ export default function WebsiteSettingsCard({ uid }: WebsiteSettingsCardProps) {
   }
 
   if (websites.length === 0) {
-    return <p className="text-sm text-slate">Add a website to monitor from the Dashboard to configure it here.</p>;
+    return <p className="text-sm text-slate">Add a website or app from the Dashboard to configure it here.</p>;
   }
 
   return (
@@ -109,7 +109,7 @@ export default function WebsiteSettingsCard({ uid }: WebsiteSettingsCardProps) {
       {selected && (
         <div className="space-y-5">
           <div>
-            <label className="text-xs font-semibold text-slate">Website URL</label>
+            <label className="text-xs font-semibold text-slate">Site URL</label>
             <div className="mt-1.5 flex items-center gap-2 rounded-2xl border border-ink/10 bg-ink/[0.02] px-4 py-3 text-sm text-slate dark:border-white/10 dark:bg-white/[0.02]">
               <Globe className="size-4 shrink-0" /> {selected.url}
             </div>

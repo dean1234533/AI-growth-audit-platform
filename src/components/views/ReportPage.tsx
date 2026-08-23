@@ -111,6 +111,7 @@ export function ReportPage({ audit, onBack, attribution }: ReportPageProps) {
             scannedAt={audit.scannedAt}
             scanQuality={audit.meta.scanQuality}
             auditQuality={audit.meta.auditQuality}
+            siteType={audit.meta.siteType}
           />
 
           <div className="mt-5 flex flex-wrap justify-center gap-3 sm:justify-start">

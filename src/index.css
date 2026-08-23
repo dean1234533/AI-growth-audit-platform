@@ -898,7 +898,15 @@ button:not(:disabled),
 @media (max-width: 640px) {
   .editorial-hero { width: min(100% - 2rem, 1280px); padding-top: 4rem; }
   .editorial-hero h1 { font-size: clamp(3.25rem, 16vw, 5rem); }
-  .hero-blueprint { top: 5rem; right: -12rem; width: 590px; opacity: 0.12; transform: rotate(-7deg); }
+  .hero-blueprint {
+    top: 4.25rem;
+    right: -8rem;
+    width: 560px;
+    opacity: 0.21;
+    transform: rotate(-5deg);
+  }
+  .hero-blueprint-grid { opacity: 0.42; }
+  .hero-blueprint-path { stroke-width: 7; }
   .hero-blueprint-label { display: none; }
   .editorial-audit-control { grid-template-columns: auto 1fr; }
   .editorial-audit-control button { grid-column: 1 / -1; margin-top: 0.65rem; }
@@ -1074,4 +1082,12 @@ button:not(:disabled),
   .editorial-resource-grid { width: min(100% - 2rem,1280px); }
   .editorial-guides-list > a { grid-template-columns: 1fr auto; }
   .editorial-guides-list span { grid-column: 1 / -1; }
+  .report-category-contrast > div {
+    grid-template-columns: minmax(0, auto) auto;
+    justify-content: start;
+    gap: 0.35rem 0.65rem;
+    padding-right: 0.75rem;
+  }
+  .report-category-contrast > div + div { padding-left: 0.9rem; }
+  .report-category-contrast strong { overflow-wrap: anywhere; }
 }

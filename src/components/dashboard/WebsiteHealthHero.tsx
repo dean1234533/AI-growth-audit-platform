@@ -11,6 +11,7 @@ interface WebsiteHealthHeroProps {
   scoreDelta?: number | null;
   scanQuality?: ScanQuality;
   auditQuality?: 'FULL' | 'PARTIAL' | 'STATIC_FALLBACK';
+  siteType?: 'website' | 'app';
 }
 
 const AUDIT_QUALITY_COPY = {
@@ -19,12 +20,13 @@ const AUDIT_QUALITY_COPY = {
   STATIC_FALLBACK: 'Static fallback',
 } as const;
 
-export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta, scanQuality, auditQuality }: WebsiteHealthHeroProps) {
+export function WebsiteHealthHero({ score, categories, recommendationCount, scannedAt, scoreDelta, scanQuality, auditQuality, siteType }: WebsiteHealthHeroProps) {
   const band = scoreBand(score);
   const scoredCategories = categories.filter(isCategoryScored);
   const sorted = [...scoredCategories].sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
   const weakest = sorted[sorted.length - 1];
+  const target = siteType === 'app' ? 'app' : siteType === 'website' ? 'website' : 'site';
 
   return (
     <section className="report-summary">
@@ -42,7 +44,7 @@ export function WebsiteHealthHero({ score, categories, recommendationCount, scan
 
       <div className="report-verdict">
         <span>Audit summary</span>
-        <h1>{recommendationCount === 0 ? 'Your website is in strong shape.' : `${recommendationCount} opportunities to improve your website.`}</h1>
+        <h1>{recommendationCount === 0 ? `Your ${target} is in strong shape.` : `${recommendationCount} opportunities to improve your ${target}.`}</h1>
         <p>The findings below are ordered to show what deserves attention first, followed by the evidence behind every score.</p>
 
         {strongest && weakest && strongest.id !== weakest.id && (

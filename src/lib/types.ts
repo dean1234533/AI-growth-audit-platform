@@ -204,6 +204,8 @@ export interface MonitoredWebsite {
   uid: string;
   url: string;
   name: string;
+  businessName?: string;
+  siteType?: 'website' | 'app';
   frequency: ScanFrequency;
   status: 'active' | 'paused';
   createdAt: string;
