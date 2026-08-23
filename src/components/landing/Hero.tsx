@@ -95,40 +95,72 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false, initia
 
   return (
     <section id="top" className="editorial-hero">
-      <div className="hero-blueprint" aria-hidden="true">
-        <svg viewBox="0 0 720 500" role="presentation">
-          <g className="hero-blueprint-grid">
-            <path d="M80 42V458M160 42V458M240 42V458M320 42V458M400 42V458M480 42V458M560 42V458M640 42V458" />
-            <path d="M40 90H680M40 170H680M40 250H680M40 330H680M40 410H680" />
+      <div className="hero-score-pattern" aria-hidden="true">
+        <svg viewBox="0 0 1120 610" role="presentation">
+          <g className="hero-score-grid">
+            <path d="M40 90H1080M40 210H1080M40 330H1080M40 450H1080M160 30V580M360 30V580M560 30V580M760 30V580M960 30V580" />
           </g>
-          <circle className="hero-blueprint-orbit" cx="480" cy="214" r="154" />
-          <circle className="hero-blueprint-orbit hero-blueprint-orbit-inner" cx="480" cy="214" r="104" />
-          <path className="hero-blueprint-path" d="M82 386C164 340 202 365 266 302S390 263 438 194 548 114 646 78" />
-          <path className="hero-blueprint-area" d="M82 386C164 340 202 365 266 302S390 263 438 194 548 114 646 78V438H82Z" />
-          <g className="hero-blueprint-points">
-            <circle cx="82" cy="386" r="7" />
-            <circle cx="266" cy="302" r="7" />
-            <circle cx="438" cy="194" r="7" />
-            <circle cx="646" cy="78" r="7" />
+          <path className="hero-score-route" d="M100 468C210 390 236 438 342 322S536 260 620 154 812 92 1022 174" />
+
+          <g className="hero-score-node hero-score-node-main" transform="translate(188 170)">
+            <circle className="track" r="78" />
+            <circle className="progress blue" r="78" pathLength="100" strokeDasharray="68 32" />
+            <text className="value" y="14">68</text>
+            <text className="label" y="112">OVERALL</text>
           </g>
-          <g className="hero-blueprint-marks">
-            <path d="M48 42H112M80 18V66" />
-            <path d="M608 438H672M640 414V462" />
+          <g className="hero-score-node" transform="translate(530 102)">
+            <circle className="track" r="52" />
+            <circle className="progress mint" r="52" pathLength="100" strokeDasharray="82 18" />
+            <text className="value small" y="10">82</text>
+            <text className="label" y="82">SEARCH</text>
+          </g>
+          <g className="hero-score-node" transform="translate(880 155)">
+            <circle className="track" r="61" />
+            <circle className="progress blue" r="61" pathLength="100" strokeDasharray="61 39" />
+            <text className="value small" y="10">61</text>
+            <text className="label" y="91">SPEED</text>
+          </g>
+          <g className="hero-score-node" transform="translate(390 414)">
+            <circle className="track" r="46" />
+            <circle className="progress mint" r="46" pathLength="100" strokeDasharray="54 46" />
+            <text className="value mini" y="9">54</text>
+            <text className="label" y="74">CONVERSION</text>
+          </g>
+          <g className="hero-score-node" transform="translate(716 438)">
+            <circle className="track" r="72" />
+            <circle className="progress mint" r="72" pathLength="100" strokeDasharray="97 3" />
+            <text className="value" y="13">97</text>
+            <text className="label" y="105">SEO</text>
+          </g>
+          <g className="hero-score-node" transform="translate(1030 394)">
+            <circle className="track" r="42" />
+            <circle className="progress blue" r="42" pathLength="100" strokeDasharray="76 24" />
+            <text className="value mini" y="8">76</text>
+            <text className="label" y="69">TRUST</text>
+          </g>
+
+          <g className="hero-score-marks">
+            <path d="M70 46H118M94 22V70M990 540H1038M1014 516V564" />
+            <text x="70" y="590">37 CHECKS / 7 CATEGORIES / 3 PRIORITIES</text>
           </g>
         </svg>
-        <span className="hero-blueprint-label hero-blueprint-label-a">VISIBILITY / 82</span>
-        <span className="hero-blueprint-label hero-blueprint-label-b">GROWTH SIGNAL</span>
+      </div>
+      <div className="hero-mobile-score-pattern" aria-hidden="true">
+        <span className="hero-mobile-score score-82"><b>82</b><small>SEARCH</small></span>
+        <span className="hero-mobile-score score-61"><b>61</b><small>SPEED</small></span>
+        <span className="hero-mobile-score score-97"><b>97</b><small>SEO</small></span>
+        <span className="hero-mobile-score score-54"><b>54</b><small>CONVERT</small></span>
       </div>
       <div className="editorial-hero-copy">
         <div>
-          <span className="editorial-index">01 / Website growth audit</span>
+          <span className="editorial-index">01 / Independent site diagnosis</span>
           <h1>
-            Your website should <span className="hero-word-blue">bring you work.</span>{' '}
-            Find out <span className="hero-word-mint">why it isn’t.</span>
+            See what’s <span className="hero-word-blue">holding</span> your site back.{' '}
+            Fix what matters <span className="hero-word-mint">first.</span>
           </h1>
         </div>
         <div className="editorial-intro">
-          <p>See where your website loses visibility, trust and enquiries—then get a clear order for improving it.</p>
+          <p>Get a clear diagnosis of the issues affecting visibility, speed, trust and enquiries—ranked by what will make the biggest difference.</p>
           <dl>
             <div><dt>Checks</dt><dd>SEO, speed, accessibility, conversion and local search</dd></div>
             <div><dt>Output</dt><dd>A scored report with prioritised actions</dd></div>
