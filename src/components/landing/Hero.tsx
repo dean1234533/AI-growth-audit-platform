@@ -63,9 +63,9 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false, initia
         </div>
       </form>
 
-      <div className="mt-3 flex flex-wrap justify-between gap-2 text-xs font-medium text-[#667085]">
+      <div className="editorial-form-meta mt-3 flex flex-wrap justify-between gap-2 text-xs font-medium">
         <span>Free to run · no account · results in about 30 seconds</span>
-        {!compact && <a href="/login" className="font-semibold text-[#101828] hover:text-brand-600">Already monitoring a site? Log in</a>}
+        {!compact && <a href="/login" className="editorial-form-login font-semibold">Already monitoring a site? Log in</a>}
       </div>
 
       <button
@@ -73,7 +73,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false, initia
         onClick={() => setShowDetails((value) => !value)}
         aria-expanded={showDetails}
         aria-controls="optional-business-details"
-        className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-[#667085] hover:text-[#101828]"
+        className="editorial-form-details mt-3 inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold"
       >
         Add business details for a more relevant audit
         <ChevronDown className={`size-3.5 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
