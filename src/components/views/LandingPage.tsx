@@ -1,9 +1,6 @@
 import { FloatingBackground } from '../landing/FloatingBackground';
 import { Hero } from '../landing/Hero';
-import { TryFreeAudit } from '../landing/TryFreeAudit';
-import { WhyAccount } from '../landing/WhyAccount';
 import { HowItWorks } from '../landing/HowItWorks';
-import { WhyMonitoring } from '../landing/WhyMonitoring';
 import { HomepagePricing } from '../landing/HomepagePricing';
 import type { AuditIntakeContext } from '../../lib/api';
 
@@ -14,21 +11,19 @@ interface LandingPageProps {
   /** Used when embedded on a page that already has its own hero/H1 and marketing copy
    *  (e.g. a dedicated tool landing page) — renders just the input form, no duplicate chrome. */
   compact?: boolean;
+  initialUrl?: string;
 }
 
-export function LandingPage({ onAnalyse, loading, errorMessage, compact = false }: LandingPageProps) {
+export function LandingPage({ onAnalyse, loading, errorMessage, compact = false, initialUrl }: LandingPageProps) {
   if (compact) {
-    return <Hero onAnalyse={onAnalyse} loading={loading} errorMessage={errorMessage} compact />;
+    return <Hero onAnalyse={onAnalyse} loading={loading} errorMessage={errorMessage} compact initialUrl={initialUrl} />;
   }
 
   return (
-    <div className="relative">
+    <div className="premium-public relative">
       <FloatingBackground />
-      <Hero onAnalyse={onAnalyse} loading={loading} errorMessage={errorMessage} />
-      <TryFreeAudit />
-      <WhyAccount />
+      <Hero onAnalyse={onAnalyse} loading={loading} errorMessage={errorMessage} initialUrl={initialUrl} />
       <HowItWorks />
-      <WhyMonitoring />
       <HomepagePricing />
     </div>
   );

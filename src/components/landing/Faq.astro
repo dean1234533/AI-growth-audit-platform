@@ -46,24 +46,24 @@ const FAQS = [
 
 <JsonLd schema={buildFaqSchema(FAQS.map((item) => ({ question: item.q, answer: item.a })))} />
 
-<section id="faq" class="relative scroll-mt-24 px-6 py-24 sm:py-32">
-  <div class="mx-auto max-w-3xl">
-    <div class="mb-12 text-center">
-      <span class="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">FAQ</span>
-      <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl dark:text-white">
-        Common questions
-      </h2>
-    </div>
+<section id="faq" class="editorial-faq">
+  <div class="editorial-faq-grid">
+    <header>
+      <span class="editorial-index">05 / Questions</span>
+      <h2>Everything worth knowing before you start.</h2>
+      <p>The audit is free, anonymous and does not commit you to anything.</p>
+      <a href="/contact">Still have a question? Contact us →</a>
+    </header>
 
-    <div class="space-y-3">
+    <div class="editorial-faq-list">
       {
         FAQS.map((item) => (
-          <details class="glass group rounded-2xl px-5 py-4 open:pb-4 [&_summary::-webkit-details-marker]:hidden">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-ink dark:text-white">
+          <details class="group [&_summary::-webkit-details-marker]:hidden">
+            <summary>
               {item.q}
-              <span class="shrink-0 text-slate transition-transform group-open:rotate-45">+</span>
+              <span>+</span>
             </summary>
-            <p class="mt-3 text-sm leading-relaxed text-slate">{item.a}</p>
+            <p>{item.a}</p>
           </details>
         ))
       }

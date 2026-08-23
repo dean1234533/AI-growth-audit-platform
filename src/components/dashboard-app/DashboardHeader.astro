@@ -8,23 +8,23 @@ interface Props {
 const { active } = Astro.props;
 
 const NAV = [
-  { label: 'Dashboard', href: '/dashboard', key: 'dashboard' },
-  { label: 'Audit', href: '/dashboard/audit', key: 'audit' },
-  { label: 'Monitoring', href: '/dashboard/monitoring', key: 'monitoring' },
-  { label: 'AI Coach', href: '/dashboard/coach', key: 'coach' },
+  { label: 'Sites', href: '/dashboard', key: 'dashboard' },
+  { label: 'New inspection', href: '/dashboard/audit', key: 'audit' },
+  { label: 'Changes', href: '/dashboard/monitoring', key: 'monitoring' },
+  { label: 'Ask the coach', href: '/dashboard/coach', key: 'coach' },
   { label: 'Reports', href: '/dashboard/reports', key: 'reports' },
   { label: 'Settings', href: '/dashboard/settings', key: 'settings' },
 ];
 
-const ACTIVE_CLASSES = ['bg-brand-500/10', 'text-brand-600', 'dark:text-brand-300'];
+const ACTIVE_CLASSES = ['bg-brand-500', 'text-white'];
 const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white'];
 ---
 
-<header class="sticky top-0 z-40 border-b border-ink/[0.06] bg-canvas/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/80">
-  <div class="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
+<header class="sticky top-0 z-40 border-b border-ink/10 bg-canvas/85 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/85">
+  <div class="mx-auto flex max-w-7xl items-center gap-5 px-5 py-3.5 sm:px-6">
     <a href="/dashboard" class="inline-flex shrink-0 items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
-      <img src="/logo.jpg" alt="" width="32" height="32" class="size-8 rounded-xl" />
-      Growth Audit
+      <img src="/logo.jpg" alt="" width="36" height="36" class="size-9 rounded-lg" />
+      <span>Growth Audit</span>
     </a>
 
     <nav class="hidden flex-1 items-center gap-1 overflow-x-auto text-sm font-semibold sm:flex">
@@ -33,7 +33,7 @@ const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white
           <a
             href={item.href}
             data-nav-key={item.key}
-            class={`whitespace-nowrap rounded-xl px-3 py-1.5 transition-colors ${
+            class={`whitespace-nowrap rounded-lg px-3 py-2 transition-colors ${
               active === item.key ? ACTIVE_CLASSES.join(' ') : INACTIVE_CLASSES.join(' ')
             }`}
           >
@@ -51,7 +51,7 @@ const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white
         aria-label="Open menu"
         aria-expanded="false"
         aria-controls="mobile-nav-panel"
-        class="inline-flex items-center justify-center rounded-xl p-2 text-slate transition-colors hover:bg-ink/5 sm:hidden dark:hover:bg-white/5"
+        class="inline-flex items-center justify-center rounded-xl p-2 text-slate hover:bg-ink/5 sm:hidden dark:hover:bg-white/5"
       >
         <svg id="mobile-nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="4" x2="20" y1="6" y2="6" />
@@ -66,13 +66,13 @@ const INACTIVE_CLASSES = ['text-slate', 'hover:text-ink', 'dark:hover:text-white
     </div>
   </div>
 
-  <nav id="mobile-nav-panel" class="hidden flex-col gap-1 border-t border-ink/[0.06] px-6 py-3 sm:hidden dark:border-white/10">
+  <nav id="mobile-nav-panel" class="hidden flex-col gap-1 border-t border-ink/10 px-5 py-3 sm:hidden dark:border-white/10">
     {
       NAV.map((item) => (
         <a
           href={item.href}
           data-nav-key={item.key}
-          class={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+          class={`block rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
             active === item.key ? ACTIVE_CLASSES.join(' ') : INACTIVE_CLASSES.join(' ')
           }`}
         >

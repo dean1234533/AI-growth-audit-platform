@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import type { AuditResult, Lead } from '../../lib/types';
+import type { AttributionContext } from '../../lib/attribution';
 import { addFirestoreDocument, parseServiceAccount } from '../../server/lib/firestore';
 import { notifyAdmin, type AdminAlertEnv } from '../../server/lib/adminAlert';
 
@@ -17,9 +18,21 @@ interface LeadRequestBody extends Lead {
   preferredContact?: 'email' | 'phone' | 'either';
   message?: string;
   recommendedServices?: string[];
+  attribution?: AttributionContext;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function safeAttribution(value: AttributionContext | undefined): Record<string, string | number | null> | null {
+  if (!value || value.version !== 1) return null;
+  const clean = (input: unknown, max: number) => typeof input === 'string' && input.trim().length <= max ? input.trim() : null;
+  return {
+    version: 1,
+    channel: clean(value.channel, 20),
+    leadId: clean(value.leadId, 200),
+    leadCollection: clean(value.leadCollection, 100),
+  };
+}
 
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {
@@ -76,6 +89,7 @@ export const POST: APIRoute = async ({ request }) => {
       auditScannedAt: body.audit?.scannedAt ?? null,
       categoryScores,
       topIssues,
+      attribution: safeAttribution(body.attribution),
       createdAt: new Date(),
     });
   } catch {

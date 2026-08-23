@@ -21,7 +21,9 @@ export function GrowthEstimateSection({ estimate }: GrowthEstimateProps) {
     { icon: MousePointerClick, label: 'Conversion rate', suffix: '%', value: estimate.conversionImprovementPct, gauge: estimate.conversionImprovementPct },
     { icon: Zap, label: 'Site speed', suffix: '%', value: estimate.speedImprovementPct, gauge: estimate.speedImprovementPct },
     { icon: Accessibility, label: 'Accessibility', suffix: '%', value: estimate.accessibilityImprovementPct, gauge: estimate.accessibilityImprovementPct },
-  ];
+  ].filter((item) => item.isRange ? estimate.additionalEnquiriesPerMonth[1] > 1 : Number(item.value) > 0);
+
+  if (items.length === 0) return null;
 
   return (
     <div>

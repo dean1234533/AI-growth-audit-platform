@@ -71,21 +71,20 @@ export default function WebsiteHealthCentre() {
   }
 
   const initialUrl = new URLSearchParams(window.location.search).get('url') ?? undefined;
+  const scoredWebsites = websites?.filter((site) => site.latestOverallScore !== null) ?? [];
+  const averageScore = scoredWebsites.length
+    ? Math.round(scoredWebsites.reduce((total, site) => total + (site.latestOverallScore ?? 0), 0) / scoredWebsites.length)
+    : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16">
-      <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
+    <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-14">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5 border-b border-ink/10 pb-7 dark:border-white/10">
         <div>
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">Dashboard</span>
-          <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl dark:text-white">
-            Website Health Centre
+          <span className="text-xs font-bold uppercase tracking-[0.16em] text-brand-500">Overview</span>
+          <h1 className="mt-2 font-display text-4xl font-black tracking-[-0.05em] text-ink sm:text-5xl dark:text-white">
+            Your inspected sites
           </h1>
-          <p className="mt-1 text-sm text-slate">{user.email}</p>
-          {quota && (
-            <p className="mt-1 text-xs font-semibold text-slate">
-              {quota.unlimited ? 'Unlimited websites' : `${quota.currentCount} / ${quota.maxWebsites} websites`}
-            </p>
-          )}
+          <p className="mt-2 text-sm font-semibold text-slate">What changed, what needs work, and what to inspect next.</p>
         </div>
         <div className="flex gap-3">
           <Button onClick={() => setModalOpen(true)} icon={<Plus className="size-4" />}>
@@ -96,6 +95,14 @@ export default function WebsiteHealthCentre() {
           </Button>
         </div>
       </div>
+
+      {websites && websites.length > 0 && (
+        <div className="surface mb-10 grid overflow-hidden rounded-2xl sm:grid-cols-3">
+          <RegisterMetric label="Portfolio" value={`${websites.length} ${websites.length === 1 ? 'site' : 'sites'}`} note={quota?.unlimited ? 'Unlimited allowance' : quota && quota.maxWebsites !== null ? `${quota.maxWebsites - quota.currentCount} spaces remaining` : 'Allowance loading'} />
+          <RegisterMetric label="Average health" value={averageScore === null ? 'Pending' : `${averageScore}/100`} note={averageScore === null ? 'First inspection in progress' : 'Across scored websites'} />
+          <RegisterMetric label="Inspection cycle" value="Automatic" note="Changes are logged for review" />
+        </div>
+      )}
 
       {quota && !quota.canAdd && (
         <div className="glass mb-10 flex items-start gap-3 rounded-2xl px-5 py-4 text-sm text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:text-amber-300">
@@ -140,17 +147,20 @@ export default function WebsiteHealthCentre() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.06 }}
               >
-                <GlassCard gradientBorder className="flex h-full flex-col gap-4 p-6">
+                <article className="group flex h-full flex-col rounded-2xl border border-ink/10 bg-white/75 p-5 shadow-[0_18px_45px_-32px_rgba(17,24,39,0.4)] transition hover:-translate-y-1 hover:border-brand-400/40 hover:shadow-[0_26px_55px_-30px_rgba(59,130,246,0.45)] dark:border-white/10 dark:bg-[#16162a]/80">
+                  <div className="mb-5 flex items-center justify-between border-b border-ink/10 pb-3 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-slate dark:border-white/10">
+                    <span>Website</span><span>{String(i + 1).padStart(2, '0')}</span>
+                  </div>
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="truncate font-display font-bold text-ink dark:text-white">{site.name}</div>
-                      <div className="truncate text-xs text-slate">{site.url}</div>
+                      <div className="truncate font-display text-xl font-black tracking-tight text-ink dark:text-white">{site.name}</div>
+                      <div className="mt-1 truncate font-mono text-[0.68rem] text-slate">{site.url}</div>
                     </div>
                     {site.latestOverallScore !== null && <ScoreCircle score={site.latestOverallScore} size={64} strokeWidth={5} />}
                   </div>
                   {band && (
                     <span
-                      className="inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset"
+                      className="inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.06em]"
                       style={{ color: band.color, backgroundColor: `${band.color}18`, borderColor: `${band.color}40` }}
                     >
                       {band.label}
@@ -163,7 +173,7 @@ export default function WebsiteHealthCentre() {
                       {site.lastScannedAt ? new Date(site.lastScannedAt.seconds * 1000).toLocaleDateString('en-GB') : 'Pending'}
                     </span>
                   </div>
-                </GlassCard>
+                </article>
               </motion.a>
             );
           })}
@@ -181,6 +191,16 @@ export default function WebsiteHealthCentre() {
           window.location.href = `/dashboard/${websiteId}`;
         }}
       />
+    </div>
+  );
+}
+
+function RegisterMetric({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="border-b border-ink/10 p-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0 dark:border-white/10">
+      <span className="text-[0.65rem] font-bold uppercase tracking-[0.12em] text-slate">{label}</span>
+      <div className="mt-2 font-display text-2xl font-black tracking-tight text-ink dark:text-white">{value}</div>
+      <p className="mt-1 text-xs font-semibold text-slate">{note}</p>
     </div>
   );
 }

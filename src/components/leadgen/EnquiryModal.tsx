@@ -5,6 +5,7 @@ import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import { submitEnquiry, ApiError } from '../../lib/api';
 import type { AuditResult, EnquiryLead } from '../../lib/types';
+import type { AttributionContext } from '../../lib/attribution';
 
 interface EnquiryModalProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface EnquiryModalProps {
   /** Prefills "what would you like help with" — e.g. the service the user clicked from. */
   initialHelpWith?: string;
   recommendedServices?: string[];
+  attribution?: AttributionContext | null;
 }
 
 const CONTACT_OPTIONS: { id: EnquiryLead['preferredContact']; label: string }[] = [
@@ -31,7 +33,7 @@ function businessFromWebsite(website: string): string {
   }
 }
 
-export function EnquiryModal({ open, onClose, audit, initialHelpWith, recommendedServices = [] }: EnquiryModalProps) {
+export function EnquiryModal({ open, onClose, audit, initialHelpWith, recommendedServices = [], attribution }: EnquiryModalProps) {
   const [form, setForm] = useState<EnquiryLead>({ ...EMPTY, website: audit.url, business: businessFromWebsite(audit.url) });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,7 @@ export function EnquiryModal({ open, onClose, audit, initialHelpWith, recommende
         form,
         { url: audit.url, overallScore: audit.overallScore, scannedAt: audit.scannedAt, categories: audit.categories, recommendations: audit.recommendations },
         recommendedServices,
+        attribution,
       );
       setSent(true);
     } catch (err) {

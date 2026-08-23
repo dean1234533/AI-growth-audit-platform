@@ -25,28 +25,26 @@ const COLUMNS = [
 ];
 ---
 
-<footer class="relative border-t border-ink/[0.06] px-6 py-16 dark:border-white/10">
-  <div class="mx-auto max-w-6xl">
-    <div class="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+<footer class="editorial-footer">
+  <div class="mx-auto max-w-7xl">
+    <div class="editorial-footer-top">
       <div>
-        <a href="/" class="inline-flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
-          <img src="/logo.jpg" alt="Growth Audit logo" width="32" height="32" class="size-8 rounded-xl" />
+        <a href="/" class="inline-flex items-center gap-3 font-display text-xl font-extrabold tracking-tight text-white">
+          <img src="/logo.jpg" alt="Growth Audit logo" width="38" height="38" class="size-[38px] rounded-lg" />
           Growth Audit
         </a>
-        <p class="mt-4 max-w-xs text-sm leading-relaxed text-slate">
-          AI-powered website audits and monitoring for businesses.
+        <p>
+          Understand what your website needs. Improve what matters. Monitor what changes.
         </p>
       </div>
 
       {COLUMNS.map((col) => (
         <div>
-          <div class="text-xs font-bold uppercase tracking-wide text-slate">{col.title}</div>
-          <ul class="mt-4 space-y-2.5">
+          <div>{col.title}</div>
+          <ul>
             {col.links.map((link) => (
               <li>
-                <a href={link.href} class="text-sm font-medium text-ink transition-colors hover:text-brand-500 dark:text-slate-200">
-                  {link.label}
-                </a>
+                <a href={link.href}>{link.label}</a>
               </li>
             ))}
           </ul>
@@ -54,7 +52,7 @@ const COLUMNS = [
       ))}
     </div>
 
-    <div class="mt-14 border-t border-ink/[0.06] pt-8 text-sm text-slate dark:border-white/10">
+    <div class="editorial-footer-bottom">
       &copy; {new Date().getFullYear()} Growth Audit, built by <a href="https://dean-da-dev.co.uk" class="font-semibold text-brand-500">Dean Da Dev</a>.
     </div>
   </div>

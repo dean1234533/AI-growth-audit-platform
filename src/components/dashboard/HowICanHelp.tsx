@@ -1,4 +1,4 @@
-import { Wrench, CalendarClock, MessageCircle, Sparkles } from 'lucide-react';
+import { Wrench, CalendarClock, MessageCircle } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import { buildServiceRecommendations } from '../../lib/serviceRecommendations';
@@ -8,12 +8,14 @@ import type { AuditResult } from '../../lib/types';
 interface HowICanHelpProps {
   audit: AuditResult;
   onGetFixed: (serviceTitle?: string) => void;
+  onBook?: () => void;
   onAskAi?: () => void;
 }
 
 /** "Want these opportunities fixed?" — dynamically recommends only the services the audit actually evidences, then offers a clear next step. Not a tool hub: this is the conversion step of the one core product. */
-export function HowICanHelp({ audit, onGetFixed, onAskAi }: HowICanHelpProps) {
+export function HowICanHelp({ audit, onGetFixed, onBook, onAskAi }: HowICanHelpProps) {
   const services = buildServiceRecommendations(audit);
+  const handleBook = onBook ?? (() => window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer'));
 
   return (
     <div className="space-y-6">
@@ -35,49 +37,24 @@ export function HowICanHelp({ audit, onGetFixed, onAskAi }: HowICanHelpProps) {
                   <span className="text-sm font-bold text-ink dark:text-white">{s.title}</span>
                 </div>
                 <p className="text-xs leading-relaxed text-slate">{s.reason}</p>
-                <button
-                  type="button"
-                  onClick={() => onGetFixed(s.title)}
-                  className="mt-3 text-xs font-semibold text-brand-500 hover:underline"
-                >
-                  Ask about this →
-                </button>
               </div>
             ))}
           </div>
         )}
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button size="lg" onClick={() => window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer')} icon={<CalendarClock className="size-4" />}>
+          <Button size="lg" onClick={handleBook} icon={<CalendarClock className="size-4" />}>
             Book My Free Website Review
           </Button>
-          <Button size="lg" variant="secondary" onClick={() => onGetFixed()} icon={<Wrench className="size-4" />}>
-            Contact Me Instead
-          </Button>
+          <button type="button" onClick={() => onGetFixed()} className="min-h-11 px-3 text-sm font-semibold text-slate hover:text-brand-500">
+            Prefer email? Send your details
+          </button>
           {onAskAi && (
-            <Button size="lg" variant="secondary" onClick={onAskAi} icon={<MessageCircle className="size-4" />}>
-              Ask AI What I Should Do
+            <Button size="md" variant="ghost" onClick={onAskAi} icon={<MessageCircle className="size-4" />}>
+              Ask AI about these results
             </Button>
           )}
         </div>
-      </GlassCard>
-
-      <GlassCard static className="flex flex-wrap items-center justify-between gap-4 p-6">
-        <div className="flex items-start gap-3">
-          <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-mint-500/10 text-mint-600">
-            <Sparkles className="size-4.5" />
-          </span>
-          <div>
-            <p className="text-sm font-bold text-ink dark:text-white">Need more than a website?</p>
-            <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate">
-              I also build custom web apps, booking systems, dashboards, CRMs, automation and AI-powered business
-              tools tailored to how your business operates.
-            </p>
-          </div>
-        </div>
-        <Button size="md" variant="ghost" onClick={() => onGetFixed('Custom project')}>
-          Discuss a Custom Project
-        </Button>
       </GlassCard>
     </div>
   );

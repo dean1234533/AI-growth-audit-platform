@@ -14,14 +14,14 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'chi
 
 const VARIANTS: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:
-    'bg-[linear-gradient(120deg,#3b82f6,#4b7cff)] text-white shadow-[0_16px_36px_-12px_rgba(59,130,246,0.55)] hover:shadow-[0_20px_44px_-10px_rgba(59,130,246,0.65)]',
-  secondary: 'glass text-ink dark:text-white hover:bg-white/60 dark:hover:bg-white/10',
-  ghost: 'bg-transparent text-current hover:bg-black/5 dark:hover:bg-white/10',
+    'bg-brand-500 text-white shadow-[0_14px_30px_-14px_rgba(59,130,246,0.75)] hover:bg-brand-400 hover:shadow-[0_18px_38px_-14px_rgba(59,130,246,0.8)]',
+  secondary: 'border border-ink/10 bg-white/80 text-ink shadow-sm hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/10',
+  ghost: 'bg-transparent text-current hover:bg-black/5 dark:hover:bg-white/[0.06]',
 };
 
 const SIZES: Record<NonNullable<ButtonProps['size']>, string> = {
-  md: 'px-5 py-2.5 text-sm rounded-2xl',
-  lg: 'px-8 py-4 text-base rounded-[20px]',
+  md: 'rounded-xl px-5 py-2.5 text-sm',
+  lg: 'rounded-xl px-7 py-3.5 text-sm',
 };
 
 interface Ripple {
@@ -58,7 +58,7 @@ export function Button({
       disabled={disabled || loading}
       onClick={handleClick}
       className={[
-        'relative inline-flex items-center justify-center gap-2 overflow-hidden font-semibold tracking-tight transition-shadow disabled:opacity-60 disabled:cursor-not-allowed',
+        'relative inline-flex items-center justify-center gap-2 overflow-hidden font-semibold tracking-tight transition disabled:cursor-not-allowed disabled:opacity-60',
         VARIANTS[variant],
         SIZES[size],
         className,
@@ -68,7 +68,7 @@ export function Button({
       {ripples.map((r) => (
         <span
           key={r.id}
-          className="pointer-events-none absolute size-8 animate-ping rounded-full bg-white/50"
+          className="pointer-events-none absolute size-8 animate-ping rounded-full bg-white/30"
           style={{ left: r.x - 16, top: r.y - 16 }}
         />
       ))}

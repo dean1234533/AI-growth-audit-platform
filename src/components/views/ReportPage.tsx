@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Globe, AppWindow, AlertTriangle, Activity, CalendarClock, MessageCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Globe, AppWindow, AlertTriangle, Activity, CalendarClock, ShieldCheck } from 'lucide-react';
 import { WebsiteHealthHero } from '../dashboard/WebsiteHealthHero';
 import { CategoryCard } from '../dashboard/CategoryCard';
 import { RadarScoreChart, SeverityBarChart, PerformanceBreakdownChart } from '../dashboard/Charts';
@@ -15,22 +15,31 @@ import { generateAuditPdf } from '../../lib/pdf';
 import { markPwaInstallEligible } from '../pwa/InstallBanner';
 import { buildServiceRecommendations } from '../../lib/serviceRecommendations';
 import { CONSULTATION_URL } from '../../lib/seo/site';
+import { trackFunnelEvent } from '../../lib/api';
+import type { AttributionContext } from '../../lib/attribution';
 import type { AuditResult, Lead } from '../../lib/types';
 
 interface ReportPageProps {
   audit: AuditResult;
   onBack: () => void;
+  attribution?: AttributionContext | null;
 }
 
-export function ReportPage({ audit, onBack }: ReportPageProps) {
+export function ReportPage({ audit, onBack, attribution }: ReportPageProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [enquiryPrefill, setEnquiryPrefill] = useState<string | undefined>(undefined);
 
   function handleGetFixed(serviceTitle?: string) {
+    void trackFunnelEvent('enquiry_opened', attribution, { website: audit.url }).catch(() => undefined);
     setEnquiryPrefill(serviceTitle);
     setEnquiryOpen(true);
+  }
+
+  function handleBook() {
+    void trackFunnelEvent('booking_clicked', attribution, { website: audit.url }).catch(() => undefined);
+    window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer');
   }
 
   useEffect(() => {
@@ -54,25 +63,25 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
   }
 
   return (
-    <div className="relative px-6 py-16 sm:py-24">
+    <div className="relative px-5 py-10 sm:px-6 sm:py-16">
       <FloatingBackground />
-      <div className="relative mx-auto max-w-6xl space-y-20 sm:space-y-28">
+      <div className="relative mx-auto max-w-7xl space-y-16 sm:space-y-24">
         <div>
-          <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-ink/10 pb-5 text-xs font-semibold dark:border-white/10">
             <button
               onClick={onBack}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white"
+              className="inline-flex items-center gap-2 text-slate transition-colors hover:text-ink dark:hover:text-white"
             >
               <ArrowLeft className="size-4" /> Analyse another site
             </button>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-slate">
+              <div className="inline-flex items-center gap-2 text-slate">
                 <Globe className="size-4 text-brand-500" />
                 {audit.url}
               </div>
               {audit.meta.siteType && (
                 <div
-                  className="glass inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-slate"
+                  className="inline-flex items-center gap-1.5 border-l border-ink/30 pl-3 text-slate dark:border-white/30"
                   title={audit.meta.siteTypeReason}
                 >
                   <AppWindow className="size-3.5 text-brand-500" />
@@ -104,43 +113,11 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
             auditQuality={audit.meta.auditQuality}
           />
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            className="mt-8 overflow-hidden rounded-3xl border border-brand-400/25 bg-[linear-gradient(135deg,rgba(59,130,246,0.12),rgba(0,196,140,0.08))] p-6 shadow-[0_24px_70px_-40px_rgba(59,130,246,0.65)] sm:p-8"
-          >
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl">
-                <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-300">
-                  <ShieldCheck className="size-4" /> Free, no-pressure advice
-                </span>
-                <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl dark:text-white">
-                  Want a clear plan for fixing your results?
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate sm:text-base">
-                  Book a free 15-minute website review with Dean. We’ll look at your audit together and identify the quickest wins for getting more enquiries.
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
-                <Button
-                  size="lg"
-                  icon={<CalendarClock className="size-4" />}
-                  onClick={() => window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer')}
-                  className="w-full sm:w-auto"
-                >
-                  Book My Free Website Review
-                </Button>
-                <Button size="lg" variant="secondary" icon={<MessageCircle className="size-4" />} onClick={() => handleGetFixed()} className="w-full sm:w-auto">
-                  Contact Me Instead
-                </Button>
-              </div>
-            </div>
-            <p className="mt-4 text-xs font-medium text-slate">No obligation · Your audit is already complete · Choose a time that suits you</p>
-          </motion.div>
-
           <div className="mt-5 flex flex-wrap justify-center gap-3 sm:justify-start">
-            <Button size="md" variant="secondary" onClick={() => setModalOpen(true)} disabled={downloaded} success={downloaded}>
+            <Button size="md" variant="secondary" onClick={() => {
+              void trackFunnelEvent('report_unlocked', attribution, { website: audit.url }).catch(() => undefined);
+              setModalOpen(true);
+            }} disabled={downloaded} success={downloaded}>
               {downloaded ? (
                 <>
                   <CheckCircle2 className="size-4" /> Report downloaded
@@ -154,6 +131,7 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
               variant="ghost"
               icon={<Activity className="size-4" />}
               onClick={() => {
+                void trackFunnelEvent('monitor_clicked', attribution, { website: audit.url }).catch(() => undefined);
                 window.location.href = `/login?url=${encodeURIComponent(audit.url)}`;
               }}
             >
@@ -163,7 +141,12 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
         </div>
 
         <section>
-          <SectionHeading eyebrow="Category breakdown" title="Where you stand" />
+          <SectionHeading eyebrow="Highest priority" title="Fix these first" />
+          <GrowthOpportunities recommendations={audit.recommendations} />
+        </section>
+
+        <section>
+          <SectionHeading eyebrow="Category breakdown" title="How each area performed" />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {audit.categories.map((category, i) => (
               <motion.div
@@ -179,6 +162,26 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
           </div>
         </section>
 
+        <GrowthEstimateSection estimate={audit.growthEstimate} />
+
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="surface grid overflow-hidden rounded-2xl lg:grid-cols-[1fr_auto]"
+        >
+          <div className="p-6 sm:p-8">
+            <span className="inline-flex items-center gap-2 font-mono text-[0.65rem] font-black uppercase tracking-[0.1em] text-brand-500"><ShieldCheck className="size-4" /> Independent second opinion</span>
+            <h2 className="mt-3 font-display text-2xl font-black tracking-tight text-ink sm:text-3xl dark:text-white">Talk through the inspection with Dean.</h2>
+            <p className="mt-2 max-w-2xl text-sm font-semibold leading-relaxed text-slate">A free 15-minute review to decide what is worth fixing now, what can wait, and what will make the biggest commercial difference.</p>
+          </div>
+          <div className="flex items-center border-t border-ink/10 p-6 lg:border-l lg:border-t-0 sm:p-8 dark:border-white/10">
+            <Button size="lg" icon={<CalendarClock className="size-4" />} onClick={handleBook}>Book the free review</Button>
+          </div>
+        </motion.section>
+
+        <HowICanHelp audit={audit} onGetFixed={handleGetFixed} onBook={handleBook} />
+
         <section>
           <SectionHeading eyebrow="Visual analysis" title="The full picture" />
           <div className="grid gap-6 lg:grid-cols-3">
@@ -187,35 +190,27 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
             <PerformanceBreakdownChart categories={audit.categories} />
           </div>
         </section>
-
-        <GrowthEstimateSection estimate={audit.growthEstimate} />
-
-        <GrowthOpportunities recommendations={audit.recommendations} />
-
-        <HowICanHelp audit={audit} onGetFixed={handleGetFixed} />
       </div>
 
-      <LeadCaptureModal open={modalOpen} onClose={() => setModalOpen(false)} audit={audit} onSuccess={handleLeadSuccess} />
+      <LeadCaptureModal open={modalOpen} onClose={() => setModalOpen(false)} audit={audit} onSuccess={handleLeadSuccess} attribution={attribution} />
       <EnquiryModal
         open={enquiryOpen}
         onClose={() => setEnquiryOpen(false)}
         audit={audit}
         initialHelpWith={enquiryPrefill}
         recommendedServices={buildServiceRecommendations(audit).map((s) => s.title)}
+        attribution={attribution}
       />
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0a0a12]/95 p-3 shadow-2xl backdrop-blur-xl sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-brand-400 bg-[#0a0a12]/95 p-3 shadow-2xl sm:hidden">
         <div className="mx-auto flex max-w-md gap-2">
           <Button
             size="md"
             icon={<CalendarClock className="size-4" />}
-            onClick={() => window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer')}
+            onClick={handleBook}
             className="flex-1"
           >
             Book Free Review
-          </Button>
-          <Button size="md" variant="secondary" onClick={() => handleGetFixed()} aria-label="Contact Dean">
-            <MessageCircle className="size-4" />
           </Button>
         </div>
       </div>
@@ -226,8 +221,8 @@ export function ReportPage({ audit, onBack }: ReportPageProps) {
 function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.5 }} className="mb-8">
-      <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">{eyebrow}</span>
-      <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl dark:text-white">{title}</h2>
+      <span className="text-xs font-bold uppercase tracking-[0.16em] text-brand-500">{eyebrow}</span>
+      <h2 className="mt-3 font-display text-3xl font-black tracking-[-0.035em] text-ink sm:text-4xl dark:text-white">{title}</h2>
     </motion.div>
   );
 }

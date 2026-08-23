@@ -1,4 +1,5 @@
 import type { AuditResult, Lead, EnquiryLead, ScanFrequency } from './types';
+import type { AttributionContext } from './attribution';
 
 export class ApiError extends Error {}
 
@@ -98,11 +99,11 @@ export async function getGeminiKeyStatus(): Promise<GeminiKeyStatus> {
   return (await res.json()) as GeminiKeyStatus;
 }
 
-export async function submitLead(lead: Lead, audit: Pick<AuditResult, 'url' | 'overallScore' | 'scannedAt'>): Promise<void> {
+export async function submitLead(lead: Lead, audit: Pick<AuditResult, 'url' | 'overallScore' | 'scannedAt'>, attribution?: AttributionContext | null): Promise<void> {
   const res = await fetch('/api/lead', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ ...lead, audit, source: 'pdf_download' }),
+    body: JSON.stringify({ ...lead, audit, attribution, source: 'pdf_download' }),
   });
   if (!res.ok) {
     const json = await parseErrorResponse(res);
@@ -114,16 +115,28 @@ export async function submitEnquiry(
   lead: EnquiryLead,
   audit: Pick<AuditResult, 'url' | 'overallScore' | 'scannedAt' | 'categories' | 'recommendations'>,
   recommendedServices: string[],
+  attribution?: AttributionContext | null,
 ): Promise<void> {
   const res = await fetch('/api/lead', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ ...lead, audit, source: 'enquiry', recommendedServices }),
+    body: JSON.stringify({ ...lead, audit, attribution, source: 'enquiry', recommendedServices }),
   });
   if (!res.ok) {
     const json = await parseErrorResponse(res);
     throw new ApiError(json.error ?? 'Could not send your enquiry. Please try again.');
   }
+}
+
+export type FunnelEvent = 'landing_view' | 'audit_started' | 'audit_completed' | 'booking_clicked' | 'enquiry_opened' | 'report_unlocked' | 'monitor_clicked';
+
+export async function trackFunnelEvent(event: FunnelEvent, attribution?: AttributionContext | null, details: { website?: string; score?: number } = {}): Promise<void> {
+  const res = await fetch('/api/funnel-event', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ event, attribution, ...details }),
+  });
+  if (!res.ok) throw new ApiError('Could not record funnel event.');
 }
 
 export async function subscribeNewsletter(email: string): Promise<void> {

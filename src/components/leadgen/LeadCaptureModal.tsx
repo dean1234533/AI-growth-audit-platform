@@ -7,15 +7,17 @@ import { ScoreCircle } from '../dashboard/ScoreCircle';
 import { scoreBand } from '../../lib/scoreBand';
 import { submitLead, ApiError } from '../../lib/api';
 import type { AuditResult, Lead } from '../../lib/types';
+import type { AttributionContext } from '../../lib/attribution';
 
 interface LeadCaptureModalProps {
   open: boolean;
   onClose: () => void;
   audit: AuditResult;
   onSuccess: (lead: Lead) => void;
+  attribution?: AttributionContext | null;
 }
 
-export function LeadCaptureModal({ open, onClose, audit, onSuccess }: LeadCaptureModalProps) {
+export function LeadCaptureModal({ open, onClose, audit, onSuccess, attribution }: LeadCaptureModalProps) {
   const [form, setForm] = useState<Lead>({ name: '', email: '', business: '', website: audit.url });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export function LeadCaptureModal({ open, onClose, audit, onSuccess }: LeadCaptur
     setSubmitting(true);
     setError(null);
     try {
-      await submitLead(form, { url: audit.url, overallScore: audit.overallScore, scannedAt: audit.scannedAt });
+      await submitLead(form, { url: audit.url, overallScore: audit.overallScore, scannedAt: audit.scannedAt }, attribution);
       onSuccess(form);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
@@ -112,12 +114,12 @@ export function LeadCaptureModal({ open, onClose, audit, onSuccess }: LeadCaptur
                     </div>
                   )}
 
-                  <div className="glass relative mt-7 flex items-center gap-3 rounded-2xl px-4 py-3.5">
+                  {enquiries[1] > 1 && <div className="glass relative mt-7 flex items-center gap-3 rounded-2xl px-4 py-3.5">
                     <TrendingUp className="size-5 shrink-0 text-mint-500" />
                     <div className="text-sm font-medium text-ink dark:text-slate-100">
                       Est. <strong className="font-bold">+{enquiries[0]}-{enquiries[1]}</strong> enquiries/month if fixed
                     </div>
-                  </div>
+                  </div>}
                 </div>
 
                 {/* Form panel */}

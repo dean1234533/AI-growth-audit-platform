@@ -16,8 +16,8 @@ export function GlassCard({ children, className = '', style, static: isStatic, g
     <div
       onMouseMove={isStatic ? undefined : onMouseMove}
       className={[
-        'glass relative rounded-[28px] transition-shadow duration-300',
-        isStatic ? '' : 'cursor-glow hover:shadow-[0_32px_64px_-24px_rgba(59,130,246,0.35)]',
+        'glass relative rounded-2xl transition duration-200',
+        isStatic ? '' : 'hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-24px_rgba(59,130,246,0.35)]',
         gradientBorder ? 'gradient-border gradient-border-brand' : '',
         className,
       ].join(' ')}

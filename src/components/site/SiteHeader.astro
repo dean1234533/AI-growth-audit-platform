@@ -2,60 +2,38 @@
 import { Menu } from 'lucide-react';
 
 const NAV = [
-  { label: 'How It Works', href: '/#how-it-works' },
+  { label: 'Method', href: '/#how-it-works' },
+  { label: 'Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'FAQ', href: '/#faq' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Field notes', href: '/blog' },
 ];
 ---
 
-<header class="sticky top-0 z-40 border-b border-ink/[0.06] bg-canvas/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0a0a12]/80">
-  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-    <a href="/" class="inline-flex items-center gap-2 font-display text-lg font-extrabold tracking-tight text-ink dark:text-white">
-      <img src="/logo.jpg" alt="Growth Audit logo" width="32" height="32" class="size-8 rounded-xl" />
-      Growth Audit
+<header class="sticky top-0 z-40 border-b border-[#e4e7ec] bg-white/95 text-[#101828] backdrop-blur-xl">
+  <div class="mx-auto flex max-w-7xl items-center gap-5 px-5 py-3.5 sm:px-6">
+    <a href="/" class="flex shrink-0 items-center gap-3 text-[#101828]">
+      <img src="/logo.jpg" alt="Growth Audit logo" width="36" height="36" class="size-9 rounded-lg" />
+      <span class="font-display text-lg font-black tracking-[-0.04em]">Growth Audit</span>
     </a>
 
-    <nav class="hidden items-center gap-7 text-sm font-semibold text-slate lg:flex">
-      {NAV.map((item) => (
-        <a href={item.href} class="transition-colors hover:text-ink dark:hover:text-white">
-          {item.label}
-        </a>
-      ))}
+    <nav class="hidden flex-1 items-center justify-center gap-8 text-sm font-semibold text-[#667085] lg:flex">
+      {NAV.map((item) => <a href={item.href} class="hover:text-brand-500">{item.label}</a>)}
     </nav>
 
-    <div class="hidden items-center gap-3 lg:flex">
-      <a href="/login" class="text-sm font-semibold text-slate transition-colors hover:text-ink dark:hover:text-white">Log In</a>
-      <a
-        href="/#top"
-        class="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(120deg,#3b82f6,#4b7cff)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_16px_36px_-12px_rgba(59,130,246,0.55)] transition-shadow hover:shadow-[0_20px_44px_-10px_rgba(59,130,246,0.65)]"
-      >
-        Start Free Audit
-      </a>
+    <div class="ml-auto hidden items-center gap-5 lg:flex">
+      <a href="/login" class="text-sm font-semibold text-[#667085] hover:text-[#101828]">Log in</a>
+      <a href="/#top" class="rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_-14px_rgba(59,130,246,0.8)] transition hover:bg-brand-400">Start free audit</a>
     </div>
 
-    <!-- Mobile: only the primary CTA stays visible outside the collapsed menu — Log In and the
-         rest of the nav live inside ☰ so the header stays compact. -->
-    <div class="flex items-center gap-2 lg:hidden">
-      <a
-        href="/#top"
-        class="inline-flex items-center justify-center rounded-xl bg-[linear-gradient(120deg,#3b82f6,#4b7cff)] px-3.5 py-2 text-xs font-semibold text-white shadow-[0_12px_28px_-10px_rgba(59,130,246,0.55)]"
-      >
-        Start Free Audit
-      </a>
-      <details class="group relative">
-        <summary aria-label="Open navigation menu" class="flex size-11 cursor-pointer list-none items-center justify-center rounded-xl text-ink dark:text-white [&::-webkit-details-marker]:hidden">
-          <Menu className="size-5" />
-        </summary>
-        <nav class="glass absolute right-0 top-12 flex w-56 flex-col gap-1 rounded-2xl p-3 text-sm font-semibold text-ink dark:text-white">
-          {NAV.map((item) => (
-            <a href={item.href} class="rounded-xl px-3 py-2 transition-colors hover:bg-brand-500/10">
-              {item.label}
-            </a>
-          ))}
-          <a href="/login" class="rounded-xl px-3 py-2 transition-colors hover:bg-brand-500/10">Log In</a>
-        </nav>
-      </details>
-    </div>
+    <details class="group relative ml-auto lg:hidden">
+      <summary aria-label="Open navigation menu" class="flex size-11 cursor-pointer list-none items-center justify-center rounded-xl text-[#101828] hover:bg-[#f2f4f7] [&::-webkit-details-marker]:hidden">
+        <Menu className="size-5" />
+      </summary>
+      <nav class="absolute right-0 top-12 flex w-64 flex-col rounded-2xl border border-[#e4e7ec] bg-white p-3 text-sm font-semibold text-[#101828] shadow-2xl">
+        {NAV.map((item) => <a href={item.href} class="rounded-xl px-3 py-2.5 hover:bg-brand-500/10">{item.label}</a>)}
+        <a href="/login" class="rounded-xl px-3 py-2.5 hover:bg-brand-500/10">Log in</a>
+        <a href="/#top" class="mt-2 rounded-xl bg-brand-500 px-3 py-2.5 text-white">Start free audit</a>
+      </nav>
+    </details>
   </div>
 </header>
