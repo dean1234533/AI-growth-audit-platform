@@ -26,7 +26,7 @@ export function WebsiteHealthHero({ score, categories, recommendationCount, scan
   const sorted = [...scoredCategories].sort((a, b) => b.score - a.score);
   const strongest = sorted[0];
   const weakest = sorted[sorted.length - 1];
-  const target = siteType === 'app' ? 'app' : siteType === 'website' ? 'website' : 'site';
+  const target = siteType === 'app' ? 'app' : 'website';
 
   return (
     <section className="report-summary">

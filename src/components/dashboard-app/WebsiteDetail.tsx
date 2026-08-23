@@ -218,7 +218,8 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
   const latest = scans[scans.length - 1];
   const displayName = monitoredSiteName(website);
   const resolvedSiteType = latest?.meta.siteType ?? website.siteType;
-  const targetLabel = siteKind(resolvedSiteType);
+  const targetLabel = siteKind(resolvedSiteType, website.url);
+  const healthSiteType = resolvedSiteType ?? (targetLabel === 'App' ? 'app' : 'website');
   const previous = scans.length > 1 ? scans[scans.length - 2] : null;
   const topRecommendation = latest?.recommendations[0] ?? null;
   const digest = latest ? buildWeeklyDigest(website.name, website.url, latest, previous) : null;
@@ -271,7 +272,7 @@ export default function WebsiteDetail({ websiteId }: WebsiteDetailProps) {
             scoreDelta={digest?.scoreDelta ?? null}
             scanQuality={latest.meta.scanQuality}
             auditQuality={latest.meta.auditQuality}
-            siteType={resolvedSiteType}
+            siteType={healthSiteType}
           />
 
           <div className="grid gap-4 sm:grid-cols-2">

@@ -22,7 +22,13 @@ function humaniseHost(url: string): string {
 
 function titleCandidate(pageTitle?: string | null): string | null {
   if (!pageTitle?.trim()) return null;
-  const candidates = pageTitle.split(/\s+(?:[|–—·]|-)\s+/).map((part) => part.trim()).filter(Boolean);
+  const decoded = pageTitle
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#(?:39|x27);/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+  const candidates = decoded.split(/\s+(?:[|–—·]|-)\s+/).map((part) => part.trim()).filter(Boolean);
   return candidates.find((candidate) => !GENERIC_TITLES.has(candidate.toLowerCase()) && !candidate.includes('://')) ?? null;
 }
 
@@ -38,6 +44,8 @@ export function monitoredSiteName(site: { url: string; name?: string; businessNa
   return humaniseHost(site.url);
 }
 
-export function siteKind(siteType?: 'website' | 'app'): 'Website' | 'App' | 'Site' {
-  return siteType === 'app' ? 'App' : siteType === 'website' ? 'Website' : 'Site';
+export function siteKind(siteType?: 'website' | 'app', url?: string): 'Website' | 'App' {
+  if (siteType === 'app') return 'App';
+  if (siteType === 'website') return 'Website';
+  return hostname(url ?? '').toLowerCase().startsWith('app.') ? 'App' : 'Website';
 }

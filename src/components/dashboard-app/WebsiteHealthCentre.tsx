@@ -175,7 +175,7 @@ export default function WebsiteHealthCentre() {
               >
                 <article className="group flex h-full flex-col rounded-2xl border border-ink/10 bg-white/75 p-5 shadow-[0_18px_45px_-32px_rgba(17,24,39,0.4)] transition hover:-translate-y-1 hover:border-brand-400/40 hover:shadow-[0_26px_55px_-30px_rgba(59,130,246,0.45)] dark:border-white/10 dark:bg-[#16162a]/80">
                   <div className="mb-5 flex items-center justify-between border-b border-ink/10 pb-3 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-slate dark:border-white/10">
-                    <span>{siteKind(site.siteType)}</span><span>{String(i + 1).padStart(2, '0')}</span>
+                    <span>{siteKind(site.siteType, site.url)}</span><span>{String(i + 1).padStart(2, '0')}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">

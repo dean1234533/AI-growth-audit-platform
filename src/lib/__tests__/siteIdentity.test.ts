@@ -20,9 +20,14 @@ describe('site identity', () => {
     expect(monitoredSiteName({ url: 'https://dean-da-dev.co.uk/', name: 'dean-da-dev.co.uk' })).toBe('Dean Da Dev');
   });
 
-  it('labels apps, websites and unknown older records honestly', () => {
+  it('labels apps, websites and older records consistently', () => {
     expect(siteKind('app')).toBe('App');
     expect(siteKind('website')).toBe('Website');
-    expect(siteKind()).toBe('Site');
+    expect(siteKind(undefined, 'https://app.example.com')).toBe('App');
+    expect(siteKind(undefined, 'https://example.com')).toBe('Website');
+  });
+
+  it('decodes HTML entities in page-title names', () => {
+    expect(deriveSiteName({ url: 'https://app.example.com', meta: { pageTitle: 'AI Workout &amp; Nutrition' } })).toBe('AI Workout & Nutrition');
   });
 });
