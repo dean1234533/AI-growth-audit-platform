@@ -1047,7 +1047,7 @@ button:not(:disabled),
   .hero-mobile-score small { align-self: start; margin-top: 0.2rem; font-size: 0.42rem; font-weight: 850; letter-spacing: 0.12em; }
   .hero-mobile-score.score-82 { top: -2rem; right: 0.75rem; left: auto; width: 68px; height: 68px; opacity: 0.78; }
   .hero-mobile-score.score-61 { top: 11rem; right: 4rem; left: auto; width: 58px; height: 58px; opacity: 0.74; background: conic-gradient(#285aa8 0 61%,rgba(148,163,184,0.16) 61% 100%); }
-  .hero-mobile-score.score-97 { top: 24rem; right: auto; left: 38%; width: 72px; height: 72px; opacity: 0.76; color: rgba(20,120,100,0.52); background: conic-gradient(#147864 0 97%,rgba(148,163,184,0.16) 97% 100%); }
+  .hero-mobile-score.score-97 { top: 24rem; right: auto; left: 58%; width: 72px; height: 72px; opacity: 0.76; color: rgba(20,120,100,0.52); background: conic-gradient(#147864 0 97%,rgba(148,163,184,0.16) 97% 100%); }
   .hero-mobile-score.score-54 { display: none !important; }
   .hero-mobile-score.score-61 b,
   .hero-mobile-score.score-54 b { font-size: 1.05rem; }
@@ -1078,7 +1078,7 @@ button:not(:disabled),
   .editorial-hero h1 { font-size: clamp(3rem, 16.25vw, 3.25rem); line-height: 0.94; }
   .hero-mobile-score.score-82 { right: 0.65rem; }
   .hero-mobile-score.score-61 { right: 3.4rem; }
-  .hero-mobile-score.score-97 { top: 21rem; right: auto; left: 36%; width: 68px; height: 68px; }
+  .hero-mobile-score.score-97 { top: 21rem; right: auto; left: 55%; width: 68px; height: 68px; }
   .hero-mobile-score.score-54 { display: none !important; }
   .editorial-intro > p { font-size: 0.96rem; line-height: 1.62; }
 }
