@@ -27,7 +27,7 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script is:inline set:html={THEME_INIT_SCRIPT} />
     <link rel="icon" type="image/png" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -42,8 +42,8 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
     <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b89fe80abff1489294eea9f4b7cbef4f"}'></script>
   </head>
   <body class="bg-canvas text-ink dark:bg-[#0a0a12] dark:text-white">
-    {!bare && <SiteHeader />}
     {!bare && <AnnouncementBanner client:idle />}
+    {!bare && <SiteHeader />}
     <slot />
     {!bare && <SiteFooter />}
     {!bare && <CookieConsent />}
