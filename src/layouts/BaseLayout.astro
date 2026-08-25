@@ -42,7 +42,7 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
     <JsonLd schema={[buildOrganizationSchema(), buildSoftwareApplicationSchema()]} />
     <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b89fe80abff1489294eea9f4b7cbef4f"}'></script>
   </head>
-  <body class="bg-canvas text-ink dark:bg-[#0a0a12] dark:text-white">
+  <body class={`bg-canvas text-ink dark:bg-[#0a0a12] dark:text-white${bare ? '' : ' public-shell'}`}>
     {!bare && <AnnouncementBanner client:idle />}
     {!bare && <SiteHeader />}
     <slot />

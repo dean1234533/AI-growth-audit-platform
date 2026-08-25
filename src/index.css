@@ -105,6 +105,27 @@ body {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* Public pages can show an announcement before their sticky header. Put the
+   iOS top inset on the page once, then keep the header below that inset when
+   it becomes sticky. This avoids adding a second, empty safe-area inside the
+   white header. */
+.public-shell {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.public-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: env(safe-area-inset-top, 0px);
+  background: #080b12;
+}
+
+.public-sticky-header {
+  top: env(safe-area-inset-top, 0px);
+}
+
 /* Inline links otherwise render at only 17–20px tall. A 24px line box clears the
    audit's minimum without changing the surrounding layout or visible design. */
 a {
