@@ -108,6 +108,16 @@ body {
    from body's own padding edge). Stick it just below the safe area instead. */
 header.sticky {
   top: env(safe-area-inset-top, 0px);
+  /* Safari/WebKit has a long-standing bug where `position: sticky` fails to recalculate once
+     content is inserted below it by JavaScript after the initial layout pass — exactly what
+     happens here, since the page body (WebsiteHealthCentre, AuthForm, etc.) is a client-only
+     React island that renders nothing in the server HTML and mounts its real content after
+     load. Chromium recalculates correctly when that happens; Safari can get permanently stuck
+     at whatever offset it computed before that content existed. Promoting the header to its own
+     compositing layer is the standard, well-documented workaround — it forces Safari to keep
+     tracking the sticky offset instead of freezing it. */
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
 }
 
 /* Inline links otherwise render at only 17–20px tall. A 24px line box clears the
