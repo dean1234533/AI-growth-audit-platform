@@ -102,22 +102,32 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* SiteHeader/DashboardHeader are `sticky top-0` — with body's padding-top above already
-   clearing the notch for the initial layout, a literal `top: 0` would still make the header
-   re-collide with the status bar once scrolled (sticky freezes at 0 from the scrollport, not
-   from body's own padding edge). Stick it just below the safe area instead. */
+/* SiteHeader/DashboardHeader were `sticky top-0`, which has a long-standing Safari/WebKit bug:
+   it fails to recalculate its offset once content is inserted below it by JavaScript after the
+   initial layout pass — exactly what happens here, since the page body (WebsiteHealthCentre,
+   AuthForm, etc.) is a client-only React island that renders nothing in the server HTML and
+   mounts its real content after load. Chromium recalculates correctly when that happens; on the
+   reporter's device, Safari did not, and neither GPU-layer promotion (transform: translateZ(0))
+   nor an active forced-reflow-on-settle script resolved it. Switching to `fixed` sidesteps the
+   entire bug category rather than mitigating it — a fixed element is positioned fresh against
+   the viewport on every frame; there is no "stale committed offset" for WebKit to get stuck on. */
 header.sticky {
+  position: fixed;
+  left: 0;
+  right: 0;
   top: env(safe-area-inset-top, 0px);
-  /* Safari/WebKit has a long-standing bug where `position: sticky` fails to recalculate once
-     content is inserted below it by JavaScript after the initial layout pass — exactly what
-     happens here, since the page body (WebsiteHealthCentre, AuthForm, etc.) is a client-only
-     React island that renders nothing in the server HTML and mounts its real content after
-     load. Chromium recalculates correctly when that happens; Safari can get permanently stuck
-     at whatever offset it computed before that content existed. Promoting the header to its own
-     compositing layer is the standard, well-documented workaround — it forces Safari to keep
-     tracking the sticky offset instead of freezing it. */
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
+}
+
+/* `fixed` removes the header from document flow entirely, so — unlike `sticky` — it no longer
+   reserves its own space. SiteHeader.astro/DashboardHeader.astro each render one of these
+   immediately after their own `</header>` (not a generic adjacent-sibling CSS selector, which
+   could target an empty Astro hydration-island wrapper instead of real content on
+   client-hydrated siblings like AnnouncementBanner). A deliberately generous height: a little
+   extra clearance below the header is harmless, whereas even 1px too little would put content
+   back under it. Body's own safe-area padding-top (above) already accounts for the notch
+   separately, so this only needs to cover the header's own height. */
+.fixed-header-spacer {
+  height: 5.5rem;
 }
 
 /* Inline links otherwise render at only 17–20px tall. A 24px line box clears the

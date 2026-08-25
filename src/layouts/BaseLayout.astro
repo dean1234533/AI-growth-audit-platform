@@ -42,8 +42,8 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
     <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b89fe80abff1489294eea9f4b7cbef4f"}'></script>
   </head>
   <body class="bg-canvas text-ink dark:bg-[#0a0a12] dark:text-white">
-    {!bare && <AnnouncementBanner client:idle />}
     {!bare && <SiteHeader />}
+    {!bare && <AnnouncementBanner client:idle />}
     <slot />
     {!bare && <SiteFooter />}
     {!bare && <CookieConsent />}
@@ -54,37 +54,6 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
       }
-    </script>
-    <script is:inline>
-      // Safari/WebKit has a long-standing bug where a `position: sticky` element fails to
-      // recalculate its offset once a large amount of content is inserted below it by
-      // JavaScript after the initial layout pass — exactly what happens on every page here,
-      // since the main content is a client:only React island that renders nothing in the
-      // server HTML and mounts its real content afterward. A passive CSS hint
-      // (transform: translateZ(0), already applied in index.css) resolves this for small
-      // layout shifts but is not reliably enough for a shift this large. This forces Safari to
-      // fully redo the calculation: wait for the body's size to stop changing (i.e. the React
-      // island has finished mounting its content), then briefly toggle the header out of
-      // `sticky` and back, which makes WebKit recompute from scratch rather than reuse a stale
-      // offset. One-shot — disconnects after the first settle, so it never fires again during
-      // normal use (opening a modal, etc.) and can't cause a visible flicker later in the session.
-      (function () {
-        var headers = document.querySelectorAll('header.sticky');
-        if (!headers.length || typeof ResizeObserver === 'undefined') return;
-        var timer = null;
-        var ro = new ResizeObserver(function () {
-          clearTimeout(timer);
-          timer = setTimeout(function () {
-            ro.disconnect();
-            headers.forEach(function (header) {
-              header.style.position = 'static';
-              void header.offsetHeight;
-              header.style.position = '';
-            });
-          }, 250);
-        });
-        ro.observe(document.body);
-      })();
     </script>
   </body>
 </html>
