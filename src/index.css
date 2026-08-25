@@ -83,15 +83,26 @@
 html {
   color-scheme: light dark;
   scroll-behavior: smooth;
+  background-color: var(--color-canvas);
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--color-canvas);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'ss01' 1, 'cv01' 1;
   background-image: radial-gradient(circle at 12% 4%, rgba(59,130,246,0.07), transparent 30%);
+}
+
+/* In standalone mode iOS lets the viewport extend beneath the status bar and
+   home indicator. Keep the sticky app chrome and page canvas covering those
+   safe areas so scrolled cards never show above the navigation. */
+.app-safe-header {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* Inline links otherwise render at only 17–20px tall. A 24px line box clears the
@@ -146,6 +157,7 @@ button:not(:disabled),
   }
 }
 
+html.dark,
 .dark body {
   background: #0c1018;
   background-image:

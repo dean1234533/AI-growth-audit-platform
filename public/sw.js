@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'growth-audit-v2';
+const CACHE_VERSION = 'growth-audit-v3';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 const OFFLINE_URL = '/offline';
