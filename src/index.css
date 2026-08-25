@@ -92,6 +92,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'ss01' 1, 'cv01' 1;
   background-image: radial-gradient(circle at 12% 4%, rgba(59,130,246,0.07), transparent 30%);
+  /* apple-mobile-web-app-status-bar-style is "black-translucent" (BaseLayout.astro), which makes
+     iOS draw the status bar as a transparent overlay over the page when installed as a PWA
+     (viewport-fit=cover is what makes env(safe-area-inset-*) resolve to a real value at all,
+     rather than always 0px) — without this padding, content renders straight under the notch/
+     status bar in standalone mode, invisible in a regular browser tab since there's no overlay
+     there. padding-bottom does the same for the home-indicator area on notched iPhones. */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* SiteHeader/DashboardHeader are `sticky top-0` — with body's padding-top above already
+   clearing the notch for the initial layout, a literal `top: 0` would still make the header
+   re-collide with the status bar once scrolled (sticky freezes at 0 from the scrollport, not
+   from body's own padding edge). Stick it just below the safe area instead. */
+header.sticky {
+  top: env(safe-area-inset-top, 0px);
 }
 
 /* Inline links otherwise render at only 17–20px tall. A 24px line box clears the
