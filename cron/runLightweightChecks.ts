@@ -58,9 +58,21 @@ export async function runLightweightChecks(env: CronEnv): Promise<void> {
     return;
   }
 
-  const activeWebsites = (await runQuery(serviceAccount, 'websites', [
-    { field: 'status', op: 'EQUAL', value: 'active' },
-  ])) as unknown as WebsiteDoc[];
+  // Unlike runDueScans.ts's daily pass — where a failure here is deliberately left to bubble up
+  // to the admin-alert catch-all in cron/entry.ts, since a missed day is worth a human look —
+  // this runs every 15 minutes. A transient Firestore error (a 502, a brief network blip) is
+  // expected to self-heal on the next cycle 15 minutes later, so it's caught and logged here
+  // rather than escalated: alerting on every transient blip at this frequency would be pure
+  // noise, not a signal anything is actually wrong.
+  let activeWebsites: WebsiteDoc[];
+  try {
+    activeWebsites = (await runQuery(serviceAccount, 'websites', [
+      { field: 'status', op: 'EQUAL', value: 'active' },
+    ])) as unknown as WebsiteDoc[];
+  } catch (err) {
+    console.error('runLightweightChecks: failed to query active websites, skipping this cycle:', err);
+    return;
+  }
   if (activeWebsites.length === 0) return;
 
   // Resolve each unique owner's plan once, not once per website — a Pro user can have up to 5
