@@ -18,6 +18,7 @@ interface WebsiteDoc {
   name: string;
   frequency: ScanFrequency;
   status: 'active' | 'paused';
+  nextScanDue?: string | number | Date;
   latestOverallScore?: number;
   latestCategoryScores?: { id: string; score: number }[];
 }
@@ -27,6 +28,7 @@ interface CompetitorDoc {
   url: string;
   name: string;
   path: string[];
+  nextScanDue?: string | number | Date;
   latestOverallScore?: number;
 }
 
@@ -43,6 +45,18 @@ const FREQUENCY_MS: Record<Exclude<ScanFrequency, 'manual'>, number> = {
 // bounded batches with pacing between them instead.
 const BATCH_SIZE = 3;
 const BATCH_PACING_MS = 20_000;
+
+// Workers Free's subrequest limit is 50 per invocation, and a single full audit (Firestore
+// reads/writes, PageSpeed Insights, Gemini, browser rendering, push notifications) can use a
+// double-digit share of that on its own. Processing every due website in one cron run — as
+// opposed to just batching/pacing them — silently exceeds the limit partway through and kills
+// the whole invocation (including any notifyAdmin call after it, since that's a subrequest
+// too), which is why scans can go weeks without actually running even though the cron itself
+// fires on schedule. Capping how many sites one invocation touches, combined with the sweep
+// below running hourly (see wrangler.toml), keeps each run safely under budget while still
+// working through any backlog within a few hours.
+const MAX_WEBSITES_PER_RUN = 3;
+const MAX_COMPETITORS_PER_RUN = 3;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -74,10 +88,18 @@ export async function runDueScans(env: CronEnv): Promise<void> {
     return;
   }
 
-  const dueWebsites = (await runQuery(serviceAccount, 'websites', [
+  const allDueWebsites = (await runQuery(serviceAccount, 'websites', [
     { field: 'status', op: 'EQUAL', value: 'active' },
     { field: 'nextScanDue', op: 'LESS_THAN_OR_EQUAL', value: new Date() },
   ])) as unknown as WebsiteDoc[];
+
+  // Oldest-due first, and capped — see MAX_WEBSITES_PER_RUN above for why the whole due list
+  // can't just be processed in one invocation. Whatever doesn't fit this run gets picked up by
+  // the next hourly sweep, working through any backlog within a few hours rather than one run
+  // silently dying partway through every time.
+  const dueWebsites = [...allDueWebsites]
+    .sort((a, b) => new Date(a.nextScanDue ?? 0).getTime() - new Date(b.nextScanDue ?? 0).getTime())
+    .slice(0, MAX_WEBSITES_PER_RUN);
 
   await processInBatches(dueWebsites, async (website) => {
     try {
@@ -125,12 +147,16 @@ export async function runDueScans(env: CronEnv): Promise<void> {
   // Competitors default to a fixed weekly cadence (see COMPETITOR_FREQUENCY in src/lib/monitoring.ts,
   // which this mirrors) — there's no per-competitor frequency picker, so every due one gets scanned
   // and rescheduled a week out, regardless of its parent website's own frequency.
-  const dueCompetitors = (await runQuery(
+  const allDueCompetitors = (await runQuery(
     serviceAccount,
     'competitors',
     [{ field: 'nextScanDue', op: 'LESS_THAN_OR_EQUAL', value: new Date() }],
     { allDescendants: true },
   )) as unknown as CompetitorDoc[];
+
+  const dueCompetitors = [...allDueCompetitors]
+    .sort((a, b) => new Date(a.nextScanDue ?? 0).getTime() - new Date(b.nextScanDue ?? 0).getTime())
+    .slice(0, MAX_COMPETITORS_PER_RUN);
 
   for (const competitor of dueCompetitors) {
     const websiteId = competitor.path[1];
