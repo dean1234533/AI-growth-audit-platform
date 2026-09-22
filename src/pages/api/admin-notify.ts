@@ -18,9 +18,9 @@ interface RequestBody {
 
 /**
  * Trusted admin-alert trigger for events that only ever happen client-side (new signup, new
- * monitored website) — the client can't hold RESEND_API_KEY, so it fires this instead. The
- * `event` field is a fixed allowlist and the email body is always built server-side from it,
- * never from client-supplied free text, so this can't be abused as an open email-send relay.
+ * monitored website) — the client can't hold Firebase/VAPID config, so it fires this instead.
+ * The `event` field is a fixed allowlist and the alert body is always built server-side from
+ * it, never from client-supplied free text, so this can't be abused as an open push-send relay.
  */
 export const POST: APIRoute = async ({ request }) => {
   const cfEnv = env as unknown as AdminAlertEnv;
