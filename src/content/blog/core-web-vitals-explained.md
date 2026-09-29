@@ -1,6 +1,7 @@
 ---
 title: "Core Web Vitals Explained (In Plain English)"
 description: "What Largest Contentful Paint, Cumulative Layout Shift and Interaction to Next Paint actually measure, why Google cares, and how to improve each one."
+summary: "Core Web Vitals are three Google ranking metrics: Largest Contentful Paint (LCP, target under 2.5s) measures load speed, Cumulative Layout Shift (CLS, target under 0.1) measures visual stability, and Interaction to Next Paint (INP, target under 200ms) measures responsiveness."
 category: "Page Speed"
 tags: ["core web vitals", "lcp", "cls", "inp", "performance"]
 author: "Dean Da Dev"

@@ -1,6 +1,7 @@
 ---
 title: "The Ultimate Website SEO Guide for Small Businesses"
 description: "A comprehensive, practical guide to website SEO for small business owners — covering on-page SEO, technical SEO, local SEO, performance, accessibility and conversion."
+summary: "Website SEO for a small business comes down to seven areas, in priority order: on-page fundamentals (titles, headings, meta descriptions), technical SEO (crawlability, structured data, site speed), content strategy, local SEO (Google Business Profile, NAP consistency), performance (Core Web Vitals), accessibility, and conversion — ranking only matters if the traffic then turns into enquiries."
 publishDate: 2026-07-01
 author: "Dean Da Dev"
 ---

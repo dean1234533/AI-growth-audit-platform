@@ -1,0 +1,15 @@
+---
+// A short, direct, extractable answer near the top of long-form content — the block AI answer
+// engines (ChatGPT, Perplexity, Google AI Overviews) most often lift verbatim when citing a
+// page, since it states the takeaway plainly instead of requiring the whole article to be read.
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<div class="glass not-prose mb-10 rounded-2xl border border-brand-500/20 bg-brand-500/[0.04] p-6">
+  <p class="text-xs font-bold uppercase tracking-[0.14em] text-brand-500">Quick answer</p>
+  <p class="mt-2 text-base leading-relaxed text-ink dark:text-white">{text}</p>
+</div>

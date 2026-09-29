@@ -1,6 +1,7 @@
 ---
 title: "The Complete Website SEO Checklist for Small Businesses"
 description: "A practical, no-nonsense SEO checklist covering everything from title tags to structured data — everything a small business website needs to rank well."
+summary: "A small business website's core SEO checklist covers: unique title tags and meta descriptions on every page, a single clear H1, logical heading hierarchy, descriptive image alt text, a canonical URL, structured data (schema.org), fast load times, mobile-friendliness, and consistent NAP details for local search."
 category: "SEO"
 tags: ["seo", "checklist", "on-page seo", "structured data"]
 author: "Dean Da Dev"

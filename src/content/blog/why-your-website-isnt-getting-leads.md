@@ -1,6 +1,7 @@
 ---
 title: "Why Your Website Isn't Getting Leads (Even With Decent Traffic)"
 description: "Getting visitors but not enquiries? Here are the most common conversion killers on small business websites, and how to fix each one."
+summary: "If a website gets traffic but no enquiries, the usual causes are: an unclear or hidden call-to-action, a contact form that asks for too much information, and a lack of visible trust signals (reviews, credentials, past work) that reassure a visitor before they commit to contacting you."
 category: "Conversions"
 tags: ["conversion rate optimisation", "lead generation", "cta"]
 author: "Dean Da Dev"

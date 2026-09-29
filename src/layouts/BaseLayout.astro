@@ -18,9 +18,13 @@ interface Props {
   noindex?: boolean;
   /** Hide the global header/footer chrome — used for the bare audit-tool experience. */
   bare?: boolean;
+  /** Article-specific metadata, passed through to SeoHead — set by blog posts and guides. */
+  author?: string;
+  publishedTime?: Date;
+  modifiedTime?: Date;
 }
 
-const { title, description, path, image, noindex, bare = false } = Astro.props;
+const { title, description, path, image, noindex, bare = false, author, publishedTime, modifiedTime } = Astro.props;
 ---
 
 <!doctype html>
@@ -38,7 +42,16 @@ const { title, description, path, image, noindex, bare = false } = Astro.props;
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Growth Audit" />
-    <SeoHead title={title} description={description} path={path} image={image} noindex={noindex} />
+    <SeoHead
+      title={title}
+      description={description}
+      path={path}
+      image={image}
+      noindex={noindex}
+      author={author}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+    />
     <JsonLd schema={[buildOrganizationSchema(), buildSoftwareApplicationSchema()]} />
     <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b89fe80abff1489294eea9f4b7cbef4f"}'></script>
   </head>

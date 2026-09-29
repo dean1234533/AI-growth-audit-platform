@@ -1,6 +1,7 @@
 ---
 title: "How to Improve Your Website Speed: A Practical Guide"
 description: "A practical, prioritised guide to making your website faster — covering images, render-blocking resources, caching, and the Core Web Vitals that actually affect Google rankings."
+summary: "To speed up a website, prioritise in this order: compress and correctly size images, eliminate render-blocking CSS/JavaScript, enable browser and server caching, and use a CDN — these fixes address the root causes behind poor Core Web Vitals scores for most small business sites."
 category: "Page Speed"
 tags: ["performance", "core web vitals", "images", "caching"]
 author: "Dean Da Dev"

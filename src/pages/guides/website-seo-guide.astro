@@ -7,6 +7,7 @@ import JsonLd from '../../components/seo/JsonLd.astro';
 import ReadingProgressBar from '../../components/blog/ReadingProgressBar.astro';
 import TableOfContents from '../../components/blog/TableOfContents.astro';
 import ShareButtons from '../../components/blog/ShareButtons.astro';
+import QuickAnswer from '../../components/blog/QuickAnswer.astro';
 import CtaBanner from '../../components/site/CtaBanner.astro';
 import { buildArticleSchema } from '../../lib/seo/schema';
 import { canonicalUrl } from '../../lib/seo/site';
@@ -16,14 +17,14 @@ const entry = await getEntry('guides', 'website-seo-guide');
 if (!entry) throw new Error('Missing guides/website-seo-guide entry');
 
 const { Content, headings } = await render(entry);
-const { title, description, publishDate, updatedDate, author } = entry.data;
+const { title, description, publishDate, updatedDate, author, summary } = entry.data;
 const readingTime = getReadingTime(entry.body);
 const path = '/guides/website-seo-guide';
 
 const schema = buildArticleSchema({ title, description, path, publishDate, updatedDate, authorName: author });
 ---
 
-<BaseLayout title={title} description={description} path={path}>
+<BaseLayout title={title} description={description} path={path} author={author} publishedTime={publishDate} modifiedTime={updatedDate}>
   <ReadingProgressBar />
   <JsonLd schema={schema} />
   <Breadcrumbs items={[{ name: 'Guides', path: '/guides' }, { name: title, path }]} />
@@ -37,6 +38,16 @@ const schema = buildArticleSchema({ title, description, path, publishDate, updat
         <span class="inline-flex items-center gap-1.5">
           <Clock className="size-4" /> {readingTime} min read
         </span>
+        {
+          updatedDate && (
+            <span>
+              · Updated{' '}
+              <time datetime={updatedDate.toISOString()}>
+                {updatedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </time>
+            </span>
+          )
+        }
       </div>
       <div class="mt-6 flex justify-center">
         <ShareButtons url={canonicalUrl(path)} title={title} />
@@ -45,6 +56,7 @@ const schema = buildArticleSchema({ title, description, path, publishDate, updat
 
     <div class="mx-auto mt-14 grid max-w-5xl gap-10 lg:grid-cols-[1fr_260px]">
       <div class="prose prose-slate dark:prose-invert max-w-none prose-headings:font-display prose-a:text-brand-600 dark:prose-a:text-brand-400">
+        {summary && <QuickAnswer text={summary} />}
         <Content />
       </div>
       <aside class="hidden lg:block">

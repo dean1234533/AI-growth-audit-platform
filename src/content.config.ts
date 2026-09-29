@@ -7,6 +7,9 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    /** A short, direct, self-contained answer shown near the top of the post — see
+     * QuickAnswer.astro. Optional so older/short posts aren't forced to have one. */
+    summary: z.string().optional(),
     category: z.enum([
       'SEO',
       'Website Design',
@@ -113,6 +116,7 @@ const guides = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    summary: z.string().optional(),
     publishDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     author: z.string().default('Dean Da Dev'),

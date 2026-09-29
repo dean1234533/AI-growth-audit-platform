@@ -73,12 +73,15 @@ export interface ArticleSchemaInput {
   updatedDate?: Date;
   authorName: string;
   image?: string;
+  /** BlogPosting for blog posts, Article (default) for standalone guides/pillar content —
+   * BlogPosting is the more specific type answer engines and Google prefer for blog content. */
+  type?: 'Article' | 'BlogPosting';
 }
 
 export function buildArticleSchema(input: ArticleSchemaInput): SchemaObject {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': input.type ?? 'Article',
     headline: input.title,
     description: input.description,
     url: canonicalUrl(input.path),

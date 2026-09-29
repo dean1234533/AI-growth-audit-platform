@@ -1,0 +1,45 @@
+# AI Website Growth Audit
+
+> Free AI-powered website audit for small businesses, covering SEO, performance, accessibility, trust, mobile, conversion and local SEO — with clear, prioritised recommendations and growth opportunities. Built and operated by Dean Da Dev.
+
+The tool automatically detects whether a submitted URL is a marketing website or a web app (SaaS product, login-gated tool, PWA) and scores it accordingly — website-only checks (e.g. local SEO, Google Business Profile signals) are skipped for apps so they aren't penalised for not having them. Audits run for free on the free plan; the Pro plan (see /pricing) adds more monitored sites, daily automated scans, competitor tracking and instant downtime/content-change alerts via push notification.
+
+## Product
+
+- [Homepage](https://app.dean-da-dev.co.uk/): run a free audit by URL
+- [Features](https://app.dean-da-dev.co.uk/features): what the audit checks and how scoring works
+- [Pricing](https://app.dean-da-dev.co.uk/pricing): free vs Pro plan comparison
+- [FAQ](https://app.dean-da-dev.co.uk/faq): common questions about the audit and the platform
+
+## Guides
+
+- [The Ultimate Website SEO Guide for Small Businesses](https://app.dean-da-dev.co.uk/guides/website-seo-guide): comprehensive guide covering on-page SEO, technical SEO, content strategy, local SEO, speed, accessibility and conversion
+
+## Blog
+
+- [The Complete Website SEO Checklist for Small Businesses](https://app.dean-da-dev.co.uk/blog/website-seo-checklist)
+- [How to Improve Your Website Speed: A Practical Guide](https://app.dean-da-dev.co.uk/blog/how-to-improve-your-website-speed)
+- [Core Web Vitals Explained (In Plain English)](https://app.dean-da-dev.co.uk/blog/core-web-vitals-explained)
+- [Why Your Website Isn't Getting Leads (Even With Decent Traffic)](https://app.dean-da-dev.co.uk/blog/why-your-website-isnt-getting-leads)
+- [Google Business Profile Tips That Actually Move the Needle](https://app.dean-da-dev.co.uk/blog/google-business-profile-tips)
+
+## Comparisons
+
+- [Google PageSpeed vs AI Website Audit](https://app.dean-da-dev.co.uk/compare/google-pagespeed-vs-ai-website-audit)
+- [GTmetrix vs AI Website Audit](https://app.dean-da-dev.co.uk/compare/gtmetrix-vs-ai-website-audit)
+
+## By industry
+
+- [Painters and Decorators](https://app.dean-da-dev.co.uk/industries/painters-and-decorators)
+- [Electricians](https://app.dean-da-dev.co.uk/industries/electricians)
+- [Plumbers](https://app.dean-da-dev.co.uk/industries/plumbers)
+- [Dentists](https://app.dean-da-dev.co.uk/industries/dentists)
+- [Restaurants](https://app.dean-da-dev.co.uk/industries/restaurants)
+
+## By location (UK)
+
+- [London](https://app.dean-da-dev.co.uk/locations/london)
+- [Manchester](https://app.dean-da-dev.co.uk/locations/manchester)
+- [Birmingham](https://app.dean-da-dev.co.uk/locations/birmingham)
+- [Leeds](https://app.dean-da-dev.co.uk/locations/leeds)
+- [Bristol](https://app.dean-da-dev.co.uk/locations/bristol)

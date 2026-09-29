@@ -5,7 +5,9 @@ import { AlertTriangle } from 'lucide-react';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
 import FaqAccordion from '../../components/seo/FaqAccordion.astro';
+import JsonLd from '../../components/seo/JsonLd.astro';
 import CtaBanner from '../../components/site/CtaBanner.astro';
+import { buildFaqSchema } from '../../lib/seo/schema';
 
 export async function getStaticPaths() {
   const locations = await getCollection('locations');
@@ -18,9 +20,11 @@ interface Props {
 
 const { location } = Astro.props;
 const { name, region, seoTitle, metaDescription, intro, painPoints, faq } = location.data;
+const schema = buildFaqSchema(faq);
 ---
 
 <BaseLayout title={seoTitle} description={metaDescription} path={`/locations/${location.id}`}>
+  <JsonLd schema={schema} />
   <Breadcrumbs items={[{ name: 'Locations', path: '/locations' }, { name, path: `/locations/${location.id}` }]} />
 
   <section class="px-6 pt-10 pb-16 sm:pt-16">

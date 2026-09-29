@@ -1,6 +1,7 @@
 ---
 title: "Google Business Profile Tips That Actually Move the Needle"
 description: "Practical, high-impact Google Business Profile tips for small businesses wanting to improve local search visibility — beyond just \"claim your listing.\""
+summary: "Beyond claiming your listing, the Google Business Profile changes that move local search rankings most are: completing every profile field, keeping your Name/Address/Phone (NAP) identical everywhere it appears online, posting updates regularly, and actively collecting and responding to reviews."
 category: "Google Business Profile"
 tags: ["local seo", "google business profile", "gbp"]
 author: "Dean Da Dev"
