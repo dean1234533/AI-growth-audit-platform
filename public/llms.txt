@@ -11,9 +11,18 @@ The tool automatically detects whether a submitted URL is a marketing website or
 - [Pricing](https://app.dean-da-dev.co.uk/pricing): free vs Pro plan comparison
 - [FAQ](https://app.dean-da-dev.co.uk/faq): common questions about the audit and the platform
 
+## Focused checks
+
+- [SEO checker](https://app.dean-da-dev.co.uk/seo-checker): on-page and technical SEO signals; not a keyword rank tracker
+- [Website health check](https://app.dean-da-dev.co.uk/website-health-check): broad website diagnosis and limitations
+- [Local SEO website audit](https://app.dean-da-dev.co.uk/local-seo-audit): public local-business website signals; not Google Maps ranking verification
+
 ## Guides
 
 - [The Ultimate Website SEO Guide for Small Businesses](https://app.dean-da-dev.co.uk/guides/website-seo-guide): comprehensive guide covering on-page SEO, technical SEO, content strategy, local SEO, speed, accessibility and conversion
+
+- [Website audit checklist](https://app.dean-da-dev.co.uk/guides/website-audit-checklist): plan, prioritise and verify website improvements
+- [Choosing a website audit tool](https://app.dean-da-dev.co.uk/guides/choosing-website-audit-tool): choose tools by scope and evidence
 
 ## Blog
 
@@ -27,6 +36,11 @@ The tool automatically detects whether a submitted URL is a marketing website or
 
 - [Google PageSpeed vs AI Website Audit](https://app.dean-da-dev.co.uk/compare/google-pagespeed-vs-ai-website-audit)
 - [GTmetrix vs AI Website Audit](https://app.dean-da-dev.co.uk/compare/gtmetrix-vs-ai-website-audit)
+
+- [Sitechecker vs Growth Audit](https://app.dean-da-dev.co.uk/compare/sitechecker-vs-growth-audit)
+- [Seobility vs Growth Audit](https://app.dean-da-dev.co.uk/compare/seobility-vs-growth-audit)
+
+The audit checks public pages with a bounded sample of up to six pages when crawling is enabled. Scores are diagnostic; growth estimates are illustrative, not verified revenue/enquiry forecasts. Automated checks do not certify accessibility or legal compliance.
 
 ## By industry
 

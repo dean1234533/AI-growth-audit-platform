@@ -15,7 +15,7 @@ interface Props {
 }
 
 const { title, description, path, image, noindex = false, author, publishedTime, modifiedTime } = Astro.props;
-const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
+const fullTitle = title.includes('Growth Audit') ? title : `${title} | Growth Audit`;
 const url = canonicalUrl(path);
 const ogImage = image ?? canonicalUrl('/og-default.png');
 const isArticle = Boolean(publishedTime);

@@ -59,6 +59,14 @@ async function fetchWithSecurityHeaders(request: Request, env: Env, ctx: Executi
     return Response.redirect(url.toString(), 308);
   }
 
+  // Static assets can otherwise answer both slash variants despite Astro's canonical policy.
+  // Restrict redirects to read-only public pages; API and account routes keep their behaviour.
+  const isPublicPage = /^\/(about|audit|blog|compare|contact|faq|features|guides|industries|locations|pricing|privacy|terms|seo-checker|website-health-check|local-seo-audit)(\/|$)/.test(url.pathname);
+  if ((request.method === 'GET' || request.method === 'HEAD') && isPublicPage && url.pathname.endsWith('/')) {
+    url.pathname = url.pathname.replace(/\/+$/, '');
+    return new Response(null, { status: 308, headers: { ...SECURITY_HEADERS, Location: url.toString() } });
+  }
+
   const response = await astroEntry.fetch(request, env, ctx);
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {

@@ -155,7 +155,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false, initia
         <div>
           <span className="editorial-index">01 / Independent site diagnosis</span>
           <h1>
-            See what’s <span className="hero-word-blue">holding</span> your site back.{' '}
+            Your free <span className="hero-word-blue">website audit.</span>{' '}
             Fix what matters <span className="hero-word-mint">first.</span>
           </h1>
         </div>
@@ -172,7 +172,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false, initia
 
       <div className="result-stage">
         <div className="result-float result-float-quality"><span>Scan quality</span><strong>Full browser audit</strong></div>
-        <div className="result-float result-float-growth"><span>Estimated upside</span><strong>+2–5 enquiries</strong><small>per month</small></div>
+        <div className="result-float result-float-growth"><span>Illustrative upside</span><strong>+2–5 enquiries</strong><small>example, not a forecast</small></div>
         <div className="result-preview" aria-label="Example Growth Audit result">
         <div className="result-score">
           <div className="result-score-head">
@@ -202,7 +202,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false, initia
               <small>{row.detail}</small>
             </div>
           ))}
-          <div className="result-benchmark"><span>Portfolio benchmark</span><strong>+6</strong><small>points above similar local-business sites</small></div>
+          <div className="result-benchmark"><span>Example benchmark</span><strong>+6</strong><small>illustrative comparison only</small></div>
         </div>
         <div className="result-actions">
           <div className="result-section-head">

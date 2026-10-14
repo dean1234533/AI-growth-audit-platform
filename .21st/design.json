@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "project": {
+    "name": "ai-website-growth-audit-platform",
+    "productType": null,
+    "stack": [
+      "astro",
+      "react",
+      "tailwind-v4"
+    ]
+  },
+  "sources": {
+    "tokens": [
+      "src/index.css"
+    ],
+    "components": [
+      "src/components/ui"
+    ],
+    "assets": [],
+    "instructions": []
+  },
+  "design": {
+    "colorMode": "light-and-dark",
+    "colors": {
+      "--color-brand-50": {
+        "value": "#eff6ff",
+        "source": "src/index.css"
+      },
+      "--color-brand-100": {
+        "value": "#dbeafe",
+        "source": "src/index.css"
+      },
+      "--color-brand-200": {
+        "value": "#bfdbfe",
+        "source": "src/index.css"
+      },
+      "--color-brand-300": {
+        "value": "#93c5fd",
+        "source": "src/index.css"
+      },
+      "--color-brand-400": {
+        "value": "#60a5fa",
+        "source": "src/index.css"
+      },
+      "--color-brand-500": {
+        "value": "#3b82f6",
+        "source": "src/index.css"
+      },
+      "--color-brand-600": {
+        "value": "#2563eb",
+        "source": "src/index.css"
+      },
+      "--color-brand-700": {
+        "value": "#1d4ed8",
+        "source": "src/index.css"
+      },
+      "--color-brand-800": {
+        "value": "#1e40af",
+        "source": "src/index.css"
+      },
+      "--color-brand-900": {
+        "value": "#1e3a8a",
+        "source": "src/index.css"
+      },
+      "--color-accent-400": {
+        "value": "#6f9fff",
+        "source": "src/index.css"
+      },
+      "--color-accent-500": {
+        "value": "#4b7cff",
+        "source": "src/index.css"
+      },
+      "--color-accent-600": {
+        "value": "#3a63e0",
+        "source": "src/index.css"
+      },
+      "--color-mint-400": {
+        "value": "#2fe0a8",
+        "source": "src/index.css"
+      },
+      "--color-mint-500": {
+        "value": "#00c48c",
+        "source": "src/index.css"
+      },
+      "--color-mint-600": {
+        "value": "#00a374",
+        "source": "src/index.css"
+      },
+      "--color-amber-400": {
+        "value": "#ffc470",
+        "source": "src/index.css"
+      },
+      "--color-amber-500": {
+        "value": "#ffb547",
+        "source": "src/index.css"
+      },
+      "--color-amber-600": {
+        "value": "#f59b1f",
+        "source": "src/index.css"
+      },
+      "--color-rose-400": {
+        "value": "#ff7d97",
+        "source": "src/index.css"
+      },
+      "--color-rose-500": {
+        "value": "#ff5a7a",
+        "source": "src/index.css"
+      },
+      "--color-rose-600": {
+        "value": "#e83f61",
+        "source": "src/index.css"
+      },
+      "--color-canvas": {
+        "value": "#f4f5f0",
+        "source": "src/index.css"
+      },
+      "--color-ink": {
+        "value": "#101722",
+        "source": "src/index.css"
+      },
+      "--color-slate": {
+        "value": "#5f6b78",
+        "source": "src/index.css"
+      }
+    },
+    "typography": {
+      "--font-sans": {
+        "value": "'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif",
+        "source": "src/index.css"
+      },
+      "--font-display": {
+        "value": "'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif",
+        "source": "src/index.css"
+      }
+    },
+    "spacing": {},
+    "radius": {},
+    "shadows": {},
+    "motion": {},
+    "density": "unknown"
+  },
+  "components": {
+    "installed": [
+      "AnimatedCounter",
+      "Button",
+      "GlassCard",
+      "motion-lite",
+      "SeverityBadge",
+      "Skeleton",
+      "Toggle"
+    ],
+    "preferredPrimitives": [],
+    "patterns": []
+  },
+  "constraints": {
+    "must": [],
+    "avoid": []
+  },
+  "decisions": [],
+  "evidence": [
+    {
+      "fact": "components.installed",
+      "source": "src/components/ui"
+    },
+    {
+      "fact": "design.colorMode:light-and-dark",
+      "source": "src/index.css"
+    },
+    {
+      "fact": "design.tokens",
+      "source": "src/index.css"
+    },
+    {
+      "fact": "project.stack:astro",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:react",
+      "source": "package.json"
+    },
+    {
+      "fact": "project.stack:tailwind-v4",
+      "source": "package.json"
+    }
+  ],
+  "generatedAt": "2026-10-14T12:03:53.878Z"
+}

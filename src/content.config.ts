@@ -104,6 +104,8 @@ const compareContentSchema = z.object({
   competitorStrengths: z.array(z.string()),
   ourStrengths: z.array(z.string()),
   verdict: z.string(),
+  sources: z.array(z.object({ label: z.string(), url: z.string().url() })).optional(),
+  reviewedDate: z.string().optional(),
 });
 
 const compare = defineCollection({

@@ -17,7 +17,7 @@ interface Props {
 }
 
 const { item } = Astro.props;
-const { competitor, seoTitle, metaDescription, intro, competitorStrengths, ourStrengths, verdict } = item.data;
+const { competitor, seoTitle, metaDescription, intro, competitorStrengths, ourStrengths, verdict, sources, reviewedDate } = item.data;
 ---
 
 <BaseLayout title={seoTitle} description={metaDescription} path={`/compare/${item.id}`}>
@@ -68,5 +68,6 @@ const { competitor, seoTitle, metaDescription, intro, competitorStrengths, ourSt
     </div>
   </section>
 
+  {sources && <section class="mx-auto max-w-5xl px-6 py-8"><h2 class="font-display text-xl font-bold">Official sources</h2><p class="mt-3 text-sm text-slate">Reviewed {reviewedDate}. Features and terms can change; check the current official pages.</p><ul class="mt-4 space-y-3">{sources.map(source=><li><a href={source.url} class="text-brand-600 underline underline-offset-4">{source.label}</a></li>)}</ul></section>}
   <CtaBanner />
 </BaseLayout>

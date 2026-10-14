@@ -13,7 +13,7 @@ const posts = sortByDateDesc(await getCollection('blog')).slice(0, 3);
 const industries = (await getCollection('industries')).slice(0, 6);
 ---
 
-<BaseLayout title="Free AI Website Growth Audit & Report" description={SITE_DESCRIPTION} path="/">
+<BaseLayout title="Free Website Audit UK — SEO & Website Health Check" description={SITE_DESCRIPTION} path="/">
   <main class="premium-public-shell">
   <AuditTool client:load />
 
@@ -55,6 +55,12 @@ const industries = (await getCollection('industries')).slice(0, 6);
     </div>
   </section>
 
+  <section class="mx-auto max-w-7xl px-6 py-14">
+    <h2 class="font-display text-3xl font-bold tracking-tight text-ink dark:text-white">Choose the checks your website needs</h2>
+    <p class="mt-4 max-w-3xl leading-7 text-slate">Start with search visibility, review overall website health or focus on local-business signals. Each audit explains what it can verify and what needs a separate check.</p>
+    <ul class="mt-6 grid gap-4 sm:grid-cols-3">{[{href:'/seo-checker',label:'Free SEO checker'},{href:'/website-health-check',label:'Website health check'},{href:'/local-seo-audit',label:'Local SEO website audit'}].map(link=><li><a href={link.href} class="block rounded-xl border border-slate/20 p-5 font-semibold text-brand-600 underline underline-offset-4">{link.label}</a></li>)}</ul>
+    <p class="mt-6 leading-7 text-slate"><a href="/guides/website-audit-checklist" class="text-brand-600 underline">Use the website audit checklist</a> or <a href="/guides/choosing-website-audit-tool" class="text-brand-600 underline">compare tools by the evidence you need</a>.</p>
+  </section>
   <Faq />
 
   <section class="editorial-final-cta">

@@ -9,13 +9,16 @@ const SITE_URL = process.env.SITE_URL ?? 'https://app.dean-da-dev.co.uk';
 
 export default defineConfig({
   site: SITE_URL,
+  trailingSlash: 'never',
+  outDir: process.env.BUILD_OUTPUT_DIR ?? './dist',
+  cacheDir: process.env.ASTRO_CACHE_DIR ?? './node_modules/.astro',
   output: 'server',
   integrations: [
     react(),
     sitemap({
       filter: (page) => {
         const path = new URL(page).pathname;
-        return !/^\/(dashboard|admin|login|offline)(\/|$)/.test(path);
+        return !/^\/(dashboard|admin|login|offline|api)(\/|$)/.test(path) && !path.startsWith('/blog/tag/');
       },
     }),
     mdx(),
@@ -27,5 +30,6 @@ export default defineConfig({
   }),
   vite: {
     plugins: [tailwindcss()],
+    cacheDir: process.env.VITE_CACHE_DIR ?? 'node_modules/.vite',
   },
 });

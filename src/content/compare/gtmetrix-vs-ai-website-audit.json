@@ -12,8 +12,19 @@
   "ourStrengths": [
     "No technical knowledge required — every finding is explained in plain English with a clear severity and difficulty rating",
     "Covers the full picture beyond speed: SEO, accessibility, trust, mobile, conversion and local SEO",
-    "Estimates real business impact (potential enquiries, visibility improvement) rather than just technical scores",
+    "Includes illustrative growth estimates; actual business outcomes need your own data",
     "Free branded PDF report and a natural path to professional help fixing what's found"
   ],
-  "verdict": "If you're a developer who needs granular waterfall-level performance debugging, GTmetrix is built exactly for that. If you're a business owner who wants a fast, plain-English answer to \"what's wrong with my website and how much is it costing me\" across every factor that affects enquiries — not just load time — our free AI Website Audit is the more useful starting point."
+  "verdict": "If you're a developer who needs granular waterfall-level performance debugging, GTmetrix is built exactly for that. If you're a business owner who wants a fast, plain-English answer to \"what issues should I investigate on my website\" across every factor that affects enquiries — not just load time — our free AI Website Audit is the more useful starting point.",
+  "sources": [
+    {
+      "label": "GTmetrix official tool",
+      "url": "https://gtmetrix.com/"
+    },
+    {
+      "label": "Growth Audit features",
+      "url": "https://app.dean-da-dev.co.uk/features"
+    }
+  ],
+  "reviewedDate": "14 October 2026"
 }

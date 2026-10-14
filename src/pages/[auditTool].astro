@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AuditTool from '../components/AuditTool';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import FaqAccordion from '../components/seo/FaqAccordion.astro';
+import { AUDIT_PAGES } from '../lib/seo/auditPages';
+export const prerender = true;
+export function getStaticPaths(){return AUDIT_PAGES.map(page=>({params:{auditTool:page.slug},props:{page}}));}
+const {page}=Astro.props;
+---
+<BaseLayout title={page.title} description={page.description} path={`/${page.slug}`}>
+  <Breadcrumbs items={[{name:page.h1,path:`/${page.slug}`}]} />
+  <main class="mx-auto max-w-5xl px-6 py-12 sm:py-20">
+    <header class="max-w-3xl"><p class="text-xs font-bold uppercase tracking-widest text-brand-600">Free website audit · UK businesses</p><h1 class="mt-4 font-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl dark:text-white">{page.h1}</h1><p class="mt-5 text-lg leading-relaxed text-slate">{page.intro}</p></header>
+    <section aria-label="Run a website audit" class="mt-10 rounded-2xl border border-slate/20 p-5 sm:p-8"><AuditTool compact client:load /></section>
+    <div class="mt-12 max-w-3xl space-y-10">{page.sections.map(([heading,text])=><section><h2 class="font-display text-2xl font-bold text-ink dark:text-white">{heading}</h2><p class="mt-4 leading-7 text-slate">{text}</p></section>)}</div>
+    <section class="mt-14 max-w-3xl"><h2 class="mb-6 font-display text-2xl font-bold">Common questions</h2><FaqAccordion items={page.faq} /></section>
+    <nav aria-label="Related audit resources" class="mt-12 border-t border-slate/20 pt-8"><h2 class="font-display text-xl font-bold">Plan your improvements</h2><ul class="mt-4 flex flex-wrap gap-x-6 gap-y-3"><li><a href="/guides/website-audit-checklist" class="text-brand-600 underline">Website audit checklist</a></li><li><a href="/guides/choosing-website-audit-tool" class="text-brand-600 underline">Choose an audit tool</a></li><li><a href="/industries" class="text-brand-600 underline">Industry audits</a></li><li><a href="/pricing" class="text-brand-600 underline">Monitoring plans</a></li></ul></nav>
+  </main>
+</BaseLayout>

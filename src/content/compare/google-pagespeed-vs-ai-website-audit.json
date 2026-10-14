@@ -12,8 +12,19 @@
   "ourStrengths": [
     "Covers SEO, accessibility, trust, mobile-friendliness, conversion optimisation and local SEO — not just speed",
     "Translates technical performance issues into plain-English, prioritised recommendations rather than raw metrics",
-    "Estimates the business impact of fixing issues (potential enquiries, visibility, conversion improvement)",
+    "Shows illustrative growth opportunities without guaranteeing enquiries or revenue",
     "Produces a downloadable, branded PDF report suitable for sharing with a business owner or team"
   ],
-  "verdict": "If you specifically need deep, technical Core Web Vitals diagnostics, PageSpeed Insights is the right specialist tool — and it's exactly what powers our own performance checks. If you want to understand your website's overall health across SEO, trust, accessibility and conversion in one plain-English report — not just speed — run our free AI Website Audit instead. Many businesses use both: PageSpeed Insights for deep technical performance work, and our audit for the full picture."
+  "verdict": "If you specifically need deep, technical Core Web Vitals diagnostics, PageSpeed Insights is the right specialist tool — and it's exactly what powers our own performance checks. If you want to understand your website's overall health across SEO, trust, accessibility and conversion in one plain-English report — not just speed — run our free AI Website Audit instead. Many businesses use both: PageSpeed Insights for deep technical performance work, and our audit for the full picture.",
+  "sources": [
+    {
+      "label": "Google PageSpeed Insights official tool",
+      "url": "https://pagespeed.web.dev/"
+    },
+    {
+      "label": "Growth Audit features",
+      "url": "https://app.dean-da-dev.co.uk/features"
+    }
+  ],
+  "reviewedDate": "14 October 2026"
 }

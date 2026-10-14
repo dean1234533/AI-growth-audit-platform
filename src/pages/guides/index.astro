@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import CtaBanner from '../../components/site/CtaBanner.astro';
+export const prerender = true;
+const guides = await getCollection('guides');
+---
+<BaseLayout title="Website Audit & SEO Guides" description="Practical website audit and SEO guides for UK small businesses. Plan your checks, choose tools and prioritise improvements." path="/guides">
+  <Breadcrumbs items={[{name:'Guides',path:'/guides'}]} />
+  <main class="mx-auto max-w-5xl px-6 py-14 sm:py-20">
+    <h1 class="font-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl dark:text-white">Website audit and SEO guides</h1>
+    <p class="mt-5 max-w-3xl text-lg leading-relaxed text-slate">Make sense of your report, choose the right checks and turn findings into a practical improvement plan.</p>
+    <ul class="mt-10 grid gap-6 sm:grid-cols-2">{guides.map(g=><li class="rounded-2xl border border-slate/20 p-6"><h2 class="font-display text-xl font-bold"><a href={`/guides/${g.id}`} class="text-brand-600 underline underline-offset-4">{g.data.title}</a></h2><p class="mt-4 leading-relaxed text-slate">{g.data.description}</p></li>)}</ul>
+  </main><CtaBanner />
+</BaseLayout>
