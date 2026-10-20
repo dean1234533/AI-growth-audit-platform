@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { updateProfile, deleteUser, signOut, sendPasswordResetEmail } from 'firebase/auth';
-import { collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
 import { User, Bell, Trash2, Save, Smartphone, X, SlidersHorizontal, Moon, Sun, Monitor, CreditCard, Globe, KeyRound, Sparkles, ExternalLink } from 'lucide-react';
-import { auth, db } from '../../lib/firebaseClient';
+import { auth } from '../../lib/firebaseClient';
 import { useAuthUser } from '../../lib/useAuthUser';
 import { getUserSettings, saveUserSettings, type UserSettings, type WorkingHours, type NotificationPref } from '../../lib/userSettings';
 import { saveGeminiKey, removeGeminiKey } from '../../lib/geminiKey';
-import { getGeminiKeyStatus, type GeminiKeyStatus } from '../../lib/api';
+import { authHeaders, getGeminiKeyStatus, type GeminiKeyStatus } from '../../lib/api';
 import { setTheme, getStoredTheme, type ThemePreference } from '../../lib/theme';
 import {
   isPushSupported,
@@ -212,13 +211,28 @@ export default function Settings() {
     setDeleting(true);
     setError(null);
     try {
-      const sitesQuery = query(collection(db, 'websites'), where('uid', '==', user.uid));
-      const sites = await getDocs(sitesQuery);
-      await Promise.all(sites.docs.map((d) => deleteDoc(d.ref)));
-      await deleteUser(user);
+      // Server-side purge: also cancels any Pro subscription and removes scan history,
+      // which Firestore rules don't let the browser delete.
+      const res = await fetch('/api/delete-account', { method: 'POST', headers: await authHeaders() });
+      if (!res.ok) {
+        const json = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(json.error ?? 'delete failed');
+      }
+      try {
+        await deleteUser(user);
+      } catch (err) {
+        // Data and billing are already gone. Firebase only refuses the final login removal
+        // when the session is old — sign out so one fresh login + "Delete Account" finishes it.
+        if ((err as { code?: string })?.code === 'auth/requires-recent-login') {
+          await signOut(auth);
+          window.location.href = '/login?deleted=1';
+          return;
+        }
+        throw err;
+      }
       window.location.href = '/';
     } catch {
-      setError('Could not delete your account — try signing out and back in, then retry (Firebase requires a recent login for this action).');
+      setError('Could not delete your account right now — please try again in a moment.');
       setDeleting(false);
     }
   }

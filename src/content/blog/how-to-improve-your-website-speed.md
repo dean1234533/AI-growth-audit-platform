@@ -56,4 +56,4 @@ Rather than guessing which of these apply to your site, the fastest way to know 
 
 Website speed isn't a one-time fix — new images, plugins and features can quietly reintroduce the same problems over time. Building a habit of checking every few months (especially after adding new content or features) keeps your site fast, keeps Google happy, and keeps visitors from bouncing before they see what you do.
 
-**Ready to see where your site stands?** [Run a free website audit](/) and get your Core Web Vitals score in under 30 seconds.
+**Ready to see where your site stands?** [Run a free website audit](/) and get your Core Web Vitals score in about a minute.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, CreditCard, ExternalLink } from 'lucide-react';
 import { useAuthUser } from '../../lib/useAuthUser';
+import { authHeaders } from '../../lib/api';
 import { getUserSettings } from '../../lib/userSettings';
 import { PLANS } from '../../lib/plans';
 import type { PlanId, UserSettings } from '../../lib/userSettings';
@@ -31,8 +32,8 @@ export default function BillingSection() {
     try {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
+        headers: { 'content-type': 'application/json', ...(await authHeaders()) },
+        body: JSON.stringify({}),
       });
       const json = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !json.url) throw new Error(json.error ?? 'Could not start checkout.');
@@ -50,8 +51,8 @@ export default function BillingSection() {
     try {
       const res = await fetch('/api/stripe/portal', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ customerId: settings.stripeCustomerId }),
+        headers: { 'content-type': 'application/json', ...(await authHeaders()) },
+        body: JSON.stringify({}),
       });
       const json = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !json.url) throw new Error(json.error ?? 'Could not open the billing portal.');

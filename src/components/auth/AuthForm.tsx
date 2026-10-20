@@ -150,6 +150,11 @@ export default function AuthForm() {
             />
           </div>
 
+          {!error && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('deleted') === '1' && (
+            <p className="text-sm font-medium text-slate">
+              Your data and subscription have been removed. For security, sign in once more, then press Delete Account in Settings to finish removing your login.
+            </p>
+          )}
           {error && <p className="text-sm font-medium text-rose-500">{error}</p>}
 
           <Button type="submit" size="lg" loading={loading} className="w-full">

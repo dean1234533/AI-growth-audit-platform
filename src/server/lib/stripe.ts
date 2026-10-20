@@ -18,7 +18,7 @@ function toFormBody(params: Record<string, string | number | string[]>): string 
 
 export async function stripeRequest<T = Record<string, unknown>>(
   secretKey: string,
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'DELETE',
   path: string,
   params?: Record<string, string | number | string[]>,
 ): Promise<T> {

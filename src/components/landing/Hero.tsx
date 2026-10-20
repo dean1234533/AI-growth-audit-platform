@@ -64,7 +64,7 @@ export function Hero({ onAnalyse, loading, errorMessage, compact = false, initia
       </form>
 
       <div className="editorial-form-meta mt-3 flex flex-wrap justify-between gap-2 text-xs font-medium">
-        <span>Free to run · no account · results in about 30 seconds</span>
+        <span>Free to run · no account · results in about a minute</span>
         {!compact && <a href="/login" className="editorial-form-login font-semibold">Already monitoring a site? Log in</a>}
       </div>
 

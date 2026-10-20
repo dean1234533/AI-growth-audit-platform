@@ -53,4 +53,4 @@ Google's own [PageSpeed Insights](https://pagespeed.web.dev) tool measures all t
 
 Yes, confirmed directly by Google as part of their "page experience" ranking signals — though it's one of many factors, not an overriding one. A page with excellent content and poor Core Web Vitals can still rank, but all else being equal, better Core Web Vitals give you an edge, and the user experience benefit (fewer visitors bouncing from a janky page) matters regardless of the direct ranking impact.
 
-**Want to see your actual scores?** [Run a free website audit](/) and get real Core Web Vitals data in under 30 seconds.
+**Want to see your actual scores?** [Run a free website audit](/) and get real Core Web Vitals data in about a minute.

@@ -39,4 +39,4 @@ Not every visitor is ready to enquire immediately. A lead magnet — a downloada
 
 Rather than guessing, our [free website audit](/) checks your primary CTA visibility, contact form friction, trust signal placement, page speed and overall conversion structure — and estimates the enquiry uplift available from fixing what's found.
 
-**Ready to see your results?** [Run a free website audit](/) in under 30 seconds.
+**Ready to see your results?** [Run a free website audit](/) in about a minute.

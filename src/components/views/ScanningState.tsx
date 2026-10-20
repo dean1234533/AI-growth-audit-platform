@@ -11,15 +11,18 @@ const STAGES = [
   { icon: ShieldCheck, label: 'Checking trust & credibility signals…' },
   { icon: Smartphone, label: 'Reviewing mobile experience…' },
   { icon: ScanSearch, label: 'Generating your recommendations…' },
+  { icon: Gauge, label: 'Still working — the full speed test takes up to a minute…' },
 ];
 
 export function ScanningState() {
   const [stage, setStage] = useState(0);
 
   useEffect(() => {
+    // Five quick stages while the page is fetched, then a held message — the real
+    // performance test routinely takes 30–60s, so don't pretend it's nearly done.
     const interval = setInterval(() => {
       setStage((s) => Math.min(s + 1, STAGES.length - 1));
-    }, 1800);
+    }, 5500);
     return () => clearInterval(interval);
   }, []);
 

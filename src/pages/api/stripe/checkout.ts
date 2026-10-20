@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { stripeRequest } from '../../../server/lib/stripe';
+import { verifyFirebaseIdToken } from '../../../server/lib/verifyFirebaseIdToken';
 
 export const prerender = false;
 
@@ -18,13 +19,13 @@ export const POST: APIRoute = async ({ request }) => {
   const cfEnv = env as unknown as Env;
   if (!cfEnv.STRIPE_SECRET_KEY || !cfEnv.STRIPE_PRO_PRICE_ID) return jsonError('Billing is not configured yet.', 503);
 
-  let body: { uid?: string; email?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return jsonError('Invalid request body', 400);
-  }
-  if (!body.uid || !body.email) return jsonError('Missing uid or email', 400);
+  // Identity comes from the verified ID token, never from the request body.
+  const projectId = import.meta.env.PUBLIC_FIREBASE_PROJECT_ID as string | undefined;
+  const authHeader = request.headers.get('authorization') ?? '';
+  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const caller = projectId ? await verifyFirebaseIdToken(idToken, projectId) : null;
+  if (!caller?.uid || !caller.email) return jsonError('Please sign in again to upgrade.', 401);
+  const body = { uid: caller.uid, email: caller.email };
 
   const origin = new URL(request.url).origin;
 

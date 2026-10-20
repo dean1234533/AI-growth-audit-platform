@@ -187,7 +187,7 @@ ${findingsLine} ${TOOL_EXPLAINER}
 You can run your own site through it here:
 ${AUDIT_TOOL_URL}
 
-It's free to run an audit and takes about 30 seconds — no signup needed just to check the site. If you want to save the result and get notified if anything changes later on, there's an option to create a free account too.
+It's free to run an audit and takes about a minute — no signup needed just to check the site. If you want to save the result and get notified if anything changes later on, there's an option to create a free account too.
 
 If anything useful comes up, happy to point you in the right direction.
 
